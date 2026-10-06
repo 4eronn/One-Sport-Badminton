@@ -2,18 +2,19 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ONESPORT · Badminton Match & Dynamic Mid-Game Rotation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ONESPORT · Badminton Match & Dynamic Rotation</title>
 <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 <style>
   :root {
     /* ONESPORT Navy & Orange Palette */
     --bg-page: #F8FAFC;
     --bg-card: #FFFFFF;
     --bg-alt: #F1F5F9;
+    --bg-input: #FFFFFF;
     
     --brand-navy-dark: #0F1E36;
     --brand-navy: #152B52;
@@ -32,11 +33,11 @@
     --gradient-navy: linear-gradient(135deg, #0F1E36 0%, #1E3A6C 100%);
     --gradient-orange: linear-gradient(135deg, #FF5B14 0%, #FF7839 100%);
     --gradient-court: linear-gradient(145deg, #FFFFFF 0%, #F6F9FD 100%);
-    --gradient-jago: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    --gradient-gold: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
     
     --text-primary: #0F1E36;
     --text-secondary: #475569;
-    --text-muted: #8392A5;
+    --text-muted: #64748B;
     --border-color: #E2E8F0;
     --border-focus: #FF5B14;
     
@@ -46,6 +47,31 @@
     --terra-light: #FEE2E2;
     --terra-text: #991B1B;
     
+    /* Role Levels */
+    --role-pemula: #475569;
+    --role-pemula-bg: #F1F5F9;
+    --role-pemula-border: #CBD5E1;
+
+    --role-amatir: #2563EB;
+    --role-amatir-bg: #EFF6FF;
+    --role-amatir-border: #BFDBFE;
+
+    --role-inter: #EA580C;
+    --role-inter-bg: #FFF7ED;
+    --role-inter-border: #FED7AA;
+
+    --role-advance: #DC2626;
+    --role-advance-bg: #FEF2F2;
+    --role-advance-border: #FECACA;
+    
+    --gender-male: #0284C7;
+    --gender-male-bg: #E0F2FE;
+    --gender-male-border: #BAE6FD;
+
+    --gender-female: #DB2777;
+    --gender-female-bg: #FCE7F3;
+    --gender-female-border: #FBCFE8;
+
     --shadow-subtle: 0 4px 20px -2px rgba(15, 30, 54, 0.05);
     --shadow-card: 0 10px 30px -5px rgba(15, 30, 54, 0.07), 0 4px 10px -2px rgba(15, 30, 54, 0.03);
     --shadow-hover: 0 20px 40px -10px rgba(15, 30, 54, 0.12);
@@ -64,14 +90,15 @@
     background: var(--bg-page);
     color: var(--text-primary);
     min-height: 100vh;
+    padding-bottom: 90px;
     line-height: 1.5;
-    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* ── TOP APP SWITCHER ── */
   .top-sport-bar {
     background: var(--brand-navy-dark);
-    padding: 6px 24px;
+    padding: 6px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -114,23 +141,23 @@
     transition: all 0.3s ease;
   }
   .nav-container {
-    max-width: 1240px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 12px 24px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
   }
   .brand-logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     text-decoration: none;
     cursor: pointer;
   }
   .logo-img {
-    height: 42px;
+    height: 38px;
     width: auto;
     object-fit: contain;
   }
@@ -140,7 +167,7 @@
   }
   .brand-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 900;
     letter-spacing: 0.5px;
     color: var(--brand-navy-dark);
@@ -150,15 +177,15 @@
     color: var(--brand-orange);
   }
   .brand-sub {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 800;
-    letter-spacing: 1.2px;
+    letter-spacing: 1px;
     color: var(--brand-navy-soft);
     text-transform: uppercase;
   }
 
-  /* Nav Links (Pills) */
-  .nav-menu {
+  /* Desktop Nav Links (Pills) */
+  .desktop-nav-menu {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -166,2562 +193,2719 @@
     padding: 4px;
     border-radius: var(--radius-full);
   }
-  .nav-tab-btn {
+  .desktop-tab-btn {
     border: none;
     background: transparent;
-    padding: 8px 18px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
     color: var(--text-secondary);
     border-radius: var(--radius-full);
     cursor: pointer;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    transition: all 0.2s;
   }
-  .nav-tab-btn:hover {
-    color: var(--brand-navy-dark);
-  }
-  .nav-tab-btn.active {
+  .desktop-tab-btn:hover { color: var(--brand-navy-dark); }
+  .desktop-tab-btn.active {
     background: #FFFFFF;
     color: var(--brand-orange);
-    font-weight: 800;
     box-shadow: 0 2px 8px rgba(15, 30, 54, 0.08);
   }
-  .nav-cta-btn {
-    background: var(--gradient-orange);
-    color: #FFFFFF;
-    border: none;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+
+  .nav-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-nav-settings {
+    background: #F1F5F9;
+    border: 1px solid var(--border-color);
+    color: var(--brand-navy-dark);
     font-weight: 700;
-    font-size: 0.875rem;
-    padding: 10px 22px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
     border-radius: var(--radius-full);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 14px var(--brand-orange-glow);
-    white-space: nowrap;
+    transition: all 0.2s;
   }
-  .nav-cta-btn:hover {
-    background: var(--brand-orange-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 91, 20, 0.45);
-  }
-
-  /* ── HERO BANNER ── */
-  .hero-section {
-    position: relative;
-    max-width: 1240px;
-    margin: 20px auto 30px;
-    padding: 0 24px;
-  }
-  .hero-card {
-    background: var(--gradient-hero);
-    border-radius: var(--radius-xl);
-    border: 1.5px solid var(--border-color);
-    padding: 40px 48px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-card);
-    display: grid;
-    grid-template-columns: 1.25fr 0.75fr;
-    gap: 32px;
-    align-items: center;
-  }
-  .hero-badge-top {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--brand-navy-soft);
-    margin-bottom: 12px;
-  }
-  .hero-badge-top span.dot {
-    width: 7px;
-    height: 7px;
-    background: var(--brand-orange);
-    border-radius: 50%;
-  }
-  .hero-heading {
-    font-family: 'Outfit', sans-serif;
-    font-size: 3rem;
-    font-weight: 900;
-    line-height: 1.05;
-    letter-spacing: -1px;
-    color: var(--brand-navy-dark);
-    margin-bottom: 14px;
-  }
-  .hero-heading .orange-text {
+  .btn-nav-settings:hover {
+    background: var(--brand-orange-light);
     color: var(--brand-orange);
-    display: inline-block;
-  }
-  .hero-sub {
-    font-size: 0.98rem;
-    color: var(--text-secondary);
-    max-width: 500px;
-    margin-bottom: 22px;
-    line-height: 1.6;
-  }
-  .hero-actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
-  .handwritten-sticker {
-    font-family: 'Caveat', cursive;
-    font-size: 1.55rem;
-    color: var(--brand-navy-dark);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transform: rotate(-4deg);
-    font-weight: 700;
+    border-color: var(--brand-orange);
   }
 
-  /* Hero Right Feature Box */
-  .hero-feature-box {
-    background: var(--gradient-feature);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    border: 1.5px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 10px 25px rgba(15, 30, 54, 0.05);
+  /* ── SUB-HEADER INFO & COURT SELECTOR BAR ── */
+  .session-info-bar {
+    background: var(--brand-navy-light);
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 16px;
     display: flex;
-    flex-direction: column;
-    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--brand-navy-soft);
+    font-weight: 700;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  .feature-top-tag {
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--brand-navy);
+  .court-quick-selector {
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .feature-top-tag::before {
-    content: '';
-    display: inline-block;
-    width: 14px;
-    height: 3px;
+  .court-pill-btn {
+    background: #FFFFFF;
+    border: 1.5px solid #CBD5E1;
+    color: var(--brand-navy-dark);
+    padding: 3px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .court-pill-btn.active {
     background: var(--brand-orange);
-    border-radius: 2px;
-  }
-  .feature-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: var(--brand-navy-dark);
-    line-height: 1.2;
-  }
-  .hero-stats-mini {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .mini-stat-pill {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(8px);
-    border-radius: var(--radius-md);
-    padding: 8px 10px;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .mini-stat-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: var(--brand-navy-light);
-    color: var(--brand-navy);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    font-weight: 800;
-    flex-shrink: 0;
-  }
-  .mini-stat-pill.orange-theme .mini-stat-icon {
-    background: var(--brand-orange-light);
-    color: var(--brand-orange);
-  }
-  .mini-stat-pill.blue-theme .mini-stat-icon {
-    background: #DBEAFE;
-    color: #1E40AF;
-  }
-  .mini-stat-pill.rose-theme .mini-stat-icon {
-    background: #FCE7F3;
-    color: #9D174D;
-  }
-  .mini-stat-val {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 900;
-    color: var(--brand-navy-dark);
-    line-height: 1;
-  }
-  .mini-stat-lbl {
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    font-weight: 700;
+    border-color: var(--brand-orange);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px var(--brand-orange-glow);
   }
 
   /* ── MAIN CONTAINER ── */
-  .main-wrapper {
-    max-width: 1240px;
-    margin: 0 auto;
-    padding: 0 24px 60px;
+  .main-app-container {
+    max-width: 680px;
+    margin: 16px auto;
+    padding: 0 16px;
   }
-  .tab-pane {
+
+  /* ── TAB PANES ── */
+  .app-tab-pane {
     display: none;
-    animation: fadeIn 0.3s ease forwards;
+    animation: fadeIn 0.2s ease;
   }
-  .tab-pane.active {
+  .app-tab-pane.active {
     display: block;
   }
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── SECTION HEADER ── */
-  .section-intro {
-    margin-bottom: 24px;
-  }
-  .section-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--brand-orange);
-    margin-bottom: 6px;
-  }
-  .section-tag::before {
-    content: '';
-    width: 16px;
-    height: 3px;
-    background: var(--brand-orange);
-    border-radius: 2px;
-  }
-  .section-heading-row {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .section-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.85rem;
-    font-weight: 900;
-    color: var(--brand-navy-dark);
-    letter-spacing: -0.5px;
-  }
-  .section-desc {
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
-  }
-
-  /* ── ONESPORT CARD ── */
+  /* ── ONESPORT CARD STYLES ── */
   .onesport-card {
     background: var(--bg-card);
-    border-radius: var(--radius-lg);
     border: 1.5px solid var(--border-color);
-    padding: 26px 28px;
+    border-radius: var(--radius-xl);
+    padding: 18px 20px;
+    margin-bottom: 16px;
     box-shadow: var(--shadow-card);
-    margin-bottom: 24px;
-    transition: all 0.3s ease;
+    position: relative;
   }
-  .card-header-clean {
+  .onesport-card.dashed-border {
+    border: 1.5px dashed #94A3B8;
+    background: #F8FAFC;
+  }
+  .onesport-card.is-finished-card {
+    border-left: 5px solid #10B981;
+    background: #FAFDFB;
+  }
+  .onesport-card.is-ongoing-card {
+    border-left: 5px solid var(--brand-orange);
+  }
+  .card-header-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 12px;
+    margin-bottom: 14px;
   }
-  .card-title-wrap {
+  .card-title-group {
     display: flex;
     align-items: center;
-    gap: 10px;
-  }
-  .card-icon-pill {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--brand-navy-light);
-    color: var(--brand-navy);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    font-weight: 800;
-  }
-  .card-icon-pill.orange-icon {
-    background: var(--brand-orange-light);
-    color: var(--brand-orange);
-  }
-  .card-title-clean {
+    gap: 8px;
     font-family: 'Outfit', sans-serif;
-    font-size: 1.18rem;
+    font-size: 1.15rem;
     font-weight: 800;
     color: var(--brand-navy-dark);
   }
 
-  /* ── FORM ELEMENTS ── */
-  .settings-row {
+  /* ── TOP ACTION BUTTONS (Image 3 Style) ── */
+  .action-buttons-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 18px;
-  }
-  .input-field-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .input-label {
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--brand-navy-soft);
-  }
-  .input-styled {
-    background: #F8FAFC;
-    border: 1.5px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 11px 16px;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--brand-navy-dark);
-    outline: none;
-    transition: all 0.2s ease;
-  }
-  .input-styled:focus {
-    background: #FFFFFF;
-    border-color: var(--brand-orange);
-    box-shadow: 0 0 0 4px rgba(255, 91, 20, 0.12);
-  }
-
-  /* ── PLAYER MANAGEMENT (Tab 1) ── */
-  .add-player-box {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    background: #F8FAFC;
-    padding: 12px;
-    border-radius: var(--radius-lg);
-    border: 1.5px dashed var(--border-color);
-    margin-bottom: 20px;
-    align-items: center;
-  }
-  .input-player-name {
-    flex: 1;
-    min-width: 220px;
-  }
-
-  /* Buttons */
-  .btn-os-navy {
-    background: var(--brand-navy);
-    color: #FFFFFF;
-    border: none;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 11px 20px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-  }
-  .btn-os-navy:hover {
-    background: var(--brand-navy-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 30, 54, 0.25);
-  }
-  .btn-os-orange {
-    background: var(--gradient-orange);
-    color: #FFFFFF;
-    border: none;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 11px 20px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 10px var(--brand-orange-glow);
-  }
-  .btn-os-orange:hover {
-    background: var(--brand-orange-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(255, 91, 20, 0.45);
-  }
-  .btn-os-outline {
-    background: #FFFFFF;
-    color: var(--text-secondary);
-    border: 1.5px solid var(--border-color);
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.82rem;
-    padding: 9px 16px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-  }
-  .btn-os-outline:hover {
-    border-color: var(--brand-orange);
-    color: var(--brand-orange);
-    background: var(--brand-orange-light);
-  }
-  .btn-os-danger {
-    background: var(--terra-light);
-    color: var(--terra-text);
-    border: 1px solid #FECACA;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.82rem;
-    padding: 9px 16px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-  }
-  .btn-os-danger:hover {
-    background: #FCA5A5;
-    color: #7F1D1D;
-  }
-
-  /* Info Banner */
-  .onesport-banner-tip {
-    background: var(--brand-navy-light);
-    border: 1.5px solid #BFDBFE;
-    border-radius: var(--radius-md);
-    padding: 14px 18px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 20px;
-    font-size: 0.86rem;
-    color: var(--brand-navy-dark);
-  }
-  .tip-icon-circle {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #DBEAFE;
-    color: var(--brand-navy);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.8rem;
-    flex-shrink: 0;
-  }
-
-  /* Player Chips Grid */
-  .player-chips-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-bottom: 16px;
   }
-  .os-player-chip {
-    background: #FFFFFF;
-    border: 1.5px solid var(--border-color);
+  .btn-action-cyan {
+    background: linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%);
+    color: #FFFFFF;
+    border: none;
     border-radius: var(--radius-md);
-    padding: 12px 14px;
+    padding: 13px 16px;
+    font-weight: 800;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+    transition: all 0.2s;
+  }
+  .btn-action-cyan:active { transform: scale(0.98); }
+
+  .btn-action-orange {
+    background: var(--gradient-orange);
+    color: #FFFFFF;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 13px 16px;
+    font-weight: 800;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px var(--brand-orange-glow);
+    transition: all 0.2s;
+  }
+  .btn-action-orange:active { transform: scale(0.98); }
+
+  /* ── NEXT MATCH QUEUE (Multi-Court Grid) ── */
+  .next-match-lock-banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .next-court-block {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(15, 30, 54, 0.04);
+  }
+  .next-court-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--brand-navy-dark);
+  }
+  .match-versus-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+  .team-column {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 6px rgba(15, 30, 54, 0.02);
   }
-  .os-player-chip:hover {
-    border-color: var(--brand-orange);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(255, 91, 20, 0.12);
-  }
-  .os-player-chip.is-jago {
-    background: var(--gradient-jago);
-    border-color: #FCD34D;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12);
-  }
-  .chip-left {
+  .player-cell-pill {
+    background: #F8FAFC;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1;
-    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
   }
-  .chip-player-name {
-    font-weight: 700;
-    font-size: 0.92rem;
+  .player-cell-pill:hover {
+    border-color: var(--brand-orange);
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(15, 30, 54, 0.08);
+  }
+  .player-cell-pill.is-winner-pill {
+    border: 1.5px solid #10B981;
+    background: #ECFDF5;
+  }
+  .player-cell-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .player-cell-name {
+    font-weight: 800;
+    font-size: 0.88rem;
     color: var(--brand-navy-dark);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   
-  /* Gender Badges */
-  .chip-badge-gender-l {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.68rem;
+  .gender-badge {
+    font-size: 0.72rem;
     font-weight: 800;
-    color: #1E40AF;
-    background: #DBEAFE;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    border: 1px solid #BFDBFE;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.15s;
-    width: fit-content;
+    padding: 1px 6px;
+    border-radius: 4px;
   }
-  .chip-badge-gender-l:hover {
-    background: #BFDBFE;
-    transform: scale(1.03);
-  }
-  .chip-badge-gender-p {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.68rem;
-    font-weight: 800;
-    color: #9D174D;
-    background: #FCE7F3;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    border: 1px solid #FBCFE8;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.15s;
-    width: fit-content;
-  }
-  .chip-badge-gender-p:hover {
-    background: #FBCFE8;
-    transform: scale(1.03);
-  }
+  .gender-badge.male { background: var(--gender-male-bg); color: var(--gender-male); border: 1px solid var(--gender-male-border); }
+  .gender-badge.female { background: var(--gender-female-bg); color: var(--gender-female); border: 1px solid var(--gender-female-border); }
 
-  .chip-badge-jago {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    color: #B45309;
-    background: #FEF3C7;
+  .role-tag-pill {
+    display: inline-block;
     padding: 2px 8px;
     border-radius: var(--radius-full);
-    width: fit-content;
-    border: 1px solid #FDE68A;
-  }
-  .chip-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .chip-btn-star {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1.5px solid #E2E8F0;
-    background: #FFFFFF;
-    color: #94A3B8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-  }
-  .chip-btn-star:hover {
-    background: #FFFBEB;
-    border-color: #F59E0B;
-    color: #F59E0B;
-  }
-  .chip-btn-star.active {
-    background: #F59E0B;
-    border-color: #F59E0B;
-    color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
-  }
-  .chip-btn-del {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: #94A3B8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.2s ease;
-  }
-  .chip-btn-del:hover {
-    background: var(--terra-light);
-    color: var(--terra-text);
-  }
-
-  /* ── BIG GENERATE CTA ── */
-  .generate-cta-container {
-    text-align: center;
-    margin-top: 36px;
-    padding: 20px;
-  }
-  .btn-generate-hero {
-    background: var(--gradient-orange);
-    color: #FFFFFF;
-    border: none;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.15rem;
+    font-size: 0.68rem;
     font-weight: 800;
-    padding: 16px 44px;
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 8px 30px var(--brand-orange-glow);
     letter-spacing: 0.3px;
+    width: fit-content;
+    text-transform: capitalize;
   }
-  .btn-generate-hero:hover {
-    background: var(--brand-orange-hover);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 12px 36px rgba(255, 91, 20, 0.55);
+  .role-tag-pill.pemula {
+    background: var(--role-pemula-bg);
+    color: var(--role-pemula);
+    border: 1px solid var(--role-pemula-border);
+  }
+  .role-tag-pill.amatir {
+    background: var(--role-amatir-bg);
+    color: var(--role-amatir);
+    border: 1px solid var(--role-amatir-border);
+  }
+  .role-tag-pill.intermadiate,
+  .role-tag-pill.intermediate {
+    background: var(--role-inter-bg);
+    color: var(--role-inter);
+    border: 1px solid var(--role-inter-border);
+  }
+  .role-tag-pill.advance,
+  .role-tag-pill.advanced {
+    background: var(--role-advance-bg);
+    color: var(--role-advance);
+    border: 1px solid var(--role-advance-border);
   }
 
-  /* ── SCHEDULE TAB (Tab 2) ── */
-  .schedule-top-toolbar {
+  .vs-badge-middle {
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ── COURT STATUS & CONTROL BUTTONS ── */
+  .court-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .court-status-chip.ongoing {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #059669;
+  }
+  .court-status-chip.pending {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    color: #B45309;
+  }
+  .court-status-chip.finished {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1D4ED8;
+  }
+
+  .court-category-pill {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+  }
+  .court-category-pill.putri {
+    background: var(--gender-female-bg);
+    color: var(--gender-female);
+    border: 1px solid var(--gender-female-border);
+  }
+  .court-category-pill.putra {
+    background: var(--gender-male-bg);
+    color: var(--gender-male);
+    border: 1px solid var(--gender-male-border);
+  }
+
+  .court-timer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--brand-navy-dark);
+    background: #EEF2F6;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid #CBD5E1;
+  }
+
+  /* Inline Court Control Bar (Mulai / Selesai / Winner Picker) */
+  .court-control-bar {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    background: #FFFFFF;
-    border: 1.5px solid var(--border-color);
-    padding: 14px 20px;
-    border-radius: var(--radius-lg);
-    margin-bottom: 24px;
-    box-shadow: var(--shadow-subtle);
+    gap: 8px;
     flex-wrap: wrap;
   }
-  .round-filter-pills {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .filter-pill {
-    border: 1.5px solid var(--border-color);
-    background: #F8FAFC;
-    color: var(--text-secondary);
-    font-size: 0.78rem;
-    font-weight: 700;
-    padding: 5px 12px;
-    border-radius: var(--radius-full);
+  .btn-court-start {
+    background: linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%);
+    color: #FFF;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 800;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .filter-pill.active {
-    background: var(--brand-navy-dark);
-    color: #FFFFFF;
-    border-color: var(--brand-navy-dark);
-  }
+  .btn-court-start:hover { background: #0369A1; }
 
-  /* Round Match Cards & Statuses */
-  .round-card-os {
-    background: #FFFFFF;
+  .btn-court-finish {
+    background: var(--gradient-orange);
+    color: #FFF;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 8px var(--brand-orange-glow);
+    transition: all 0.2s;
+  }
+  .btn-court-finish:hover { background: var(--brand-orange-hover); }
+
+  .winner-picker-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #F8FAFC;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
     border: 1.5px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    margin-bottom: 24px;
-    overflow: hidden;
-    box-shadow: var(--shadow-card);
-    transition: all 0.25s ease;
+    width: 100%;
+    margin-top: 8px;
+    justify-content: space-between;
   }
-  .round-card-os.status-ongoing {
-    border-color: var(--brand-orange);
-    box-shadow: 0 8px 30px rgba(255, 91, 20, 0.2);
+  .btn-pick-winner {
+    flex: 1;
+    background: #FFFFFF;
+    border: 1.5px solid #CBD5E1;
+    color: var(--brand-navy-dark);
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
   }
-  .round-card-os.status-finished {
-    border-color: #CBD5E1;
-    background: #FCFDFD;
-    opacity: 0.95;
-  }
-  .round-card-os.status-pending {
-    border-color: var(--border-color);
+  .btn-pick-winner.active {
+    background: #10B981;
+    border-color: #10B981;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
   }
 
-  /* Header Bar */
-  .round-header-bar {
-    background: var(--gradient-navy);
-    color: #FFFFFF;
-    padding: 16px 24px;
+  .team-label-top {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  /* ── COURT BOTTOM ACTION BUTTONS ── */
+  .court-bottom-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .btn-smart-mm {
+    background: #0F1E36;
+    color: #FFF;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-weight: 800;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-smart-mm:hover { background: #1E3A6C; }
+
+  .btn-add-court {
+    background: #10B981;
+    color: #FFF;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-weight: 800;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    transition: all 0.2s;
+  }
+  .btn-add-court:hover { background: #059669; }
+
+  /* ── RESTING PLAYERS DRAWER ── */
+  .resting-box {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #F1F5F9;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--border-color);
+  }
+  .resting-header {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--brand-navy-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .resting-chips-wrap {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .resting-chip {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--brand-navy-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(15, 30, 54, 0.05);
+  }
+
+  /* ── SPOTLIGHT / CHAMPION (Image 1 Style) ── */
+  .champion-spotlight-card {
+    text-align: center;
+    padding: 24px 16px;
+    background: var(--gradient-gold);
+    border: 1.5px solid #FDE68A;
+    border-radius: var(--radius-xl);
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .champion-pill-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FEF3C7;
+    border: 2px solid #F59E0B;
+    padding: 6px 22px;
+    border-radius: var(--radius-full);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #92400E;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+  }
+  .champion-label-sub {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #B45309;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── LEADERBOARD TABLE (Image 1 & 2 Style) ── */
+  .leaderboard-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .leaderboard-top-controls {
+    padding: 14px 18px;
+    background: #F8FAFC;
+    border-bottom: 1.5px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
   }
-  .round-card-os.status-ongoing .round-header-bar {
-    background: linear-gradient(135deg, #0F1E36 0%, #FF5B14 100%);
-  }
-  .round-card-os.status-finished .round-header-bar {
-    background: #334155;
-  }
-  .round-title-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .round-num-pill {
-    background: var(--brand-orange);
-    color: #FFFFFF;
-    font-family: 'Outfit', sans-serif;
+  .leaderboard-filter-dropdown {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    color: var(--brand-navy-dark);
     font-weight: 800;
-    font-size: 0.82rem;
-    padding: 4px 12px;
-    border-radius: var(--radius-full);
-    letter-spacing: 0.5px;
-  }
-  .round-card-os.status-finished .round-num-pill {
-    background: #10B981;
-  }
-  .round-time-text {
-    font-size: 0.88rem;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    outline: none;
   }
 
-  /* Round Controls inside Header */
-  .round-status-controls {
+  .lb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+  .lb-table th {
+    background: #F1F5F9;
+    color: var(--brand-navy-soft);
+    font-weight: 800;
+    font-size: 0.72rem;
+    padding: 10px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1.5px solid var(--border-color);
+  }
+  .lb-table th.col-left { text-align: left; padding-left: 14px; }
+  .lb-table th.col-center { text-align: center; }
+  .lb-table th.col-right { text-align: right; padding-right: 14px; }
+
+  .lb-table tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.15s;
+  }
+  .lb-table tr:hover {
+    background: #F8FAFC;
+  }
+  .lb-table tr.top-rank-gold {
+    background: #FFFBEB;
+    border-left: 4px solid #F59E0B;
+  }
+  .lb-table tr.top-rank-silver {
+    background: #F8FAFC;
+    border-left: 4px solid #94A3B8;
+  }
+  .lb-table tr.top-rank-bronze {
+    background: #FFF7ED;
+    border-left: 4px solid #CD7F32;
+  }
+
+  .lb-table td {
+    padding: 11px 8px;
+    vertical-align: middle;
+  }
+  .lb-table td.col-left { text-align: left; padding-left: 14px; }
+  .lb-table td.col-center { text-align: center; }
+  .lb-table td.col-right { text-align: right; padding-right: 14px; }
+
+  .player-rank-cell {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .btn-round-action {
-    padding: 6px 14px;
-    border-radius: var(--radius-full);
-    font-size: 0.76rem;
+  .player-rank-num {
     font-weight: 800;
-    letter-spacing: 0.5px;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
+    color: var(--text-muted);
+    min-width: 18px;
+  }
+  .player-rank-name {
+    font-weight: 800;
+    color: var(--brand-navy-dark);
+    display: flex;
     align-items: center;
-    gap: 5px;
-    transition: all 0.2s;
+    gap: 6px;
   }
-  .btn-action-start {
-    background: #FF5B14;
-    color: #FFFFFF;
+  .rank-badge-text {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
   }
-  .btn-action-start:hover {
-    background: #E64A06;
-    transform: translateY(-1px);
+  .rank-badge-text.gold { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+  .rank-badge-text.silver { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+  .rank-badge-text.bronze { background: #FFEDD5; color: #C2410C; border: 1px solid #FED7AA; }
+
+  .wlt-cell-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
-  .btn-action-finish {
-    background: #10B981;
-    color: #FFFFFF;
+  .wlt-score-text {
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #059669;
   }
-  .btn-action-finish:hover {
-    background: #059669;
+  .wlt-dots-row {
+    display: flex;
+    gap: 3px;
+    align-items: center;
   }
-  .btn-action-reset {
-    background: rgba(255, 255, 255, 0.15);
-    color: #FFFFFF;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+  .wlt-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
   }
-  .btn-action-reset:hover {
-    background: rgba(255, 255, 255, 0.25);
+  .wlt-dot.win { background: #10B981; }
+  .wlt-dot.loss { background: #EF4444; }
+  .wlt-dot.tie { background: #94A3B8; }
+
+  .diff-val-green { color: #059669; font-weight: 800; }
+  .diff-val-red { color: #DC2626; font-weight: 800; }
+  .diff-val-dim { color: var(--text-muted); }
+  
+  .bonus-m-val { color: var(--text-secondary); font-weight: 700; }
+  .points-val-blue { color: var(--brand-orange); font-weight: 900; font-size: 0.95rem; }
+
+  /* ── 3D PODIUM VIEW (Image 2 Style) ── */
+  .podium-container {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr 1fr;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 20px 0 24px;
+    padding: 0 4px;
   }
-  .status-badge-tag {
+  .podium-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .podium-player-meta {
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .podium-medal-label {
     font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.8px;
-    padding: 4px 12px;
+    padding: 2px 8px;
     border-radius: var(--radius-full);
-    text-transform: uppercase;
+    margin-bottom: 4px;
   }
-  .status-tag-finished {
-    background: rgba(16, 185, 129, 0.25);
-    border: 1px solid #10B981;
-    color: #A7F3D0;
+  .podium-medal-label.gold { background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; }
+  .podium-medal-label.silver { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+  .podium-medal-label.bronze { background: #FFEDD5; color: #C2410C; border: 1px solid #FED7AA; }
+
+  .podium-name {
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: var(--brand-navy-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
   }
-  .status-tag-ongoing {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+  .podium-stat-line {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+  .podium-pillar {
+    width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 20px rgba(15, 30, 54, 0.08);
+  }
+  .podium-pillar.rank-1 {
+    height: 140px;
+    background: linear-gradient(180deg, #FF5B14 0%, #EA580C 100%);
     color: #FFFFFF;
   }
-  .status-tag-pending {
-    background: rgba(255, 255, 255, 0.1);
-    color: #94A3B8;
+  .podium-pillar.rank-2 {
+    height: 100px;
+    background: linear-gradient(180deg, #1E3A6C 0%, #0F1E36 100%);
+    color: #CBD5E1;
+  }
+  .podium-pillar.rank-3 {
+    height: 80px;
+    background: linear-gradient(180deg, #64748B 0%, #475569 100%);
+    color: #F1F5F9;
   }
 
-  /* Round Body & Courts */
-  .round-body-content {
-    padding: 24px;
-    background: #FFFFFF;
-  }
-  .court-match-row {
-    background: var(--gradient-court);
-    border: 1.5px solid #E2E8F0;
-    border-radius: var(--radius-md);
-    padding: 16px 20px;
+  /* ── FINISH PAGE BOTTOM ACTIONS (Image 2) ── */
+  .finish-actions-row {
     display: grid;
-    grid-template-columns: 140px 1fr auto 1fr;
-    gap: 16px;
-    align-items: center;
-    margin-bottom: 12px;
-    transition: all 0.2s ease;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
   }
-  .court-match-row:hover {
-    border-color: var(--brand-orange);
+  .btn-share-results {
     background: #FFFFFF;
-    box-shadow: 0 4px 16px rgba(255, 91, 20, 0.08);
+    border: 1.5px solid var(--border-color);
+    color: var(--brand-navy-dark);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-weight: 800;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow-subtle);
+    transition: all 0.2s;
   }
-  .court-tag-wrapper {
+  .btn-share-results:hover { background: #F8FAFC; border-color: #CBD5E1; }
+
+  .btn-new-mabar {
+    background: #10B981;
+    color: #FFF;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-weight: 800;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s;
+  }
+  .btn-new-mabar:hover { background: #059669; }
+
+  /* ── FORM & PLAYER MANAGEMENT ── */
+  .input-styled-os {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--brand-navy-dark);
+    font-family: inherit;
+    font-size: 0.88rem;
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-styled-os:focus {
+    border-color: var(--brand-orange);
+    box-shadow: 0 0 0 3px var(--brand-orange-light);
+  }
+  .add-player-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.2fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .player-roster-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .player-roster-card {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 2px 6px rgba(15, 30, 54, 0.03);
+  }
+  .player-roster-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .player-roster-name {
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: var(--brand-navy-dark);
+  }
+  .player-roster-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .player-game-count-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    background: var(--brand-navy-light);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    color: var(--brand-navy-mid);
+    border: 1px solid #BFDBFE;
+  }
+  .btn-del-player {
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    color: #DC2626;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 800;
+    transition: all 0.2s;
+  }
+  .btn-del-player:hover { background: #FCA5A5; color: #991B1B; }
+
+  .select-role-inline {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    color: var(--brand-navy-dark);
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* ── BOTTOM NAVIGATION (Mobile Fixed Bar) ── */
+  .bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(16px);
+    border-top: 1.5px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 8px 10px 12px;
+    z-index: 1000;
+    max-width: 680px;
+    margin: 0 auto;
+    box-shadow: 0 -4px 20px rgba(15, 30, 54, 0.06);
+  }
+  .nav-item-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    min-width: 54px;
+  }
+  .nav-item-btn .nav-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-item-btn.active {
+    color: var(--brand-orange);
+  }
+  .nav-item-btn.active .nav-icon {
+    transform: translateY(-2px);
+  }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 30, 54, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal-box {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(15, 30, 54, 0.25);
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--border-color);
+  }
+  .modal-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--brand-navy-dark);
+  }
+
+  /* ── SCORE INPUT MODAL ── */
+  .score-court-row {
+    background: #F8FAFC;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .score-inputs-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .score-team-box {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
-  .court-tag-pill {
-    background: var(--brand-navy);
-    color: #FFFFFF;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 5px 10px;
-    border-radius: var(--radius-full);
+  .score-num-input {
+    background: #FFFFFF;
+    border: 2px solid var(--border-color);
+    color: var(--brand-navy-dark);
+    font-size: 1.4rem;
+    font-weight: 900;
     text-align: center;
-    white-space: nowrap;
-    letter-spacing: 0.5px;
-  }
-  .court-tag-pill.pill-putra {
-    background: linear-gradient(135deg, #0F1E36 0%, #1E3A8A 100%);
-  }
-  .court-tag-pill.pill-putri {
-    background: linear-gradient(135deg, #9D174D 0%, #DB2777 100%);
-  }
-  .court-category-badge {
-    font-size: 0.68rem;
-    font-weight: 800;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    text-align: center;
-    white-space: nowrap;
-    letter-spacing: 0.3px;
-  }
-  .cat-putra {
-    background: #DBEAFE;
-    color: #1E40AF;
-    border: 1px solid #BFDBFE;
-  }
-  .cat-putri {
-    background: #FCE7F3;
-    color: #9D174D;
-    border: 1px solid #FBCFE8;
-  }
-
-  .team-unit {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .team-unit.right-align {
-    justify-content: flex-end;
-  }
-  .player-slot-badge {
-    background: #FFFFFF;
-    border: 1.5px solid #CBD5E1;
-    padding: 6px 14px;
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--brand-navy-dark);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 1px 3px rgba(15, 30, 54, 0.03);
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-  .player-slot-badge:hover {
-    border-color: var(--brand-orange);
-    color: var(--brand-orange);
-    transform: translateY(-1px);
-  }
-  .player-slot-badge.is-female {
-    border-color: #FBCFE8;
-    background: #FDF2F8;
-    color: #831843;
-  }
-  .player-slot-badge.is-male {
-    border-color: #CBD5E1;
-    background: #FFFFFF;
-    color: var(--brand-navy-dark);
-  }
-  .player-slot-badge.is-jago {
-    background: #FEF3C7 !important;
-    border-color: #F59E0B !important;
-    color: #92400E !important;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
-  }
-  .player-slot-badge.is-female.is-jago {
-    background: linear-gradient(135deg, #FDF2F8 0%, #FEF3C7 100%) !important;
-    border-color: #F59E0B !important;
-    color: #92400E !important;
-  }
-
-  .team-ampersand {
-    font-size: 0.82rem;
-    font-weight: 800;
-    color: var(--brand-orange);
-  }
-  .vs-badge-center {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 900;
-    color: var(--brand-orange);
-    background: var(--brand-orange-light);
-    border: 1px solid var(--brand-orange-subtle);
-    padding: 4px 10px;
-    border-radius: var(--radius-full);
-    letter-spacing: 1px;
-  }
-
-  /* Rest Section */
-  .rest-drawer {
-    margin-top: 14px;
-    background: #F8FAFC;
-    border: 1.5px dashed var(--border-color);
     border-radius: var(--radius-md);
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    flex-wrap: wrap;
-  }
-  .rest-label-tag {
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--brand-navy-soft);
-    font-size: 0.72rem;
-    background: var(--brand-navy-light);
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-  .rest-player-names {
-    color: var(--brand-navy-dark);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .rest-player-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: var(--radius-full);
-    font-size: 0.78rem;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-  }
-  .rest-player-pill.is-female {
-    background: #FDF2F8;
-    border-color: #FBCFE8;
-    color: #9D174D;
-  }
-  .rest-player-pill.is-jago {
-    background: #FEF3C7;
-    border-color: #FDE68A;
-    color: #92400E;
-    font-weight: 700;
-  }
-
-  /* Dynamic Alert Box */
-  .dynamic-alert-box {
-    background: #ECFDF5;
-    border: 1.5px solid #A7F3D0;
-    border-radius: var(--radius-md);
-    padding: 14px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    color: #065F46;
-    font-size: 0.88rem;
-    animation: fadeIn 0.3s ease;
-  }
-
-  /* ── SPREADSHEET RECAP (Tab 3) ── */
-  .table-responsive-os {
-    overflow-x: auto;
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--border-color);
-  }
-  .os-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.88rem;
-    background: #FFFFFF;
-    text-align: left;
-  }
-  .os-table th {
-    background: #F8FAFC;
-    color: var(--brand-navy-soft);
-    font-weight: 800;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    padding: 14px 16px;
-    border-bottom: 1.5px solid var(--border-color);
-    white-space: nowrap;
-  }
-  .os-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-    vertical-align: middle;
-  }
-  .os-table tr:last-child td {
-    border-bottom: none;
-  }
-  .os-table tr:hover td {
-    background: #F8FAFC;
-  }
-  .os-table tr.row-jago td {
-    background: #FFFDF5;
-  }
-  .select-clean-table {
-    background: #F8FAFC;
-    border: 1.5px solid var(--border-color);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-family: inherit;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--brand-navy-dark);
+    padding: 8px;
     outline: none;
-    cursor: pointer;
   }
-  .select-clean-table:focus {
-    border-color: var(--brand-orange);
-    background: #FFFFFF;
-  }
-  .editable-cell-text {
-    border-bottom: 1px dashed #CBD5E1;
-    padding: 2px 4px;
-    outline: none;
-    font-family: inherit;
-    color: var(--brand-navy-dark);
-    font-weight: 600;
-  }
-  .editable-cell-text:focus {
-    background: #FFFBEB;
-    border-bottom: 1.5px solid var(--brand-orange);
-  }
-  .cell-paid-toggle {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1.5px solid #CBD5E1;
-    background: #F8FAFC;
-    color: #94A3B8;
-    font-weight: 900;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .cell-paid-toggle.is-paid {
-    background: #10B981;
-    border-color: #10B981;
-    color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
-  }
+  .score-num-input:focus { border-color: var(--brand-orange); }
 
-  /* ── STATS TILES (Tab 4) ── */
-  .stats-grid-os {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-tile {
-    background: #FFFFFF;
-    border: 1.5px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 18px 20px;
-    box-shadow: var(--shadow-subtle);
-  }
-  .stat-tile-num {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.75rem;
-    font-weight: 900;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-  .stat-tile-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .stat-tile.orange .stat-tile-num { color: var(--brand-orange); }
-  .stat-tile.navy .stat-tile-num { color: var(--brand-navy); }
-  .stat-tile.gold .stat-tile-num { color: #D97706; }
-  .stat-tile.emerald .stat-tile-num { color: #10B981; }
-  .stat-tile.terra .stat-tile-num { color: #EF4444; }
-  .stat-tile.indigo .stat-tile-num { color: #3B82F6; }
-  .stat-tile.rose .stat-tile-num { color: #EC4899; }
-
-  /* ── FOOTER ── */
-  footer {
-    background: var(--brand-navy-dark);
-    color: #94A3B8;
-    padding: 32px 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .footer-inner {
-    max-width: 1240px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    font-size: 0.85rem;
-  }
-  .footer-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 800;
-    color: #FFFFFF;
-  }
-  .footer-motto {
-    color: #64748B;
-    font-weight: 500;
-  }
-
-  /* Responsive Adjustments */
-  @media (max-width: 900px) {
-    .hero-card {
-      grid-template-columns: 1fr;
-      padding: 28px 24px;
-    }
-    .hero-heading {
-      font-size: 2.2rem;
-    }
-    .court-match-row {
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    .team-unit.right-align {
-      justify-content: flex-start;
+  /* ── RESPONSIVE ── */
+  @media (min-width: 681px) {
+    .bottom-navbar {
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     }
   }
 </style>
 </head>
 <body>
 
-<!-- ── TOP SPORT SWITCHER ── -->
+<!-- ── TOP SPORT SWITCHER (ONESPORT PLATFORM) ── -->
 <div class="top-sport-bar">
   <div style="font-weight: 800; letter-spacing: 0.5px;">ONESPORT MULTISPORT PLATFORM</div>
   <div class="sport-toggle-group">
-    <a href="index.html" class="sport-link-btn active">🏸 Badminton Rotation</a>
-    <a href="minisoccer.html" class="sport-link-btn">⚽ Mini Soccer (Team Gen)</a>
+    <a href="index.html" class="sport-link-btn active">Badminton Rotation</a>
   </div>
 </div>
 
 <!-- ── NAVBAR ── -->
 <header>
   <div class="nav-container">
-    <div class="brand-logo" onclick="switchTab('tab-players')">
-      <img src="logo.png" alt="ONESPORT" class="logo-img" onerror="this.style.display='none'">
+    <div class="brand-logo" onclick="switchTab('tab-lapangan')">
+      <img src="logo.png" alt="ONESPORT" class="logo-img" onerror="this.src='https://one-sport-badminton.vercel.app/logo.png'">
       <div class="brand-text">
         <div class="brand-title">ONE<span class="orange-part">SPORT</span></div>
         <div class="brand-sub">Badminton Engine</div>
       </div>
     </div>
 
-    <!-- Navigation Pills -->
-    <nav class="nav-menu">
-      <button class="nav-tab-btn active" id="btn-tab-players" onclick="switchTab('tab-players')">
-        👥 Pemain
-      </button>
-      <button class="nav-tab-btn" id="btn-tab-schedule" onclick="switchTab('tab-schedule')">
-        🏸 Bagan Rotasi
-      </button>
-      <button class="nav-tab-btn" id="btn-tab-recap" onclick="switchTab('tab-recap')">
-        📋 Rekap & Iuran
-      </button>
-      <button class="nav-tab-btn" id="btn-tab-stats" onclick="switchTab('tab-stats')">
-        📊 Statistik
-      </button>
+    <!-- Desktop Navigation Menu -->
+    <nav class="desktop-nav-menu" style="display: flex;">
+      <button class="desktop-tab-btn" id="desk-tab-pemain" onclick="switchTab('tab-pemain')">Pemain</button>
+      <button class="desktop-tab-btn active" id="desk-tab-lapangan" onclick="switchTab('tab-lapangan')">Lapangan</button>
+      <button class="desktop-tab-btn" id="desk-tab-skor" onclick="switchTab('tab-skor')">Skor</button>
+      <button class="desktop-tab-btn" id="desk-tab-history" onclick="switchTab('tab-history')">History</button>
+      <button class="desktop-tab-btn" id="desk-tab-selesai" onclick="switchTab('tab-selesai')">Selesai</button>
     </nav>
 
-    <!-- Quick CTA -->
-    <button class="nav-cta-btn" onclick="generateAndGo()">
-      ⚡ Generate Bagan
-    </button>
+    <div class="nav-header-actions">
+      <button class="btn-nav-settings" onclick="openSettingsModal()">
+        Pengaturan
+      </button>
+    </div>
   </div>
 </header>
 
-<!-- ── HERO BANNER ── -->
-<div class="hero-section">
-  <div class="hero-card">
-    <div class="hero-left-content">
-      <div class="hero-badge-top">
-        <span class="dot"></span>
-        Sistem Rotasi Ganda & Pembagian Bagan Gender
-      </div>
-      <h1 class="hero-heading">
-        Rotasi Badminton <br>
-        <span class="orange-text">Adil, Gender-Aware & Dinamis!</span>
-      </h1>
-      <p class="hero-sub">
-        Bagan otomatis memisahkan partai <strong>Ganda Putra</strong> dan <strong>Ganda Putri</strong>. Pemain <strong>Perempuan Jago (⭐)</strong> bebas bertanding di bagan Putra! Tambah pemain baru kapan saja tanpa merusak ronde yang sudah selesai atau sedang berlangsung!
-      </p>
-      <div class="hero-actions">
-        <button class="btn-os-orange" onclick="generateAndGo()">
-          Mulai Buat Bagan →
-        </button>
-        <div class="handwritten-sticker">
-          Game On 🔥
-        </div>
-      </div>
+<!-- ── SUB-HEADER INFO & COURT SELECTOR BAR ── -->
+<div class="session-info-bar">
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span>Jumlah Lapangan:</span>
+    <div class="court-quick-selector">
+      <button class="court-pill-btn" id="court-btn-1" onclick="setCourtsCount(1)">1</button>
+      <button class="court-pill-btn active" id="court-btn-2" onclick="setCourtsCount(2)">2</button>
+      <button class="court-pill-btn" id="court-btn-3" onclick="setCourtsCount(3)">3</button>
+      <button class="court-pill-btn" id="court-btn-4" onclick="setCourtsCount(4)">4</button>
     </div>
-
-    <!-- Hero Feature Tile -->
-    <div class="hero-feature-box">
-      <div class="feature-top-tag">Smart Live Engine</div>
-      <div class="feature-title">Rotasi & Adaptasi Pertandingan</div>
-      
-      <div class="hero-stats-mini">
-        <div class="mini-stat-pill orange-theme">
-          <div class="mini-stat-icon">⭐</div>
-          <div>
-            <div class="mini-stat-val" id="heroJagoCount">0</div>
-            <div class="mini-stat-lbl">Pemain Jago</div>
-          </div>
-        </div>
-        <div class="mini-stat-pill">
-          <div class="mini-stat-icon">👥</div>
-          <div>
-            <div class="mini-stat-val" id="heroPlayerCount">0</div>
-            <div class="mini-stat-lbl">Total Pemain</div>
-          </div>
-        </div>
-        <div class="mini-stat-pill blue-theme">
-          <div class="mini-stat-icon">👨</div>
-          <div>
-            <div class="mini-stat-val" id="heroMaleCount">0</div>
-            <div class="mini-stat-lbl">Putra (L)</div>
-          </div>
-        </div>
-        <div class="mini-stat-pill rose-theme">
-          <div class="mini-stat-icon">👩</div>
-          <div>
-            <div class="mini-stat-val" id="heroFemaleCount">0</div>
-            <div class="mini-stat-lbl">Putri (P)</div>
-          </div>
-        </div>
-        <div class="mini-stat-pill">
-          <div class="mini-stat-icon">⚡</div>
-          <div>
-            <div class="mini-stat-val" id="heroOngoingRound">0</div>
-            <div class="mini-stat-lbl">Ronde Jalan</div>
-          </div>
-        </div>
-        <div class="mini-stat-pill orange-theme">
-          <div class="mini-stat-icon">✅</div>
-          <div>
-            <div class="mini-stat-val" id="heroFinishedRound">0</div>
-            <div class="mini-stat-lbl">Ronde Selesai</div>
-          </div>
-        </div>
-      </div>
-    </div>
+  </div>
+  <div>
+    <span id="sessionPlayerCountLabel"><strong>0</strong> Pemain Terdaftar</span>
   </div>
 </div>
 
-<!-- ── MAIN CONTENT TABS ── -->
-<main class="main-wrapper">
+<!-- ── MAIN WRAPPER ── -->
+<main class="main-app-container">
 
-  <!-- ==================== TAB 1: PEMAIN ==================== -->
-  <section id="tab-players" class="tab-pane active">
-    
-    <div class="section-intro">
-      <div class="section-tag">Pengaturan Pertandingan</div>
-      <div class="section-heading-row">
-        <div>
-          <h2 class="section-title">Konfigurasi & Daftar Pemain</h2>
-          <p class="section-desc">Pemain baru atau perubahan gender/status jago di tengah sesi otomatis diadaptasikan pada ronde yang belum terlaksana.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Match Settings Card -->
+  <!-- ========================================== -->
+  <!-- TAB 1: PEMAIN (Roster & Role Levels)       -->
+  <!-- ========================================== -->
+  <section id="tab-pemain" class="app-tab-pane">
     <div class="onesport-card">
-      <div class="card-header-clean">
-        <div class="card-title-wrap">
-          <div class="card-icon-pill">⚙️</div>
-          <h3 class="card-title-clean">Parameter Lapangan & Durasi</h3>
+      <div class="card-header-bar">
+        <div class="card-title-group">
+          <span>Daftar Pemain & Level Role</span>
         </div>
-      </div>
-      <div class="settings-row">
-        <div class="input-field-group">
-          <label class="input-label">Jumlah Lapangan</label>
-          <input type="number" id="numCourts" class="input-styled" value="2" min="1" max="8" onchange="handleSettingsChange()">
-        </div>
-        <div class="input-field-group">
-          <label class="input-label">Waktu Mulai</label>
-          <input type="time" id="startTime" class="input-styled" value="16:00" onchange="handleSettingsChange()">
-        </div>
-        <div class="input-field-group">
-          <label class="input-label">Durasi per Ronde (Menit)</label>
-          <input type="number" id="roundDuration" class="input-styled" value="20" min="5" max="60" onchange="handleSettingsChange()">
-        </div>
-        <div class="input-field-group">
-          <label class="input-label">Jumlah Ronde Total</label>
-          <input type="number" id="numRounds" class="input-styled" value="6" min="1" max="25" onchange="handleSettingsChange()">
-        </div>
-      </div>
-    </div>
-
-    <!-- Player Roster Card -->
-    <div class="onesport-card">
-      <div class="card-header-clean">
-        <div class="card-title-wrap">
-          <div class="card-icon-pill orange-icon">👥</div>
-          <h3 class="card-title-clean">Daftar Pemain Terdaftar (<span id="totalPlayerHeaderCount">0</span>)</h3>
-        </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button class="btn-os-outline" onclick="loadDefaultPlayers()">
-            🎯 Muat Contoh Pemain (L & P)
-          </button>
-          <button class="btn-os-danger" onclick="clearPlayers()">
-            🗑️ Hapus Semua
-          </button>
-        </div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight:700;" id="playerCountBadge">0 Pemain</span>
       </div>
 
-      <!-- Add Player Input Bar with Gender Select -->
-      <div class="add-player-box">
-        <input type="text" id="newPlayerName" class="input-styled input-player-name" placeholder="Ketik nama pemain baru..." onkeypress="if(event.key==='Enter')addPlayer()">
-        <select id="newPlayerGender" class="input-styled" style="width: auto; min-width: 140px; font-weight: 700; cursor: pointer;">
-          <option value="L">👨 Putra (Laki-laki)</option>
-          <option value="P">👩 Putri (Perempuan)</option>
+      <!-- Add Player Form -->
+      <div class="add-player-grid">
+        <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Nama pemain..." onkeypress="if(event.key==='Enter')addNewPlayer()">
+        
+        <select id="inputPlayerGender" class="input-styled-os">
+          <option value="L">Putra (L)</option>
+          <option value="P">Putri (P)</option>
         </select>
-        <button class="btn-os-navy" onclick="addPlayer()">
-          ➕ Tambah Pemain
+        
+        <select id="inputPlayerRole" class="input-styled-os" style="font-weight: 700;">
+          <option value="Pemula">Pemula</option>
+          <option value="Amatir">Amatir</option>
+          <option value="Intermadiate" selected>Intermadiate</option>
+          <option value="Advance">Advance</option>
+        </select>
+      </div>
+
+      <button class="btn-action-cyan" style="width: 100%; margin-bottom: 16px;" onclick="addNewPlayer()">
+        Tambah Pemain
+      </button>
+
+      <!-- Quick Action Buttons -->
+      <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+        <button class="btn-action-cyan" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1.5px solid var(--border-color); padding:8px 14px; font-size:0.78rem;" onclick="loadPresetPlayers()">
+          Muat Contoh Pemain
+        </button>
+        <button class="btn-action-orange" style="background:#FEE2E2; color:#DC2626; border:1.5px solid #FECACA; padding:8px 14px; font-size:0.78rem;" onclick="clearAllPlayers()">
+          Reset Semua
+        </button>
+        <button class="btn-action-cyan" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1.5px solid var(--border-color); padding:8px 14px; font-size:0.78rem;" onclick="exportCSV()">
+          Export CSV
         </button>
       </div>
 
-      <!-- Tip Banner with Gender Rule Info -->
-      <div class="onesport-banner-tip">
-        <div class="tip-icon-circle">⭐</div>
-        <div>
-          <strong>Aturan Bagan Gender & Proteksi JAGO:</strong> Pembagian bagan otomatis dipisahkan per kategori gender (<strong>👨 Ganda Putra</strong> & <strong>👩 Ganda Putri</strong>). Khusus <strong>Perempuan JAGO (⭐)</strong> bebas bermain dan masuk ke bagan Putra. Dua pemain Jago dipastikan tidak akan berada dalam satu tim.
-        </div>
+      <!-- Gender & Role Rule Banner -->
+      <div style="background: var(--brand-navy-light); border: 1.5px solid #BFDBFE; border-radius: var(--radius-lg); padding: 14px; margin-bottom: 16px; font-size: 0.78rem; color: var(--brand-navy-mid); display: flex; flex-direction: column; gap: 6px;">
+        <strong style="color: var(--brand-navy-dark);">Aturan Bagan & Rotasi:</strong>
+        <div>• <strong>Minimal 3x Main:</strong> Setiap pemain dijamin bertanding minimal 3 kali.</div>
+        <div>• <strong>Perempuan vs Perempuan:</strong> Bagan Putri dikelompokkan sesama perempuan. Khusus <strong>Perempuan Advance</strong> bebas masuk ke bagan Putra/Terbuka.</div>
+        <div>• <strong>Edit Role Kapan Saja:</strong> Role pemain bisa diubah langsung pada daftar di bawah, ronde mendatang akan otomatis menyesuaikan.</div>
       </div>
 
-      <!-- Chips Container -->
-      <div class="player-chips-container" id="playerChipsGrid"></div>
-      
-      <div id="playerRosterSummary" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 10px;"></div>
+      <!-- Player Roster List -->
+      <div class="player-roster-list" id="playerRosterList"></div>
     </div>
+  </section>
 
-    <!-- Big Generate CTA -->
-    <div class="generate-cta-container">
-      <button class="btn-generate-hero" onclick="generateAndGo()">
-        🎲 Generate / Adaptasikan Bagan Rotasi →
+  <!-- ========================================== -->
+  <!-- TAB 2: LAPANGAN (Image 3 Live Court View)  -->
+  <!-- ========================================== -->
+  <section id="tab-lapangan" class="app-tab-pane active">
+    
+    <!-- Top Action Buttons (Image 3) -->
+    <div class="action-buttons-row">
+      <button class="btn-action-cyan" onclick="smartRebalanceUpcoming()">
+        <span>Susun Ulang</span>
+      </button>
+      <button class="btn-action-orange" onclick="openFinishScoreModal()">
+        <span>Finish & Skor</span>
       </button>
     </div>
+
+    <!-- Main Berikutnya (Menyesuaikan Jumlah Lapangan - Image 3) -->
+    <div class="onesport-card dashed-border">
+      <div class="next-match-lock-banner">
+        <span>Main berikutnya (terkunci — tap pemain untuk ganti)</span>
+        <span style="font-size:0.75rem; font-weight:800; color:var(--brand-orange);" id="nextRoundCourtsCountLabel">2 Lapangan</span>
+      </div>
+
+      <!-- Dynamically renders ALL upcoming courts for the next round -->
+      <div id="nextMatchGridContainer"></div>
+    </div>
+
+    <!-- Active Courts Container (Image 3) -->
+    <div id="activeCourtsList"></div>
+
+    <!-- Bottom Actions for Courts (Image 3) -->
+    <div class="court-bottom-actions">
+      <button class="btn-smart-mm" onclick="smartRebalanceUpcoming()">
+        <span>Smart Matchmaking</span>
+      </button>
+      <button class="btn-add-court" onclick="addNewCourt()">
+        <span>+ Tambah Lapangan</span>
+      </button>
+    </div>
+
+    <!-- Resting Players Drawer -->
+    <div class="resting-box" id="restingBoxContainer" style="margin-top: 16px;">
+      <div class="resting-header">Istirahat Ronde Ini</div>
+      <div class="resting-chips-wrap" id="restingPlayersWrap"></div>
+    </div>
   </section>
 
-  <!-- ==================== TAB 2: BAGAN ROTASI ==================== -->
-  <section id="tab-schedule" class="tab-pane">
-    <div class="section-intro">
-      <div class="section-tag">Jadwal Pertandingan Live</div>
-      <div class="section-heading-row">
-        <div>
-          <h2 class="section-title">Bagan Rotasi Ganda Dinamis</h2>
-          <p class="section-desc">Bagan terorganisir per kategori gender. Klik bintang ⭐ pada nama pemain untuk menandai pemain Jago secara live.</p>
+  <!-- ========================================== -->
+  <!-- TAB 3: SKOR / LEADERBOARD (Image 1 Style)   -->
+  <!-- ========================================== -->
+  <section id="tab-skor" class="app-tab-pane">
+    
+    <!-- Spotlight Champion Banner (Image 1) -->
+    <div class="champion-spotlight-card" id="championSpotlight">
+      <div class="champion-pill-wrap">
+        <span id="spotlightPlayerName">—</span>
+      </div>
+      <div class="champion-label-sub">Tournament Champion</div>
+    </div>
+
+    <!-- Leaderboard Table Container (Image 1) -->
+    <div class="leaderboard-card">
+      <div class="leaderboard-top-controls">
+        <div class="card-title-group">
+          <span>Leaderboard</span>
         </div>
+        
+        <select class="leaderboard-filter-dropdown" id="lbSortSelect" onchange="renderLeaderboard()">
+          <option value="wins">BY WINS</option>
+          <option value="points">BY POINTS</option>
+          <option value="diff">BY DIFF</option>
+          <option value="wr">BY WIN RATE</option>
+        </select>
       </div>
+
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th class="col-left">Pemain</th>
+            <th class="col-center">W-L-T</th>
+            <th class="col-center">DIFF</th>
+            <th class="col-center">+M</th>
+            <th class="col-right">P</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardTableBody"></tbody>
+      </table>
     </div>
 
-    <!-- Dynamic Update Notification (Show if auto-adapted) -->
-    <div id="dynamicUpdateAlert" class="dynamic-alert-box" style="display: none;">
-      <div>
-        <strong>⚡ Bagan Mendatang Berhasil Diperbarui:</strong> Perubahan pemain/gender/status jago diterapkan pada ronde-ronde yang belum selesai tanpa mengubah ronde yang sudah berjalan/selesai!
-      </div>
-      <button class="btn-os-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="document.getElementById('dynamicUpdateAlert').style.display='none'">✕ Tutup</button>
-    </div>
-
-    <!-- Schedule Controller Toolbar -->
-    <div class="schedule-top-toolbar">
-      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <button class="btn-os-orange" onclick="regenerateAllOrPending()">
-          🔄 Sesuaikan Ronde Mendatang
-        </button>
-        <button class="btn-os-outline" onclick="forceResetAllSchedule()">
-          ⚠️ Reset Total Dari Awal
-        </button>
-        <button class="btn-os-outline" onclick="window.print()">
-          🖨️ Cetak Jadwal
-        </button>
-      </div>
-
-      <div class="round-filter-pills">
-        <button class="filter-pill active" onclick="filterRounds('all', this)">Semua Ronde</button>
-        <button class="filter-pill" onclick="filterRounds('ongoing', this)">Sedang Berlangsung</button>
-        <button class="filter-pill" onclick="filterRounds('pending', this)">Belum Dimulai</button>
-        <button class="filter-pill" onclick="filterRounds('finished', this)">Selesai</button>
-      </div>
-    </div>
-
-    <!-- Warning / Jago Status in Schedule -->
-    <div id="scheduleJagoNotice" class="onesport-banner-tip" style="background:#FFFBEB; border-color:#FDE68A; color:#92400E; display:none;">
-      <div class="tip-icon-circle" style="background:#FEF3C7; color:#B45309;">⭐</div>
-      <div>
-        <strong>Aturan Bagan Aktif:</strong> Pertandingan dibagi sesuai gender. <strong>Pemain Jago Aktif:</strong> <span id="scheduleJagoNames"></span>. <em>(Perempuan JAGO bebas masuk ke bagan Putra, dan 2 pemain Jago tidak akan berada dalam 1 tim)</em>
-      </div>
-    </div>
-
-    <!-- Schedule Cards Output -->
-    <div id="scheduleCardsContainer"></div>
+    <!-- Quick Score Input Helper Button -->
+    <button class="btn-action-orange" style="width:100%;" onclick="openFinishScoreModal()">
+      Input Skor Ronde Berjalan
+    </button>
   </section>
 
-  <!-- ==================== TAB 3: REKAP DATA (EXCEL STYLE) ==================== -->
-  <section id="tab-recap" class="tab-pane">
-    <div class="section-intro">
-      <div class="section-tag">Administrasi & Iuran</div>
-      <div class="section-heading-row">
-        <div>
-          <h2 class="section-title">Rekap Data & Status Pembayaran</h2>
-          <p class="section-desc">Format data spreadsheet terintegrasi: jenis kelamin, nomor WhatsApp, ukuran jersey, role, dan verifikasi lunas.</p>
-        </div>
-        <button class="btn-os-navy" onclick="exportCSV()">
-          ⬇️ Export Spreadsheet (.CSV)
-        </button>
-      </div>
-    </div>
-
+  <!-- ========================================== -->
+  <!-- TAB 4: HISTORY (Match Log & Rounds)       -->
+  <!-- ========================================== -->
+  <section id="tab-history" class="app-tab-pane">
     <div class="onesport-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 16px; font-size: 0.82rem; font-weight: 600; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 14px; height: 14px; background: #10B981; border-radius: 4px;"></span>
-            <span>V = Lunas (Sudah Bayar)</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 14px; height: 14px; background: #DBEAFE; border: 1px solid #BFDBFE; border-radius: 4px;"></span>
-            <span>👨 Putra (Laki-laki)</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 14px; height: 14px; background: #FCE7F3; border: 1px solid #FBCFE8; border-radius: 4px;"></span>
-            <span>👩 Putri (Perempuan)</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 14px; height: 14px; background: #FEF3C7; border: 1.5px solid #F59E0B; border-radius: 4px;"></span>
-            <span>⭐ Pemain Jago</span>
-          </div>
-        </div>
-
-        <div style="font-size: 0.88rem; font-weight: 800; color: var(--brand-navy-dark);" id="recapPaidStatsSummary">
-          Lunas: 0 / 0 Pemain
+      <div class="card-header-bar">
+        <div class="card-title-group">
+          <span>Riwayat Pertandingan Selesai</span>
         </div>
       </div>
-
-      <div class="table-responsive-os">
-        <table class="os-table" id="tableRecapData">
-          <thead>
-            <tr>
-              <th style="width: 45px;">No</th>
-              <th>Nama Pemain</th>
-              <th style="text-align: center;">Jenis Kelamin</th>
-              <th>Ukuran Baju</th>
-              <th>No. Telepon / WA</th>
-              <th>Role / Posisi</th>
-              <th style="text-align: center;">Tandai Jago</th>
-              <th style="text-align: center;">Status Bayar</th>
-            </tr>
-          </thead>
-          <tbody id="recapTableBody"></tbody>
-        </table>
-      </div>
+      <div id="historyRoundsContainer"></div>
     </div>
   </section>
 
-  <!-- ==================== TAB 4: STATISTIK ==================== -->
-  <section id="tab-stats" class="tab-pane">
-    <div class="section-intro">
-      <div class="section-tag">Ringkasan Turnamen</div>
-      <div class="section-heading-row">
-        <div>
-          <h2 class="section-title">Statistik Rotasi & Kehadiran</h2>
-          <p class="section-desc">Pantau beban bertanding, istirahat, variasi pasangan, dan komposisi gender peserta.</p>
-        </div>
-      </div>
+  <!-- ========================================== -->
+  <!-- TAB 5: SELESAI / HASIL AKHIR (Image 2)     -->
+  <!-- ========================================== -->
+  <section id="tab-selesai" class="app-tab-pane">
+    <div style="text-align: center; margin-bottom: 12px;">
+      <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Hasil Akhir</div>
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; color:var(--brand-navy-dark);" id="finalTitleHeader">Mabar Sesi</h2>
     </div>
 
-    <!-- Stats Tiles Grid -->
-    <div class="stats-grid-os" id="statsCardsGrid"></div>
+    <!-- 3D Podium for Top 3 (Image 2) -->
+    <div class="podium-container" id="podiumTop3Container">
+      <!-- Injected dynamically -->
+    </div>
 
-    <!-- Player Breakdown Table -->
-    <div class="onesport-card">
-      <div class="card-header-clean">
-        <div class="card-title-wrap">
-          <div class="card-icon-pill">📊</div>
-          <h3 class="card-title-clean">Detail Beban Main per Pemain</h3>
-        </div>
-      </div>
-      <div class="table-responsive-os">
-        <table class="os-table">
-          <thead>
-            <tr>
-              <th style="width: 50px;">No</th>
-              <th>Nama Pemain</th>
-              <th style="text-align: center;">Gender</th>
-              <th style="text-align: center;">Total Main</th>
-              <th style="text-align: center;">Total Istirahat</th>
-              <th style="text-align: center;">Partner Berbeda</th>
-              <th style="text-align: center;">Kategori</th>
-            </tr>
-          </thead>
-          <tbody id="statsTableBody"></tbody>
-        </table>
-      </div>
+    <!-- Complete Ranked Results Table (Image 2) -->
+    <div class="leaderboard-card">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th style="width:30px;" class="col-center">#</th>
+            <th class="col-left">Pemain</th>
+            <th class="col-center">M</th>
+            <th class="col-center">K</th>
+            <th class="col-center">WR</th>
+            <th class="col-center">+M</th>
+            <th class="col-center">Diff</th>
+            <th class="col-right">Poin</th>
+          </tr>
+        </thead>
+        <tbody id="finalTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Bottom Actions: Bagikan & Mabar Baru (Image 2) -->
+    <div class="finish-actions-row">
+      <button class="btn-share-results" onclick="shareFinalResults()">
+        <span>Bagikan Rekap</span>
+      </button>
+      <button class="btn-new-mabar" onclick="startNewMabarSession()">
+        <span>Mabar Baru</span>
+      </button>
     </div>
   </section>
 
 </main>
 
-<!-- ── FOOTER ── -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <img src="logo.png" alt="ONESPORT" style="height:28px; width:auto;" onerror="this.style.display='none'">
-      <span>ONE<span class="orange-part">SPORT</span> BADMINTON</span>
+<!-- ── BOTTOM NAVIGATION (Mobile Bar) ── -->
+<nav class="bottom-navbar">
+  <button class="nav-item-btn" id="nav-tab-pemain" onclick="switchTab('tab-pemain')">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+    </span>
+    <span>Pemain</span>
+  </button>
+  <button class="nav-item-btn active" id="nav-tab-lapangan" onclick="switchTab('tab-lapangan')">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+    </span>
+    <span>Lapangan</span>
+  </button>
+  <button class="nav-item-btn" id="nav-tab-skor" onclick="switchTab('tab-skor')">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+    </span>
+    <span>Skor</span>
+  </button>
+  <button class="nav-item-btn" id="nav-tab-history" onclick="switchTab('tab-history')">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    </span>
+    <span>History</span>
+  </button>
+  <button class="nav-item-btn" id="nav-tab-selesai" onclick="switchTab('tab-selesai')">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+    </span>
+    <span>Selesai</span>
+  </button>
+</nav>
+
+<!-- ── MODAL: INPUT SKOR & SELESAIKAN RONDE ── -->
+<div class="modal-overlay" id="scoreModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Pilih Pemenang & Input Skor</div>
+      <button class="btn-del-player" onclick="closeScoreModal()">✕</button>
     </div>
-    <div class="footer-motto">
-      Play Harder · Match Better · Dynamic Adaptation
-    </div>
+    
+    <div id="scoreModalContent"></div>
+
+    <button class="btn-action-orange" style="width: 100%; margin-top: 16px;" onclick="saveScoresAndAdvance()">
+      Simpan Pemenang & Selesaikan Ronde
+    </button>
   </div>
-</footer>
+</div>
+
+<!-- ── MODAL: TUKAR PEMAIN (SWAP MODAL) ── -->
+<div class="modal-overlay" id="swapModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Ganti / Tukar Pemain</div>
+      <button class="btn-del-player" onclick="closeSwapModal()">✕</button>
+    </div>
+    <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+      Pilih pemain pengganti untuk: <strong id="swapSourcePlayerName" style="color:var(--brand-navy-dark);"></strong>
+    </p>
+    <div id="swapCandidatesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto;"></div>
+  </div>
+</div>
+
+<!-- ── MODAL: SETTINGS ── -->
+<div class="modal-overlay" id="settingsModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Pengaturan Pertandingan</div>
+      <button class="btn-del-player" onclick="closeSettingsModal()">✕</button>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Judul / Nama Sesi Mabar</label>
+        <input type="text" id="settingSessionTitle" class="input-styled-os" value="Mabar Sesi">
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Jumlah Lapangan</label>
+        <input type="number" id="settingNumCourts" class="input-styled-os" value="2" min="1" max="8">
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Target Minimal Main per Pemain</label>
+        <input type="number" id="settingMinPlays" class="input-styled-os" value="3" min="1" max="10">
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Target Poin per Match (Rally Point)</label>
+        <input type="number" id="settingTargetPoints" class="input-styled-os" value="21" min="11" max="30">
+      </div>
+      <div>
+        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Total Ronde yang Direncanakan</label>
+        <input type="number" id="settingTotalRounds" class="input-styled-os" value="8" min="1" max="25">
+      </div>
+    </div>
+
+    <button class="btn-action-cyan" style="width: 100%; margin-top: 18px;" onclick="saveSettings()">
+      Simpan Pengaturan
+    </button>
+  </div>
+</div>
 
 <script>
-// ============================================================
-//  APPLICATION LOGIC & DYNAMIC ROTATION ENGINE
-// ============================================================
+// ============================================================================
+//  ONESPORT SMART ROTATION & MATCH ENGINE (Navy & Orange Theme)
+// ============================================================================
+
 let players = [];
-let schedule = []; // array of rounds: { roundNumber, timeString, courts, resting, status: 'pending'|'ongoing'|'finished' }
-let currentFilter = 'all';
-let idSeq = 0;
+let schedule = []; // Array of rounds: { roundNumber, status: 'pending'|'ongoing'|'finished', courts: [...], resting: [...] }
+let currentRoundIndex = 0;
+let courtTimers = {}; // { timerKey: { seconds, intervalId, isRunning } }
+let swapContext = null;
+let sessionTitle = `Mabar ${new Date().getDate()}/${new Date().getMonth()+1}/${new Date().getFullYear()}`;
+let numCourts = 2;
+let minPlaysPerPlayer = 3;
+let targetPoints = 21;
+let plannedRounds = 8;
 
-function nextId() { return ++idSeq; }
+const ROLE_SCORES = {
+  'Pemula': 1,
+  'Amatir': 2,
+  'Intermadiate': 3,
+  'Intermediate': 3,
+  'Advance': 4,
+  'Advanced': 4
+};
 
-function shuffleArray(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function timeToString(startMinutes, duration, index) {
-  const t1 = startMinutes + index * duration;
-  const t2 = t1 + duration;
-  const formatTime = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
-  return `${formatTime(t1)} - ${formatTime(t2)} WIB`;
-}
-
-function parseTimeToMinutes(str) {
-  if (!str) return 960; // 16:00
-  const [h, m] = str.split(':').map(Number);
-  return (h || 0) * 60 + (m || 0);
-}
+// ── INITIALIZATION ──
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('finalTitleHeader').textContent = sessionTitle;
+  document.getElementById('settingSessionTitle').value = sessionTitle;
+  loadPresetPlayers();
+  generateInitialSchedule();
+});
 
 // ── TAB SWITCHING ──
 function switchTab(tabId) {
-  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
-  
+  document.querySelectorAll('.app-tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.desktop-tab-btn').forEach(el => el.classList.remove('active'));
+
   const targetTab = document.getElementById(tabId);
   if (targetTab) targetTab.classList.add('active');
-  
-  const navBtn = document.getElementById('btn-' + tabId);
+
+  const navBtn = document.getElementById('nav-' + tabId);
   if (navBtn) navBtn.classList.add('active');
-  
-  if (tabId === 'tab-stats') renderStats();
-  if (tabId === 'tab-recap') renderRecap();
-  if (tabId === 'tab-schedule') renderSchedule();
+
+  const deskBtn = document.getElementById('desk-' + tabId);
+  if (deskBtn) deskBtn.classList.add('active');
+
+  if (tabId === 'tab-pemain') renderPlayersList();
+  if (tabId === 'tab-lapangan') renderCourtsView();
+  if (tabId === 'tab-skor') renderLeaderboard();
+  if (tabId === 'tab-history') renderHistory();
+  if (tabId === 'tab-selesai') renderFinalPodium();
 }
 
-function generateAndGo() {
-  if (schedule.length === 0) {
-    generateInitialSchedule();
-  } else {
-    adaptPendingSchedule();
+// ── PRESET PLAYERS ──
+function loadPresetPlayers() {
+  const presets = [
+    { name: 'alwan', gender: 'L', role: 'Intermadiate' },
+    { name: 'rocky', gender: 'L', role: 'Advance' },
+    { name: 'rizky pede', gender: 'L', role: 'Amatir' },
+    { name: 'vindi', gender: 'P', role: 'Pemula' },
+    { name: 'fiqih', gender: 'L', role: 'Intermadiate' },
+    { name: 'putri', gender: 'P', role: 'Pemula' },
+    { name: 'nadhil', gender: 'P', role: 'Pemula' },
+    { name: 'puji', gender: 'P', role: 'Intermadiate' },
+    { name: 'rere', gender: 'P', role: 'Advance' },
+    { name: 'addrian', gender: 'L', role: 'Intermadiate' },
+    { name: 'awal', gender: 'L', role: 'Amatir' },
+    { name: 'novry', gender: 'L', role: 'Amatir' },
+    { name: 'zakki', gender: 'L', role: 'Pemula' },
+    { name: 'boy', gender: 'L', role: 'Advance' },
+    { name: 'vivi', gender: 'P', role: 'Amatir' },
+    { name: 'yusuf', gender: 'L', role: 'Intermadiate' }
+  ];
+
+  players = presets.map((p, idx) => ({
+    id: idx + 1,
+    name: p.name,
+    gender: p.gender,
+    role: p.role,
+    paid: true
+  }));
+
+  updateSessionLabels();
+  renderPlayersList();
+}
+
+function clearAllPlayers() {
+  if (!confirm('Hapus semua pemain dan reset jadwal?')) return;
+  players = [];
+  schedule = [];
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+}
+
+function updateSessionLabels() {
+  const countEl = document.getElementById('sessionPlayerCountLabel');
+  if (countEl) countEl.innerHTML = `<strong>${players.length}</strong> Pemain Terdaftar`;
+  const badgeEl = document.getElementById('playerCountBadge');
+  if (badgeEl) badgeEl.textContent = `${players.length} Pemain`;
+
+  for (let c = 1; c <= 4; c++) {
+    const btn = document.getElementById(`court-btn-${c}`);
+    if (btn) {
+      if (c === numCourts) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
   }
-  switchTab('tab-schedule');
+
+  const nextCountLabel = document.getElementById('nextRoundCourtsCountLabel');
+  if (nextCountLabel) nextCountLabel.textContent = `${numCourts} Lapangan`;
 }
 
-// ── PLAYER ROSTER MANAGEMENT ──
-function addPlayer() {
-  const input = document.getElementById('newPlayerName');
-  const genderInput = document.getElementById('newPlayerGender');
-  const name = input.value.trim();
-  if (!name) return;
-  
-  const genderVal = (genderInput && genderInput.value) ? genderInput.value : 'L';
-  
-  const newP = {
-    id: nextId(),
-    name: name,
-    gender: genderVal, // 'L' (Putra) or 'P' (Putri)
-    jago: false,
-    ukuran: 'L',
-    telp: '',
-    role: '',
-    paid: false
-  };
-  
-  players.push(newP);
-  input.value = '';
-  input.focus();
-  
-  renderPlayers();
-  renderRecap();
-  updateHeroStats();
+function setCourtsCount(count) {
+  if (numCourts === count) return;
+  numCourts = count;
+  document.getElementById('settingNumCourts').value = count;
+  updateSessionLabels();
+  smartRebalanceUpcoming(false);
+  renderCourtsView();
+}
 
-  // Dynamic Mid-Game Adaptation
+// ── PLAYER MANAGEMENT (Edit Role On-The-Fly) ──
+function addNewPlayer() {
+  const nameInput = document.getElementById('inputPlayerName');
+  const genderInput = document.getElementById('inputPlayerGender');
+  const roleInput = document.getElementById('inputPlayerRole');
+
+  const name = nameInput.value.trim();
+  if (!name) return;
+
+  const newP = {
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    name: name,
+    gender: genderInput.value,
+    role: roleInput.value,
+    paid: true
+  };
+
+  players.push(newP);
+  nameInput.value = '';
+  nameInput.focus();
+
+  updateSessionLabels();
+  renderPlayersList();
+
   if (schedule.length > 0) {
-    adaptPendingSchedule();
-    showDynamicAlert();
+    smartRebalanceUpcoming(false);
+  }
+}
+
+function updatePlayerRole(id, newRole) {
+  const p = players.find(p => p.id === id);
+  if (p) {
+    p.role = newRole;
+    renderPlayersList();
+    if (schedule.length > 0) {
+      smartRebalanceUpcoming(false);
+    }
+  }
+}
+
+function updatePlayerGender(id, newGender) {
+  const p = players.find(p => p.id === id);
+  if (p) {
+    p.gender = newGender;
+    renderPlayersList();
+    if (schedule.length > 0) {
+      smartRebalanceUpcoming(false);
+    }
   }
 }
 
 function removePlayer(id) {
   players = players.filter(p => p.id !== id);
-  renderPlayers();
-  renderRecap();
-  updateHeroStats();
-
+  updateSessionLabels();
+  renderPlayersList();
   if (schedule.length > 0) {
-    adaptPendingSchedule();
-    showDynamicAlert();
+    smartRebalanceUpcoming(false);
   }
 }
 
-function toggleGender(id) {
-  const p = players.find(p => p.id === id);
-  if (p) {
-    p.gender = (p.gender === 'P') ? 'L' : 'P';
-  }
-  renderPlayers();
-  renderRecap();
-  updateHeroStats();
-
-  if (schedule.length > 0) {
-    adaptPendingSchedule();
-    showDynamicAlert();
-  }
+function getPlayerPlayCount(playerId) {
+  let count = 0;
+  schedule.forEach(r => {
+    r.courts.forEach(c => {
+      if (c.teamA.some(p => p && p.id === playerId) || c.teamB.some(p => p && p.id === playerId)) {
+        count++;
+      }
+    });
+  });
+  return count;
 }
 
-function toggleJago(id) {
-  const p = players.find(p => p.id === id);
-  if (p) {
-    p.jago = !p.jago;
-  }
-  renderPlayers();
-  renderRecap();
-  updateHeroStats();
-
-  // Dynamic Mid-Game Adaptation (preserve finished/ongoing, adapt upcoming)
-  if (schedule.length > 0) {
-    adaptPendingSchedule();
-    showDynamicAlert();
-  }
-}
-
-function togglePaid(id) {
-  const p = players.find(p => p.id === id);
-  if (p) {
-    p.paid = !p.paid;
-  }
-  renderRecap();
-  updateHeroStats();
-}
-
-function updatePlayerData(id, field, val) {
-  const p = players.find(p => p.id === id);
-  if (p) {
-    p[field] = val;
-  }
-  updateHeroStats();
-}
-
-function clearPlayers() {
-  if (players.length === 0) return;
-  if (!confirm('Hapus seluruh daftar pemain dan reset jadwal?')) return;
-  players = [];
-  schedule = [];
-  renderPlayers();
-  renderRecap();
-  renderSchedule();
-  updateHeroStats();
-}
-
-function loadDefaultPlayers() {
-  const samples = [
-    { name: 'Taufan', gender: 'L', jago: true, paid: true, ukuran: 'L', telp: '081234567801' },
-    { name: 'Riri S F', gender: 'P', jago: false, paid: true, ukuran: 'M', telp: '081234567802' },
-    { name: 'Febri', gender: 'L', jago: true, paid: false, ukuran: 'XL', telp: '081234567803' },
-    { name: 'Ami', gender: 'P', jago: false, paid: true, ukuran: 'S', telp: '081234567804' },
-    { name: 'Fahru', gender: 'L', jago: false, paid: false, ukuran: 'L', telp: '081234567805' },
-    { name: 'Wulan', gender: 'P', jago: false, paid: true, ukuran: 'M', telp: '081234567806' },
-    { name: 'Dwi', gender: 'L', jago: false, paid: false, ukuran: 'L', telp: '081234567807' },
-    { name: 'Novi', gender: 'P', jago: true, paid: true, ukuran: 'M', telp: '081234567808' }, // Perempuan JAGO (bebas masuk Putra!)
-    { name: 'Herdi', gender: 'L', jago: true, paid: false, ukuran: 'XL', telp: '081234567809' },
-    { name: 'Hari G', gender: 'L', jago: false, paid: false, ukuran: 'L', telp: '081234567810' },
-    { name: 'Dimas', gender: 'L', jago: false, paid: true, ukuran: 'L', telp: '081234567811' },
-    { name: 'Opik', gender: 'L', jago: false, paid: false, ukuran: 'M', telp: '081234567812' },
-    { name: 'Ranti', gender: 'P', jago: false, paid: true, ukuran: 'S', telp: '081234567813' },
-    { name: 'Ninis', gender: 'P', jago: false, paid: false, ukuran: 'M', telp: '081234567814' },
-    { name: 'Septhia', gender: 'P', jago: false, paid: true, ukuran: 'S', telp: '081234567815' },
-    { name: 'Bunga', gender: 'P', jago: false, paid: false, ukuran: 'M', telp: '081234567816' },
-    { name: 'Petra', gender: 'L', jago: false, paid: true, ukuran: 'L', telp: '081234567817' },
-    { name: 'Denda', gender: 'L', jago: false, paid: false, ukuran: 'XL', telp: '081234567818' }
-  ];
-  
-  players = samples.map(s => ({
-    id: nextId(),
-    name: s.name,
-    gender: s.gender || 'L',
-    jago: !!s.jago,
-    ukuran: s.ukuran,
-    telp: s.telp,
-    role: '',
-    paid: s.paid
-  }));
-  
-  renderPlayers();
-  renderRecap();
-  updateHeroStats();
-}
-
-function renderPlayers() {
-  const container = document.getElementById('playerChipsGrid');
-  const countEl = document.getElementById('totalPlayerHeaderCount');
-  const summaryEl = document.getElementById('playerRosterSummary');
-  
-  countEl.textContent = players.length;
-  
-  const courts = parseInt(document.getElementById('numCourts').value) || 2;
-  const needPerRound = courts * 4;
-  const restCount = Math.max(0, players.length - needPerRound);
-  
-  const maleCount = players.filter(p => p.gender === 'L').length;
-  const femaleCount = players.filter(p => p.gender === 'P').length;
-  const femaleJagoCount = players.filter(p => p.gender === 'P' && p.jago).length;
-  const jagoCount = players.filter(p => p.jago).length;
-
-  summaryEl.innerHTML = players.length > 0 
-    ? `Total: <strong>${players.length} Pemain</strong> (👨 ${maleCount} Putra, 👩 ${femaleCount} Putri · ⭐ ${jagoCount} Jago${femaleJagoCount > 0 ? `, <em>${femaleJagoCount} Putri Jago bebas ke Putra</em>` : ''}) · Butuh per ronde: <strong>${Math.min(needPerRound, players.length)} Pemain</strong> (${courts} Lapangan) · Istirahat per ronde: <strong>${restCount} Pemain</strong>`
-    : '';
+function renderPlayersList() {
+  const container = document.getElementById('playerRosterList');
+  if (!container) return;
 
   if (players.length === 0) {
     container.innerHTML = `
-      <div style="grid-column: 1/-1; padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-        Belum ada pemain. Tambahkan nama di atas atau klik "Muat Contoh Pemain".
+      <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">
+        Belum ada pemain. Tambahkan di form atas atau klik "Muat Contoh Pemain".
       </div>
     `;
     return;
   }
 
-  container.innerHTML = players.map(p => `
-    <div class="os-player-chip ${p.jago ? 'is-jago' : ''}">
-      <div class="chip-left">
-        <span class="chip-player-name">${p.name}</span>
-        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-          <button class="${p.gender === 'P' ? 'chip-badge-gender-p' : 'chip-badge-gender-l'}" onclick="toggleGender(${p.id})" title="Klik untuk ganti Gender (${p.gender === 'P' ? 'Perempuan / Putri' : 'Laki-laki / Putra'})">
-            ${p.gender === 'P' ? '👩 Putri' : '👨 Putra'}
-          </button>
-          ${p.jago ? '<span class="chip-badge-jago">⭐ JAGO</span>' : ''}
-        </div>
-      </div>
-      <div class="chip-actions">
-        <button class="chip-btn-star ${p.jago ? 'active' : ''}" title="${p.jago ? 'Hapus Status Jago' : 'Tandai Sebagai JAGO'}" onclick="toggleJago(${p.id})">
-          ★
-        </button>
-        <button class="chip-btn-del" title="Hapus Pemain" onclick="removePlayer(${p.id})">
-          ✕
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function updateHeroStats() {
-  const maleCount = players.filter(p => p.gender === 'L').length;
-  const femaleCount = players.filter(p => p.gender === 'P').length;
-
-  document.getElementById('heroPlayerCount').textContent = players.length;
-  document.getElementById('heroJagoCount').textContent = players.filter(p => p.jago).length;
-  document.getElementById('heroMaleCount').textContent = maleCount;
-  document.getElementById('heroFemaleCount').textContent = femaleCount;
-  
-  const ongoingCount = schedule.filter(r => r.status === 'ongoing').length;
-  const finishedCount = schedule.filter(r => r.status === 'finished').length;
-  document.getElementById('heroOngoingRound').textContent = ongoingCount;
-  document.getElementById('heroFinishedRound').textContent = finishedCount;
-}
-
-function handleSettingsChange() {
-  updateHeroStats();
-  if (schedule.length > 0) {
-    adaptPendingSchedule();
-    showDynamicAlert();
-  }
-}
-
-function showDynamicAlert() {
-  const el = document.getElementById('dynamicUpdateAlert');
-  if (el) {
-    el.style.display = 'flex';
-    setTimeout(() => {
-      // Auto smooth fade out
-    }, 6000);
-  }
-}
-
-// ============================================================
-//  DYNAMIC MID-GAME ROTATION ENGINE (GENDER & JAGO AWARE)
-// ============================================================
-function formBalancedCourtMatch(fourPlayers, pairHistory) {
-  // fourPlayers is an array of 4 players
-  // Split into team1 (2) and team2 (2) such that:
-  // 1. Two jago players are NOT in the same team
-  // 2. Pair history penalty is minimized
-  const p = fourPlayers;
-  const splits = [
-    { t1: [p[0], p[1]], t2: [p[2], p[3]] },
-    { t1: [p[0], p[2]], t2: [p[1], p[3]] },
-    { t1: [p[0], p[3]], t2: [p[1], p[2]] }
-  ];
-
-  let bestSplit = null;
-  let bestScore = Infinity;
-
-  for (const s of splits) {
-    const jagoClash1 = s.t1[0].jago && s.t1[1].jago;
-    const jagoClash2 = s.t2[0].jago && s.t2[1].jago;
-    if (jagoClash1 || jagoClash2) continue;
-
-    const k1 = [s.t1[0].id, s.t1[1].id].sort((a,b)=>a-b).join('-');
-    const k2 = [s.t2[0].id, s.t2[1].id].sort((a,b)=>a-b).join('-');
-    const score = (pairHistory[k1] || 0) + (pairHistory[k2] || 0);
-
-    if (score < bestScore) {
-      bestScore = score;
-      bestSplit = s;
-    }
-  }
-
-  if (!bestSplit) {
-    bestSplit = splits[0];
-  }
-
-  return bestSplit;
-}
-
-function generateInitialSchedule() {
-  const courts = parseInt(document.getElementById('numCourts').value) || 2;
-  const numRounds = parseInt(document.getElementById('numRounds').value) || 6;
-  const startMin = parseTimeToMinutes(document.getElementById('startTime').value);
-  const duration = parseInt(document.getElementById('roundDuration').value) || 20;
-
-  const playersPerRound = courts * 4;
-  if (players.length < playersPerRound) {
-    alert(`Dibutuhkan minimal ${playersPerRound} pemain untuk ${courts} lapangan (4 pemain per lapangan). Saat ini baru ada ${players.length} pemain.`);
-    return;
-  }
-
-  schedule = [];
-  const pairHistory = {};
-  const restCountMap = {};
-  players.forEach(p => restCountMap[p.id] = 0);
-
-  for (let r = 0; r < numRounds; r++) {
-    const roundData = buildSingleRound(players, courts, r, startMin, duration, pairHistory, restCountMap);
-    if (roundData) {
-      roundData.status = 'pending';
-      schedule.push(roundData);
-    }
-  }
-
-  renderSchedule();
-  renderStats();
-  updateHeroStats();
-}
-
-// Adapt ONLY upcoming (pending) rounds without touching finished or ongoing rounds!
-function adaptPendingSchedule() {
-  const courts = parseInt(document.getElementById('numCourts').value) || 2;
-  const numRounds = parseInt(document.getElementById('numRounds').value) || 6;
-  const startMin = parseTimeToMinutes(document.getElementById('startTime').value);
-  const duration = parseInt(document.getElementById('roundDuration').value) || 20;
-  const playersPerRound = courts * 4;
-
-  if (players.length < playersPerRound) {
-    return;
-  }
-
-  // 1. Ambil sejarah pair & rest dari ronde-ronde yang SUDAH SELESAI atau SEDANG BERLANGSUNG
-  const pairHistory = {};
-  const restCountMap = {};
-  players.forEach(p => restCountMap[p.id] = 0);
-
-  const getPairKey = (p1, p2) => [p1.id, p2.id].sort((a,b)=>a-b).join('-');
-  const incPair = (p1, p2) => {
-    const k = getPairKey(p1, p2);
-    pairHistory[k] = (pairHistory[k] || 0) + 1;
-  };
-
-  const preservedRounds = [];
-  schedule.forEach(r => {
-    if (r.status === 'finished' || r.status === 'ongoing') {
-      preservedRounds.push(r);
-      // Catat history
-      r.courts.forEach(court => {
-        if (court.team1.length === 2 && court.team1[0] && court.team1[1]) incPair(court.team1[0], court.team1[1]);
-        if (court.team2.length === 2 && court.team2[0] && court.team2[1]) incPair(court.team2[0], court.team2[1]);
-      });
-      r.resting.forEach(p => {
-        if (restCountMap[p.id] !== undefined) restCountMap[p.id]++;
-      });
-    }
-  });
-
-  const startIndex = preservedRounds.length;
-  const newSchedule = [...preservedRounds];
-
-  // 2. Generate ulang hanya untuk ronde yang BELUM TERLAKSANA
-  for (let r = startIndex; r < numRounds; r++) {
-    const roundData = buildSingleRound(players, courts, r, startMin, duration, pairHistory, restCountMap);
-    if (roundData) {
-      roundData.status = 'pending';
-      newSchedule.push(roundData);
-    }
-  }
-
-  schedule = newSchedule;
-  renderSchedule();
-  renderStats();
-  updateHeroStats();
-}
-
-function buildSingleRound(roster, courts, roundIndex, startMin, duration, pairHistory, restCountMap) {
-  const femalePool = roster.filter(p => p.gender === 'P');
-  const openPool = roster.filter(p => p.gender === 'L' || (p.gender === 'P' && p.jago));
-
-  // Determine possible number of women matches: w in [0, courts]
-  const possibleWList = [];
-  for (let w = 0; w <= courts; w++) {
-    const m = courts - w;
-    if (w * 4 <= femalePool.length && m * 4 <= openPool.length) {
-      possibleWList.push(w);
-    }
-  }
-
-  if (possibleWList.length === 0) {
-    possibleWList.push(0);
-  }
-
-  let bestRound = null;
-  let bestRoundScore = -Infinity;
-
-  for (const w of possibleWList) {
-    const m = courts - w;
-    for (let iter = 0; iter < 120; iter++) {
-      const roundMatches = [];
-      const usedPlayerIds = new Set();
-      let possible = true;
-
-      // 1. Pick players for Women Matches (w matches, 4 players each)
-      for (let wi = 0; wi < w; wi++) {
-        const availFemales = roster.filter(p => p.gender === 'P' && !usedPlayerIds.has(p.id));
-        if (availFemales.length < 4) {
-          possible = false;
-          break;
-        }
-        availFemales.sort((a, b) => {
-          const diff = (restCountMap[b.id] || 0) - (restCountMap[a.id] || 0);
-          return diff !== 0 ? diff : (Math.random() - 0.5);
-        });
-        const selected4 = availFemales.slice(0, 4);
-        selected4.forEach(p => usedPlayerIds.add(p.id));
-        const split = formBalancedCourtMatch(selected4, pairHistory);
-        roundMatches.push({
-          category: 'PUTRI',
-          team1: split.t1,
-          team2: split.t2
-        });
-      }
-
-      if (!possible) continue;
-
-      // 2. Pick players for Open/Men Matches (m matches, 4 players each)
-      for (let mi = 0; mi < m; mi++) {
-        const availOpen = roster.filter(p => (p.gender === 'L' || (p.gender === 'P' && p.jago)) && !usedPlayerIds.has(p.id));
-        if (availOpen.length < 4) {
-          possible = false;
-          break;
-        }
-        availOpen.sort((a, b) => {
-          const diff = (restCountMap[b.id] || 0) - (restCountMap[a.id] || 0);
-          return diff !== 0 ? diff : (Math.random() - 0.5);
-        });
-        const selected4 = availOpen.slice(0, 4);
-        selected4.forEach(p => usedPlayerIds.add(p.id));
-        const split = formBalancedCourtMatch(selected4, pairHistory);
-        roundMatches.push({
-          category: 'PUTRA',
-          team1: split.t1,
-          team2: split.t2
-        });
-      }
-
-      if (!possible || roundMatches.length < courts) continue;
-
-      // Evaluate score of candidate round
-      let score = 0;
-      let jagoClashes = 0;
-
-      roundMatches.forEach(match => {
-        [match.team1, match.team2].forEach(team => {
-          if (team[0].jago && team[1].jago) jagoClashes++;
-          const k = [team[0].id, team[1].id].sort((a,b)=>a-b).join('-');
-          score -= (pairHistory[k] || 0) * 25;
-          score += (restCountMap[team[0].id] || 0) * 15;
-          score += (restCountMap[team[1].id] || 0) * 15;
-        });
-      });
-
-      score -= jagoClashes * 10000;
-
-      if (score > bestRoundScore) {
-        bestRoundScore = score;
-        bestRound = {
-          matches: roundMatches,
-          usedPlayerIds: usedPlayerIds
-        };
-      }
-    }
-  }
-
-  if (!bestRound) {
-    // Fallback: regular shuffle
-    const shuf = shuffleArray(roster);
-    const active = shuf.slice(0, courts * 4);
-    const resting = shuf.slice(courts * 4);
-    resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
-
-    const fallbackMatches = [];
-    for (let c = 0; c < courts; c++) {
-      const p1 = active[c * 4];
-      const p2 = active[c * 4 + 1];
-      const p3 = active[c * 4 + 2];
-      const p4 = active[c * 4 + 3];
-      fallbackMatches.push({
-        courtIndex: c + 1,
-        category: (p1.gender==='P'&&p2.gender==='P'&&p3.gender==='P'&&p4.gender==='P') ? 'PUTRI' : 'PUTRA',
-        team1: [p1, p2],
-        team2: [p3, p4]
-      });
-    }
-
-    return {
-      roundNumber: roundIndex + 1,
-      timeString: timeToString(startMin, duration, roundIndex),
-      courts: fallbackMatches,
-      resting: resting,
-      status: 'pending'
-    };
-  }
-
-  const activeIds = bestRound.usedPlayerIds;
-  const restingPlayers = roster.filter(p => !activeIds.has(p.id));
-
-  // Update rest counts
-  restingPlayers.forEach(p => {
-    restCountMap[p.id] = (restCountMap[p.id] || 0) + 1;
-  });
-
-  const getPairKey = (p1, p2) => [p1.id, p2.id].sort((a,b)=>a-b).join('-');
-  const incPair = (p1, p2) => {
-    const k = getPairKey(p1, p2);
-    pairHistory[k] = (pairHistory[k] || 0) + 1;
-  };
-
-  const courtMatches = bestRound.matches.map((m, idx) => {
-    if (m.team1.length === 2 && m.team1[0] && m.team1[1]) incPair(m.team1[0], m.team1[1]);
-    if (m.team2.length === 2 && m.team2[0] && m.team2[1]) incPair(m.team2[0], m.team2[1]);
-    return {
-      courtIndex: idx + 1,
-      category: m.category,
-      team1: m.team1,
-      team2: m.team2
-    };
-  });
-
-  return {
-    roundNumber: roundIndex + 1,
-    timeString: timeToString(startMin, duration, roundIndex),
-    courts: courtMatches,
-    resting: restingPlayers,
-    status: 'pending'
-  };
-}
-
-function regenerateAllOrPending() {
-  if (!confirm('Sesuaikan jadwal ronde mendatang dengan data pemain & jago terbaru? (Ronde yang sudah selesai/berlangsung tetap aman)')) return;
-  adaptPendingSchedule();
-  showDynamicAlert();
-}
-
-function forceResetAllSchedule() {
-  if (!confirm('PERINGATAN: Apakah Anda yakin ingin mereset total seluruh jadwal dari Ronde 1? Semua status ronde akan dimulai kembali.')) return;
-  generateInitialSchedule();
-}
-
-// ── ROUND STATUS CONTROL ──
-function setRoundStatus(roundIndex, newStatus) {
-  if (schedule[roundIndex]) {
-    if (newStatus === 'ongoing') {
-      schedule.forEach((r, idx) => {
-        if (idx !== roundIndex && r.status === 'ongoing') {
-          r.status = 'finished';
-        }
-      });
-    }
-    schedule[roundIndex].status = newStatus;
-    renderSchedule();
-    renderStats();
-    updateHeroStats();
-  }
-}
-
-// ── RENDER SCHEDULE ──
-function renderSchedule() {
-  const container = document.getElementById('scheduleCardsContainer');
-  const jagoNotice = document.getElementById('scheduleJagoNotice');
-  const jagoNamesEl = document.getElementById('scheduleJagoNames');
-
-  const jagos = players.filter(p => p.jago);
-  if (jagos.length > 0) {
-    jagoNotice.style.display = 'flex';
-    jagoNamesEl.textContent = jagos.map(p => `${p.name} (${p.gender === 'P' ? '👩 Putri' : '👨 Putra'})`).join(', ');
-  } else {
-    jagoNotice.style.display = 'none';
-  }
-
-  if (schedule.length === 0) {
-    container.innerHTML = `
-      <div class="onesport-banner-tip">
-        <div class="tip-icon-circle">ℹ️</div>
-        <div>Belum ada bagan. Klik tombol <strong>Generate Bagan</strong> di atas untuk membuat rotasi pertandingan.</div>
-      </div>
-    `;
-    return;
-  }
-
-  // Filter
-  const visibleRounds = schedule.filter(r => {
-    if (currentFilter === 'all') return true;
-    return r.status === currentFilter;
-  });
-
-  if (visibleRounds.length === 0) {
-    container.innerHTML = `
-      <div class="onesport-card" style="text-align:center; padding:32px; color:var(--text-muted);">
-        Tidak ada ronde dengan status: <strong>${currentFilter.toUpperCase()}</strong>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = schedule.map((round, idx) => {
-    const isVisible = (currentFilter === 'all' || round.status === currentFilter);
-    if (!isVisible) return '';
-
-    let statusTagHtml = '';
-    let actionButtonsHtml = '';
-
-    if (round.status === 'finished') {
-      statusTagHtml = `<span class="status-badge-tag status-tag-finished">✅ SELESAI</span>`;
-      actionButtonsHtml = `
-        <button class="btn-round-action btn-action-reset" onclick="setRoundStatus(${idx}, 'pending')" title="Kembalikan ke belum mulai">
-          ↺ Reset
-        </button>
-      `;
-    } else if (round.status === 'ongoing') {
-      statusTagHtml = `<span class="status-badge-tag status-tag-ongoing">⚡ SEDANG BERLANGSUNG</span>`;
-      actionButtonsHtml = `
-        <button class="btn-round-action btn-action-finish" onclick="setRoundStatus(${idx}, 'finished')">
-          ✓ Selesaikan Ronde
-        </button>
-      `;
-    } else {
-      statusTagHtml = `<span class="status-badge-tag status-tag-pending">⏳ BELUM DIMULAI</span>`;
-      actionButtonsHtml = `
-        <button class="btn-round-action btn-action-start" onclick="setRoundStatus(${idx}, 'ongoing')">
-          ▶ Mulai Ronde Ini
-        </button>
-      `;
-    }
+  container.innerHTML = players.map(p => {
+    const isMale = p.gender === 'L';
+    const plays = getPlayerPlayCount(p.id);
 
     return `
-      <div class="round-card-os status-${round.status}" id="round-card-${idx}">
-        <div class="round-header-bar">
-          <div class="round-title-group">
-            <span class="round-num-pill">RONDE ${round.roundNumber}</span>
-            <span class="round-time-text">⏱️ ${round.timeString}</span>
-          </div>
-
-          <div class="round-status-controls">
-            ${statusTagHtml}
-            ${actionButtonsHtml}
-          </div>
-        </div>
-
-        <div class="round-body-content">
-          ${round.courts.map(court => {
-            const isPutri = court.category === 'PUTRI';
-            const catBadge = isPutri
-              ? `<span class="court-category-badge cat-putri">👩 Ganda Putri</span>`
-              : `<span class="court-category-badge cat-putra">👨 Ganda Putra / Terbuka</span>`;
-            const pillClass = isPutri ? 'pill-putri' : 'pill-putra';
-
-            return `
-              <div class="court-match-row">
-                <div class="court-tag-wrapper">
-                  <div class="court-tag-pill ${pillClass}">LAPANGAN ${court.courtIndex}</div>
-                  ${catBadge}
-                </div>
-                
-                <!-- Tim 1 -->
-                <div class="team-unit">
-                  ${renderPlayerBadge(court.team1[0])}
-                  <span class="team-ampersand">&</span>
-                  ${renderPlayerBadge(court.team1[1])}
-                </div>
-
-                <!-- VS -->
-                <div style="text-align: center;">
-                  <span class="vs-badge-center">VS</span>
-                </div>
-
-                <!-- Tim 2 -->
-                <div class="team-unit right-align">
-                  ${renderPlayerBadge(court.team2[0])}
-                  <span class="team-ampersand">&</span>
-                  ${renderPlayerBadge(court.team2[1])}
-                </div>
-              </div>
-            `;
-          }).join('')}
-
-          <!-- Istirahat -->
-          <div class="rest-drawer">
-            <span class="rest-label-tag">ISTIRAHAT</span>
-            <div class="rest-player-names">
-              ${round.resting.length > 0 ? round.resting.map(p => `
-                <span class="rest-player-pill ${p.gender === 'P' ? 'is-female' : ''} ${p.jago ? 'is-jago' : ''}">
-                  ${p.gender === 'P' ? '👩' : '👨'} ${p.name} ${p.jago ? '⭐' : ''}
-                </span>
-              `).join('') : '<span>Semua Bermain</span>'}
+      <div class="player-roster-card">
+        <div class="player-roster-left">
+          <select class="select-role-inline" onchange="updatePlayerGender(${p.id}, this.value)" style="color:${isMale ? 'var(--gender-male)' : 'var(--gender-female)'};">
+            <option value="L" ${isMale ? 'selected' : ''}>Putra (L)</option>
+            <option value="P" ${!isMale ? 'selected' : ''}>Putri (P)</option>
+          </select>
+          <div>
+            <div class="player-roster-name">${p.name}</div>
+            <div class="player-roster-badges">
+              <select class="select-role-inline" onchange="updatePlayerRole(${p.id}, this.value)">
+                <option value="Pemula" ${p.role === 'Pemula' ? 'selected' : ''}>Pemula</option>
+                <option value="Amatir" ${p.role === 'Amatir' ? 'selected' : ''}>Amatir</option>
+                <option value="Intermadiate" ${p.role === 'Intermadiate' ? 'selected' : ''}>Intermadiate</option>
+                <option value="Advance" ${p.role === 'Advance' ? 'selected' : ''}>Advance</option>
+              </select>
+              <span class="player-game-count-badge">${plays} Game</span>
             </div>
           </div>
         </div>
+        <button class="btn-del-player" onclick="removePlayer(${p.id})" title="Hapus Pemain">✕</button>
       </div>
     `;
   }).join('');
 }
 
-function renderPlayerBadge(p) {
-  if (!p) return `<span class="player-slot-badge">—</span>`;
-  const isP = p.gender === 'P';
-  const icon = isP ? '👩' : '👨';
-  const genderClass = isP ? 'is-female' : 'is-male';
+// ============================================================================
+//  SMART MATCHMAKING ENGINE (Min 3x Main, Gender Rules & Advance Female)
+// ============================================================================
 
-  return `
-    <span class="player-slot-badge ${genderClass} ${p.jago ? 'is-jago' : ''}" onclick="toggleJago(${p.id})" title="${p.name} (${isP ? 'Perempuan' : 'Laki-laki'}${p.jago ? ' ⭐ JAGO' : ''}) - Klik untuk ubah status Jago">
-      <span style="font-size:0.85rem;">${icon}</span>
-      <span>${p.name}</span>
-      ${p.jago ? '<span style="color:#D97706; font-size:0.8rem;">⭐</span>' : ''}
-    </span>
-  `;
+function getPlayerRoleScore(p) {
+  if (!p) return 2;
+  return ROLE_SCORES[p.role] || 2;
 }
 
-function filterRounds(filterType, btnEl) {
-  currentFilter = filterType;
-  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-  if (btnEl) btnEl.classList.add('active');
-  renderSchedule();
+function buildSmartRound(roster, courtsCount, pairHistory, playCountMap, restCountMap) {
+  const playersPerRound = courtsCount * 4;
+  if (roster.length < playersPerRound) {
+    return null;
+  }
+
+  const femaleOnly = roster.filter(p => p.gender === 'P' && p.role !== 'Advance');
+
+  let femaleMatchesCount = Math.floor(femaleOnly.length / 4);
+  if (femaleMatchesCount > courtsCount) femaleMatchesCount = courtsCount;
+
+  const matches = [];
+  const usedPlayerIds = new Set();
+
+  const playerPrioritySort = (a, b) => {
+    const playA = playCountMap[a.id] || 0;
+    const playB = playCountMap[b.id] || 0;
+    if (playA !== playB) return playA - playB;
+    const restDiff = (restCountMap[b.id] || 0) - (restCountMap[a.id] || 0);
+    if (restDiff !== 0) return restDiff;
+    return Math.random() - 0.5;
+  };
+
+  // 1. Build Female vs Female Matches
+  for (let f = 0; f < femaleMatchesCount; f++) {
+    const availableFemales = femaleOnly.filter(p => !usedPlayerIds.has(p.id));
+    if (availableFemales.length < 4) break;
+
+    availableFemales.sort(playerPrioritySort);
+    const selected4 = availableFemales.slice(0, 4);
+    selected4.forEach(p => usedPlayerIds.add(p.id));
+
+    const split = formBalancedTeamMatch(selected4, pairHistory);
+    matches.push({
+      courtNumber: matches.length + 1,
+      courtName: `Lapangan ${matches.length + 1}`,
+      category: 'PUTRI',
+      categoryLabel: 'Putri vs Putri',
+      teamA: split.t1,
+      teamB: split.t2,
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: 'pending',
+      timerSeconds: 0,
+      isTimerRunning: false
+    });
+  }
+
+  // 2. Build Open / Putra Matches
+  const remainingCourts = courtsCount - matches.length;
+  for (let m = 0; m < remainingCourts; m++) {
+    const availableOpen = roster.filter(p => !usedPlayerIds.has(p.id));
+    if (availableOpen.length < 4) break;
+
+    availableOpen.sort(playerPrioritySort);
+    const selected4 = availableOpen.slice(0, 4);
+    selected4.forEach(p => usedPlayerIds.add(p.id));
+
+    const split = formBalancedTeamMatch(selected4, pairHistory);
+    const hasFemale = selected4.some(p => p.gender === 'P');
+
+    matches.push({
+      courtNumber: matches.length + 1,
+      courtName: `Lapangan ${matches.length + 1}`,
+      category: hasFemale ? 'CAMPURAN' : 'PUTRA',
+      categoryLabel: hasFemale ? 'Terbuka / Advance' : 'Ganda Putra',
+      teamA: split.t1,
+      teamB: split.t2,
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: 'pending',
+      timerSeconds: 0,
+      isTimerRunning: false
+    });
+  }
+
+  if (matches.length < courtsCount) {
+    const allAvailable = roster.filter(p => !usedPlayerIds.has(p.id)).sort(playerPrioritySort);
+    while (matches.length < courtsCount && allAvailable.length >= 4) {
+      const selected4 = allAvailable.splice(0, 4);
+      selected4.forEach(p => usedPlayerIds.add(p.id));
+      const split = formBalancedTeamMatch(selected4, pairHistory);
+      matches.push({
+        courtNumber: matches.length + 1,
+        courtName: `Lapangan ${matches.length + 1}`,
+        category: 'OPEN',
+        categoryLabel: 'Ganda Terbuka',
+        teamA: split.t1,
+        teamB: split.t2,
+        scoreA: null,
+        scoreB: null,
+        winner: null,
+        status: 'pending',
+        timerSeconds: 0,
+        isTimerRunning: false
+      });
+    }
+  }
+
+  const restingPlayers = roster.filter(p => !usedPlayerIds.has(p.id));
+
+  return {
+    courts: matches,
+    resting: restingPlayers
+  };
 }
 
-// ── RECAP SPREADSHEET (Tab 3) ──
-function renderRecap() {
-  const tbody = document.getElementById('recapTableBody');
-  const paidCount = players.filter(p => p.paid).length;
-  document.getElementById('recapPaidStatsSummary').innerHTML = `
-    Sudah Bayar: <span style="color:#10B981">${paidCount}</span> / ${players.length} Pemain
-  `;
+function formBalancedTeamMatch(fourPlayers, pairHistory) {
+  const p = fourPlayers;
+  const splits = [
+    { t1: [p[0], p[3]], t2: [p[1], p[2]] },
+    { t1: [p[0], p[2]], t2: [p[1], p[3]] },
+    { t1: [p[0], p[1]], t2: [p[2], p[3]] }
+  ];
 
-  if (players.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align:center; padding: 28px; color: var(--text-muted);">
-          Belum ada data pemain. Silakan tambahkan pemain di Tab Pemain.
-        </td>
-      </tr>
+  let bestSplit = splits[0];
+  let bestScore = Infinity;
+
+  splits.forEach(s => {
+    const advanceClash1 = s.t1[0].role === 'Advance' && s.t1[1].role === 'Advance';
+    const advanceClash2 = s.t2[0].role === 'Advance' && s.t2[1].role === 'Advance';
+    let clashPenalty = (advanceClash1 || advanceClash2) ? 100 : 0;
+
+    const skill1 = getPlayerRoleScore(s.t1[0]) + getPlayerRoleScore(s.t1[1]);
+    const skill2 = getPlayerRoleScore(s.t2[0]) + getPlayerRoleScore(s.t2[1]);
+    const skillDiff = Math.abs(skill1 - skill2);
+
+    const k1 = [s.t1[0].id, s.t1[1].id].sort((a,b)=>a-b).join('-');
+    const k2 = [s.t2[0].id, s.t2[1].id].sort((a,b)=>a-b).join('-');
+    const pairPenalty = (pairHistory[k1] || 0) * 15 + (pairHistory[k2] || 0) * 15;
+
+    const totalPenalty = skillDiff * 8 + pairPenalty + clashPenalty;
+    if (totalPenalty < bestScore) {
+      bestScore = totalPenalty;
+      bestSplit = s;
+    }
+  });
+
+  return bestSplit;
+}
+
+function generateInitialSchedule() {
+  if (players.length < numCourts * 4) {
+    return;
+  }
+
+  const minRequiredRounds = Math.max(plannedRounds, Math.ceil((players.length * minPlaysPerPlayer) / (numCourts * 4)));
+  plannedRounds = minRequiredRounds;
+  document.getElementById('settingTotalRounds').value = plannedRounds;
+
+  schedule = [];
+  const pairHistory = {};
+  const playCountMap = {};
+  const restCountMap = {};
+  players.forEach(p => {
+    playCountMap[p.id] = 0;
+    restCountMap[p.id] = 0;
+  });
+
+  for (let r = 0; r < plannedRounds; r++) {
+    const roundData = buildSmartRound(players, numCourts, pairHistory, playCountMap, restCountMap);
+    if (roundData) {
+      roundData.resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
+      roundData.courts.forEach(c => {
+        c.teamA.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        c.teamB.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+
+        const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
+        const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
+        pairHistory[k1] = (pairHistory[k1] || 0) + 1;
+        pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+      });
+
+      schedule.push({
+        roundNumber: r + 1,
+        status: r === 0 ? 'ongoing' : 'pending',
+        courts: roundData.courts,
+        resting: roundData.resting
+      });
+    }
+  }
+
+  currentRoundIndex = 0;
+  renderCourtsView();
+}
+
+function smartRebalanceUpcoming(showToast = true) {
+  if (players.length < numCourts * 4) {
+    if (showToast) alert(`Dibutuhkan minimal ${numCourts * 4} pemain.`);
+    return;
+  }
+
+  const pairHistory = {};
+  const playCountMap = {};
+  const restCountMap = {};
+  players.forEach(p => {
+    playCountMap[p.id] = 0;
+    restCountMap[p.id] = 0;
+  });
+
+  const preservedRounds = [];
+  schedule.forEach((r, idx) => {
+    if (r.status === 'finished' || r.status === 'ongoing' || idx <= currentRoundIndex) {
+      preservedRounds.push(r);
+      r.resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
+      r.courts.forEach(c => {
+        c.teamA.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        c.teamB.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+
+        if (c.teamA[0] && c.teamA[1]) {
+          const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k1] = (pairHistory[k1] || 0) + 1;
+        }
+        if (c.teamB[0] && c.teamB[1]) {
+          const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+        }
+      });
+    }
+  });
+
+  const newSchedule = [...preservedRounds];
+  const totalRoundsToGenerate = Math.max(plannedRounds, preservedRounds.length + 3);
+
+  for (let r = preservedRounds.length; r < totalRoundsToGenerate; r++) {
+    const roundData = buildSmartRound(players, numCourts, pairHistory, playCountMap, restCountMap);
+    if (roundData) {
+      roundData.resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
+      roundData.courts.forEach(c => {
+        c.teamA.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        c.teamB.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+
+        const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
+        const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
+        pairHistory[k1] = (pairHistory[k1] || 0) + 1;
+        pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+      });
+
+      newSchedule.push({
+        roundNumber: r + 1,
+        status: 'pending',
+        courts: roundData.courts,
+        resting: roundData.resting
+      });
+    }
+  }
+
+  schedule = newSchedule;
+  renderCourtsView();
+  if (showToast) {
+    alert('Pertandingan belum mulai berhasil disusun ulang. Match yang sudah berjalan/selesai tetap aman.');
+  }
+}
+
+// ============================================================================
+//  RENDER LAPANGAN VIEW (Image 3 UI & Multi-Court Next Match)
+// ============================================================================
+
+function renderCourtsView() {
+  const nextMatchContainer = document.getElementById('nextMatchGridContainer');
+  const activeCourtsContainer = document.getElementById('activeCourtsList');
+  const restingWrap = document.getElementById('restingPlayersWrap');
+
+  if (schedule.length === 0 || !schedule[currentRoundIndex]) {
+    activeCourtsContainer.innerHTML = `
+      <div class="onesport-card" style="text-align:center; padding:32px; color:var(--text-muted);">
+        Belum ada bagan pertandingan aktif. Silakan tambahkan pemain di Tab Pemain.
+      </div>
     `;
     return;
   }
 
-  tbody.innerHTML = players.map((p, index) => `
-    <tr class="${p.jago ? 'row-jago' : ''}">
-      <td style="color: var(--text-muted); font-weight: 600;">${index + 1}</td>
-      <td>
-        <strong style="color: var(--brand-navy-dark);">${p.name}</strong>
-      </td>
-      <td style="text-align: center;">
-        <select class="select-clean-table" onchange="updatePlayerData(${p.id}, 'gender', this.value); if(schedule.length>0) adaptPendingSchedule();">
-          <option value="L" ${p.gender === 'L' ? 'selected' : ''}>👨 Putra (L)</option>
-          <option value="P" ${p.gender === 'P' ? 'selected' : ''}>👩 Putri (P)</option>
-        </select>
-      </td>
-      <td>
-        <select class="select-clean-table" onchange="updatePlayerData(${p.id}, 'ukuran', this.value)">
-          ${['XS','S','M','L','XL','XXL'].map(sz => `<option value="${sz}" ${p.ukuran === sz ? 'selected' : ''}>${sz}</option>`).join('')}
-        </select>
-      </td>
-      <td>
-        <span contenteditable="true" class="editable-cell-text" onblur="updatePlayerData(${p.id}, 'telp', this.textContent.trim())" placeholder="08xxxxxxxx">${p.telp || '-'}</span>
-      </td>
-      <td>
-        <select class="select-clean-table" onchange="updatePlayerData(${p.id}, 'role', this.value)">
-          <option value="" ${!p.role ? 'selected' : ''}>-</option>
-          <option value="Tunggal" ${p.role === 'Tunggal' ? 'selected' : ''}>Tunggal</option>
-          <option value="Ganda Depan" ${p.role === 'Ganda Depan' ? 'selected' : ''}>Ganda Depan</option>
-          <option value="Ganda Belakang" ${p.role === 'Ganda Belakang' ? 'selected' : ''}>Ganda Belakang</option>
-          <option value="All-Round" ${p.role === 'All-Round' ? 'selected' : ''}>All-Round</option>
-        </select>
-      </td>
-      <td style="text-align: center;">
-        <button class="chip-btn-star ${p.jago ? 'active' : ''}" style="margin: 0 auto;" onclick="toggleJago(${p.id})" title="Toggle Jago">
-          ★
-        </button>
-      </td>
-      <td style="text-align: center;">
-        <button class="cell-paid-toggle ${p.paid ? 'is-paid' : 'is-unpaid'}" onclick="togglePaid(${p.id})" title="Klik untuk ganti status pembayaran">
-          ${p.paid ? 'V' : '—'}
-        </button>
-      </td>
-    </tr>
+  const currentRound = schedule[currentRoundIndex];
+  const nextRound = schedule[currentRoundIndex + 1];
+
+  // 1. Render "Main Berikutnya" Card Menyesuaikan Jumlah Lapangan (Image 3)
+  if (nextRound && nextRound.courts.length > 0) {
+    nextMatchContainer.innerHTML = nextRound.courts.map((court, cIdx) => `
+      <div class="next-court-block">
+        <div class="next-court-header">
+          <span>${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${nextRound.roundNumber})</span>
+          <span class="court-category-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel || 'Ganda'}</span>
+        </div>
+        <div class="match-versus-grid">
+          <div class="team-column">
+            ${renderPlayerPillButton(court.teamA[0], currentRoundIndex + 1, cIdx, 'A', 0, false)}
+            ${renderPlayerPillButton(court.teamA[1], currentRoundIndex + 1, cIdx, 'A', 1, false)}
+          </div>
+          <div class="vs-badge-middle">vs</div>
+          <div class="team-column">
+            ${renderPlayerPillButton(court.teamB[0], currentRoundIndex + 1, cIdx, 'B', 0, false)}
+            ${renderPlayerPillButton(court.teamB[1], currentRoundIndex + 1, cIdx, 'B', 1, false)}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    nextMatchContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.82rem; padding:10px;">Tidak ada antrean ronde berikutnya</div>`;
+  }
+
+  // 2. Render Active Courts (Image 3)
+  activeCourtsContainer.innerHTML = currentRound.courts.map((court, cIdx) => {
+    const timerKey = `${currentRoundIndex}-${cIdx}`;
+    const isFinished = court.status === 'finished' || court.winner !== null;
+    const isOngoing = court.status === 'ongoing';
+    const timerSeconds = courtTimers[timerKey] ? courtTimers[timerKey].seconds : court.timerSeconds || 0;
+    const formattedTimer = formatTimerSeconds(timerSeconds);
+
+    let statusChipHtml = '';
+    if (isFinished) {
+      statusChipHtml = `<span class="court-status-chip finished">Selesai (Pemenang: ${court.winner === 'A' ? 'Tim A' : 'Tim B'})</span>`;
+    } else if (isOngoing) {
+      statusChipHtml = `<span class="court-status-chip ongoing">Match ke-${currentRound.roundNumber} sedang berjalan</span>`;
+    } else {
+      statusChipHtml = `<span class="court-status-chip pending">Match ke-${currentRound.roundNumber} Belum Dimulai</span>`;
+    }
+
+    const cardClass = isFinished ? 'is-finished-card' : (isOngoing ? 'is-ongoing-card' : '');
+
+    return `
+      <div class="onesport-card ${cardClass}" style="margin-top: 14px;">
+        <div class="card-header-bar">
+          <div class="card-title-group">
+            <span>${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+            ${!isFinished ? `<button class="btn-nav-settings" style="padding:2px 8px; font-size:0.75rem;" onclick="renameCourt(${cIdx})">Edit</button>` : ''}
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="court-category-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel || 'Ganda'}</span>
+            ${!isFinished ? `<button class="btn-del-player" style="width:24px; height:24px; font-size:0.7rem;" onclick="deleteCourt(${cIdx})" title="Hapus Lapangan">✕</button>` : ''}
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+          ${statusChipHtml}
+          <div class="court-timer-chip" onclick="toggleCourtTimer('${timerKey}', ${cIdx}, this)" style="cursor:pointer;" title="Klik untuk Mulai/Pause Timer">
+            <span style="color:var(--text-muted); font-size:0.72rem;">Timer:</span>
+            <span id="timer-display-${timerKey}">${formattedTimer}</span>
+          </div>
+        </div>
+
+        <div class="match-versus-grid">
+          <div class="team-column">
+            <div class="team-label-top" style="color:${court.winner === 'A' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
+              ${court.winner === 'A' ? 'Tim A (Menang)' : 'Tim A'}
+            </div>
+            ${renderPlayerPillButton(court.teamA[0], currentRoundIndex, cIdx, 'A', 0, isFinished, court.winner === 'A')}
+            ${renderPlayerPillButton(court.teamA[1], currentRoundIndex, cIdx, 'A', 1, isFinished, court.winner === 'A')}
+          </div>
+          <div class="vs-badge-middle">vs</div>
+          <div class="team-column">
+            <div class="team-label-top" style="color:${court.winner === 'B' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
+              ${court.winner === 'B' ? 'Tim B (Menang)' : 'Tim B'}
+            </div>
+            ${renderPlayerPillButton(court.teamB[0], currentRoundIndex, cIdx, 'B', 0, isFinished, court.winner === 'B')}
+            ${renderPlayerPillButton(court.teamB[1], currentRoundIndex, cIdx, 'B', 1, isFinished, court.winner === 'B')}
+          </div>
+        </div>
+
+        <!-- Court Controls: Dimulai & Selesai & Pilihan Pemenang -->
+        <div class="court-control-bar">
+          ${!isOngoing && !isFinished ? `
+            <button class="btn-court-start" onclick="startCourtMatch(${cIdx})">
+              Mulai Pertandingan
+            </button>
+          ` : ''}
+
+          ${isOngoing ? `
+            <button class="btn-court-finish" onclick="finishCourtMatchPrompt(${cIdx})">
+              Selesaikan Match
+            </button>
+          ` : ''}
+
+          ${isFinished ? `
+            <button class="btn-nav-settings" style="padding:4px 10px; font-size:0.75rem;" onclick="reopenCourtMatch(${cIdx})">
+              Buka Kembali Match
+            </button>
+          ` : ''}
+
+          <!-- Direct Winner Selector -->
+          <div class="winner-picker-box">
+            <span style="font-size:0.75rem; color:var(--brand-navy-soft); font-weight:800;">Pemenang:</span>
+            <button class="btn-pick-winner ${court.winner === 'A' ? 'active' : ''}" onclick="setCourtWinner(${cIdx}, 'A')">
+              Tim A Menang
+            </button>
+            <button class="btn-pick-winner ${court.winner === 'B' ? 'active' : ''}" onclick="setCourtWinner(${cIdx}, 'B')">
+              Tim B Menang
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 3. Resting Players
+  if (currentRound.resting && currentRound.resting.length > 0) {
+    restingWrap.innerHTML = currentRound.resting.map(p => {
+      const isMale = p.gender === 'L';
+      return `
+        <span class="resting-chip">
+          <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
+          <span>${p.name}</span>
+          <span class="role-tag-pill ${(p.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${p.role}</span>
+        </span>
+      `;
+    }).join('');
+  } else {
+    restingWrap.innerHTML = `<span style="font-size:0.78rem; color:var(--text-muted);">Semua pemain bertanding pada ronde ini.</span>`;
+  }
+}
+
+function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, isWinner = false) {
+  if (!p) {
+    return `
+      <div class="player-cell-pill" onclick="${!isLocked ? `openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, null)` : ''}">
+        <span style="color:var(--text-muted); font-size:0.8rem;">+ Pilih Pemain</span>
+      </div>
+    `;
+  }
+  const isMale = p.gender === 'L';
+  const roleClass = (p.role || 'Pemula').toLowerCase();
+
+  return `
+    <div class="player-cell-pill ${isWinner ? 'is-winner-pill' : ''}" onclick="${!isLocked ? `openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})` : ''}" title="${!isLocked ? 'Klik untuk ganti pemain ini' : 'Pertandingan terkunci'}">
+      <div class="player-cell-header">
+        <span class="player-cell-name">${p.name}</span>
+        <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
+      </div>
+      <div>
+        <span class="role-tag-pill ${roleClass}">${p.role || 'Pemula'}</span>
+      </div>
+    </div>
+  `;
+}
+
+// ── COURT STATE CONTROLS ──
+function startCourtMatch(cIdx) {
+  const round = schedule[currentRoundIndex];
+  if (!round || !round.courts[cIdx]) return;
+  const court = round.courts[cIdx];
+  court.status = 'ongoing';
+  
+  const timerKey = `${currentRoundIndex}-${cIdx}`;
+  if (!courtTimers[timerKey]) {
+    courtTimers[timerKey] = { seconds: 0, intervalId: null, isRunning: true };
+    courtTimers[timerKey].intervalId = setInterval(() => {
+      courtTimers[timerKey].seconds++;
+      const displayEl = document.getElementById(`timer-display-${timerKey}`);
+      if (displayEl) displayEl.textContent = formatTimerSeconds(courtTimers[timerKey].seconds);
+    }, 1000);
+  } else {
+    courtTimers[timerKey].isRunning = true;
+  }
+
+  renderCourtsView();
+}
+
+function setCourtWinner(cIdx, winningTeam) {
+  const round = schedule[currentRoundIndex];
+  if (!round || !round.courts[cIdx]) return;
+  const court = round.courts[cIdx];
+
+  court.winner = winningTeam;
+  court.status = 'finished';
+
+  if (winningTeam === 'A') {
+    court.scoreA = court.scoreA || 21;
+    court.scoreB = court.scoreB || 18;
+  } else {
+    court.scoreA = court.scoreA || 18;
+    court.scoreB = court.scoreB || 21;
+  }
+
+  const timerKey = `${currentRoundIndex}-${cIdx}`;
+  if (courtTimers[timerKey] && courtTimers[timerKey].intervalId) {
+    clearInterval(courtTimers[timerKey].intervalId);
+    courtTimers[timerKey].isRunning = false;
+  }
+
+  const allFinished = round.courts.every(c => c.status === 'finished');
+  if (allFinished) {
+    round.status = 'finished';
+  }
+
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+}
+
+function finishCourtMatchPrompt(cIdx) {
+  const winA = confirm('Pilih Pemenang Lapangan Ini:\n\nKlik [OK] jika Tim A Menang\nKlik [Cancel / Batal] jika Tim B Menang');
+  setCourtWinner(cIdx, winA ? 'A' : 'B');
+}
+
+function reopenCourtMatch(cIdx) {
+  const round = schedule[currentRoundIndex];
+  if (!round || !round.courts[cIdx]) return;
+  const court = round.courts[cIdx];
+  court.status = 'ongoing';
+  court.winner = null;
+  round.status = 'ongoing';
+  renderCourtsView();
+}
+
+function formatTimerSeconds(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+function toggleCourtTimer(timerKey, cIdx, el) {
+  if (!courtTimers[timerKey]) {
+    courtTimers[timerKey] = { seconds: 0, intervalId: null, isRunning: false };
+  }
+  const t = courtTimers[timerKey];
+  if (t.isRunning) {
+    clearInterval(t.intervalId);
+    t.isRunning = false;
+    el.style.color = 'var(--text-muted)';
+  } else {
+    t.isRunning = true;
+    el.style.color = 'var(--brand-orange)';
+    t.intervalId = setInterval(() => {
+      t.seconds++;
+      const displayEl = document.getElementById(`timer-display-${timerKey}`);
+      if (displayEl) displayEl.textContent = formatTimerSeconds(t.seconds);
+    }, 1000);
+  }
+}
+
+function addNewCourt() {
+  numCourts++;
+  updateSessionLabels();
+  smartRebalanceUpcoming(false);
+  renderCourtsView();
+}
+
+function deleteCourt(cIdx) {
+  if (numCourts <= 1) {
+    alert('Minimal harus ada 1 lapangan.');
+    return;
+  }
+  if (!confirm(`Hapus Lapangan ${cIdx + 1}?`)) return;
+  numCourts--;
+  updateSessionLabels();
+  smartRebalanceUpcoming(false);
+  renderCourtsView();
+}
+
+function renameCourt(cIdx) {
+  const round = schedule[currentRoundIndex];
+  if (!round || !round.courts[cIdx]) return;
+  const newName = prompt('Masukkan nama lapangan:', round.courts[cIdx].courtName || `Lapangan ${cIdx + 1}`);
+  if (newName) {
+    round.courts[cIdx].courtName = newName;
+    renderCourtsView();
+  }
+}
+
+// ── SWAP PLAYER MODAL ──
+function openSwapModal(rIdx, cIdx, teamKey, pIdx, currentPId) {
+  const round = schedule[rIdx];
+  if (round && round.status === 'finished') {
+    alert('Ronde ini sudah selesai dan terkunci.');
+    return;
+  }
+
+  swapContext = { rIdx, cIdx, teamKey, pIdx, currentPId };
+  const currentP = players.find(p => p.id === currentPId);
+  document.getElementById('swapSourcePlayerName').textContent = currentP ? currentP.name : 'Slot Kosong';
+
+  const activeIds = new Set();
+  if (round) {
+    round.courts.forEach(c => {
+      c.teamA.forEach(p => p && activeIds.add(p.id));
+      c.teamB.forEach(p => p && activeIds.add(p.id));
+    });
+  }
+
+  const container = document.getElementById('swapCandidatesList');
+  container.innerHTML = players.map(p => {
+    const isMale = p.gender === 'L';
+    const isCurrentlyActive = activeIds.has(p.id);
+    return `
+      <div class="player-roster-card" style="cursor:pointer;" onclick="executePlayerSwap(${p.id})">
+        <div class="player-roster-left">
+          <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
+          <div>
+            <div class="player-roster-name">${p.name} ${isCurrentlyActive ? '<span style="font-size:0.72rem; color:var(--brand-orange);">(Sedang Main)</span>' : '<span style="font-size:0.72rem; color:#059669;">(Istirahat)</span>'}</div>
+            <div class="player-roster-badges">
+              <span class="role-tag-pill ${(p.role||'Pemula').toLowerCase()}">${p.role}</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn-action-cyan" style="padding:4px 12px; font-size:0.75rem;">Pilih</button>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('swapModalOverlay').classList.add('open');
+}
+
+function closeSwapModal() {
+  document.getElementById('swapModalOverlay').classList.remove('open');
+}
+
+function executePlayerSwap(newPlayerId) {
+  if (!swapContext) return;
+  const { rIdx, cIdx, teamKey, pIdx } = swapContext;
+  const round = schedule[rIdx];
+  if (!round) return;
+
+  const targetPlayer = players.find(p => p.id === newPlayerId);
+  if (!targetPlayer) return;
+
+  let foundLocation = null;
+  round.courts.forEach((c, ci) => {
+    c.teamA.forEach((p, pi) => {
+      if (p && p.id === newPlayerId) foundLocation = { ci, team: 'teamA', pi };
+    });
+    c.teamB.forEach((p, pi) => {
+      if (p && p.id === newPlayerId) foundLocation = { ci, team: 'teamB', pi };
+    });
+  });
+
+  const sourceTeam = teamKey === 'A' ? round.courts[cIdx].teamA : round.courts[cIdx].teamB;
+  const originalPlayer = sourceTeam[pIdx];
+
+  if (foundLocation) {
+    round.courts[foundLocation.ci][foundLocation.team][foundLocation.pi] = originalPlayer;
+  } else {
+    round.resting = round.resting.filter(p => p.id !== newPlayerId);
+    if (originalPlayer) round.resting.push(originalPlayer);
+  }
+
+  sourceTeam[pIdx] = targetPlayer;
+
+  closeSwapModal();
+  renderCourtsView();
+}
+
+// ── SCORE INPUT & WINNER PICKER MODAL ──
+function openFinishScoreModal() {
+  const round = schedule[currentRoundIndex];
+  if (!round) {
+    alert('Tidak ada ronde yang aktif.');
+    return;
+  }
+
+  const container = document.getElementById('scoreModalContent');
+  container.innerHTML = `
+    <div style="font-size:0.88rem; font-weight:800; color:var(--brand-orange); margin-bottom:12px;">
+      Ronde ${round.roundNumber} (${round.courts.length} Lapangan)
+    </div>
+    ${round.courts.map((court, idx) => {
+      const defaultScoreA = court.scoreA !== null ? court.scoreA : 21;
+      const defaultScoreB = court.scoreB !== null ? court.scoreB : 19;
+      const currentWin = court.winner || (defaultScoreA >= defaultScoreB ? 'A' : 'B');
+
+      return `
+        <div class="score-court-row">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="color:var(--brand-navy-dark); font-size:0.9rem;">${court.courtName || ('Lapangan ' + (idx + 1))}</strong>
+            <span class="court-category-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel || 'Ganda'}</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+            <label style="display:flex; align-items:center; gap:8px; background:#FFFFFF; padding:8px 12px; border-radius:var(--radius-sm); border:1.5px solid var(--border-color); font-size:0.8rem; font-weight:700; cursor:pointer;">
+              <input type="radio" name="modal_winner_${idx}" value="A" ${currentWin === 'A' ? 'checked' : ''}>
+              <span>Tim A Menang</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; background:#FFFFFF; padding:8px 12px; border-radius:var(--radius-sm); border:1.5px solid var(--border-color); font-size:0.8rem; font-weight:700; cursor:pointer;">
+              <input type="radio" name="modal_winner_${idx}" value="B" ${currentWin === 'B' ? 'checked' : ''}>
+              <span>Tim B Menang</span>
+            </label>
+          </div>
+
+          <div class="score-inputs-wrap">
+            <div class="score-team-box">
+              <span style="font-size:0.75rem; color:var(--text-secondary); font-weight:700;">Tim A: ${court.teamA.map(p=>p.name).join(' & ')}</span>
+              <input type="number" id="inputScoreA_${idx}" class="score-num-input" value="${defaultScoreA}" min="0" max="50">
+            </div>
+            <div style="font-weight:900; font-size:1.1rem; color:var(--text-muted);">VS</div>
+            <div class="score-team-box">
+              <span style="font-size:0.75rem; color:var(--text-secondary); font-weight:700;">Tim B: ${court.teamB.map(p=>p.name).join(' & ')}</span>
+              <input type="number" id="inputScoreB_${idx}" class="score-num-input" value="${defaultScoreB}" min="0" max="50">
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+
+  document.getElementById('scoreModalOverlay').classList.add('open');
+}
+
+function closeScoreModal() {
+  document.getElementById('scoreModalOverlay').classList.remove('open');
+}
+
+function saveScoresAndAdvance() {
+  const round = schedule[currentRoundIndex];
+  if (!round) return;
+
+  round.courts.forEach((court, idx) => {
+    const sA = parseInt(document.getElementById(`inputScoreA_${idx}`).value) || 0;
+    const sB = parseInt(document.getElementById(`inputScoreB_${idx}`).value) || 0;
+    const winRadio = document.querySelector(`input[name="modal_winner_${idx}"]:checked`);
+    
+    court.scoreA = sA;
+    court.scoreB = sB;
+    court.winner = winRadio ? winRadio.value : (sA >= sB ? 'A' : 'B');
+    court.status = 'finished';
+  });
+
+  round.status = 'finished';
+
+  if (currentRoundIndex + 1 < schedule.length) {
+    currentRoundIndex++;
+    schedule[currentRoundIndex].status = 'ongoing';
+  }
+
+  closeScoreModal();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  alert('Skor & Pemenang tersimpan. Ronde berhasil diselesaikan.');
+}
+
+// ============================================================================
+//  LEADERBOARD & STATS CALCULATIONS (Image 1 & 2)
+// ============================================================================
+
+function calculatePlayerStats() {
+  const stats = {};
+  players.forEach(p => {
+    stats[p.id] = {
+      player: p,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      pointsScored: 0,
+      pointsConceded: 0,
+      diff: 0,
+      bonusM: 0,
+      totalPoints: 0,
+      historyDots: []
+    };
+  });
+
+  schedule.forEach(r => {
+    r.courts.forEach(court => {
+      if (court.winner === null && court.status !== 'finished') return;
+      const sA = court.scoreA !== null ? court.scoreA : (court.winner === 'A' ? 21 : 18);
+      const sB = court.scoreB !== null ? court.scoreB : (court.winner === 'B' ? 21 : 18);
+
+      const isWinA = court.winner === 'A' || sA > sB;
+      const isWinB = court.winner === 'B' || sB > sA;
+
+      court.teamA.forEach(p => {
+        if (!p || !stats[p.id]) return;
+        stats[p.id].pointsScored += sA;
+        stats[p.id].pointsConceded += sB;
+        if (isWinA) {
+          stats[p.id].wins++;
+          stats[p.id].bonusM += 25;
+          stats[p.id].historyDots.push('win');
+        } else if (isWinB) {
+          stats[p.id].losses++;
+          stats[p.id].historyDots.push('loss');
+        } else {
+          stats[p.id].ties++;
+          stats[p.id].historyDots.push('tie');
+        }
+      });
+
+      court.teamB.forEach(p => {
+        if (!p || !stats[p.id]) return;
+        stats[p.id].pointsScored += sB;
+        stats[p.id].pointsConceded += sA;
+        if (isWinB) {
+          stats[p.id].wins++;
+          stats[p.id].bonusM += 25;
+          stats[p.id].historyDots.push('win');
+        } else if (isWinA) {
+          stats[p.id].losses++;
+          stats[p.id].historyDots.push('loss');
+        } else {
+          stats[p.id].ties++;
+          stats[p.id].historyDots.push('tie');
+        }
+      });
+    });
+  });
+
+  return Object.values(stats).map(s => {
+    s.diff = s.pointsScored - s.pointsConceded;
+    s.totalPoints = s.pointsScored + s.bonusM;
+    const totalMatches = s.wins + s.losses + s.ties;
+    s.winRate = totalMatches > 0 ? Math.round((s.wins / totalMatches) * 100) : 0;
+    return s;
+  });
+}
+
+function renderLeaderboard() {
+  const tbody = document.getElementById('leaderboardTableBody');
+  const spotlightName = document.getElementById('spotlightPlayerName');
+  const sortMode = document.getElementById('lbSortSelect').value;
+
+  const statsList = calculatePlayerStats();
+
+  statsList.sort((a, b) => {
+    if (sortMode === 'wins') {
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (b.diff !== a.diff) return b.diff - a.diff;
+      return b.totalPoints - a.totalPoints;
+    } else if (sortMode === 'points') {
+      if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+      return b.wins - a.wins;
+    } else if (sortMode === 'diff') {
+      if (b.diff !== a.diff) return b.diff - a.diff;
+      return b.wins - a.wins;
+    } else if (sortMode === 'wr') {
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      return b.wins - a.wins;
+    }
+    return 0;
+  });
+
+  if (statsList.length > 0 && statsList[0].wins > 0) {
+    spotlightName.textContent = statsList[0].player.name;
+  } else if (statsList.length > 0) {
+    spotlightName.textContent = statsList[0].player.name;
+  } else {
+    spotlightName.textContent = '—';
+  }
+
+  tbody.innerHTML = statsList.map((s, idx) => {
+    const rank = idx + 1;
+    let rankRowClass = '';
+    let medalTag = '';
+    if (rank === 1) { rankRowClass = 'top-rank-gold'; medalTag = '<span class="rank-badge-text gold">Juara 1</span>'; }
+    else if (rank === 2) { rankRowClass = 'top-rank-silver'; medalTag = '<span class="rank-badge-text silver">Juara 2</span>'; }
+    else if (rank === 3) { rankRowClass = 'top-rank-bronze'; medalTag = '<span class="rank-badge-text bronze">Juara 3</span>'; }
+
+    const diffFormatted = s.diff > 0 ? `+${s.diff}` : `${s.diff}`;
+    const diffClass = s.diff > 0 ? 'diff-val-green' : (s.diff < 0 ? 'diff-val-red' : 'diff-val-dim');
+
+    const dotsHtml = s.historyDots.length > 0 ? s.historyDots.map(d => `<span class="wlt-dot ${d}"></span>`).join('') : '<span class="wlt-dot tie"></span>';
+
+    return `
+      <tr class="${rankRowClass}">
+        <td class="col-left">
+          <div class="player-rank-cell">
+            <span class="player-rank-num">${rank}.</span>
+            <span class="player-rank-name">
+              ${s.player.name}
+              ${medalTag}
+            </span>
+          </div>
+        </td>
+        <td class="col-center">
+          <div class="wlt-cell-stack">
+            <span class="wlt-score-text">${s.wins}-${s.losses}-${s.ties}</span>
+            <div class="wlt-dots-row">${dotsHtml}</div>
+          </div>
+        </td>
+        <td class="col-center ${diffClass}">${diffFormatted}</td>
+        <td class="col-center bonus-m-val">${s.bonusM}</td>
+        <td class="col-right points-val-blue">${s.totalPoints}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================================================
+//  RENDER HISTORY (Tab 4)
+// ============================================================================
+
+function renderHistory() {
+  const container = document.getElementById('historyRoundsContainer');
+  const finishedRounds = schedule.filter(r => r.courts.some(c => c.status === 'finished'));
+
+  if (finishedRounds.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">
+        Belum ada match yang selesai.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = finishedRounds.map(r => `
+    <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:14px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-weight:800; font-size:0.92rem; color:var(--brand-orange);">Ronde ${r.roundNumber}</span>
+        <span style="font-size:0.75rem; color:#059669; font-weight:800;">Selesai</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${r.courts.map(c => `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#FFFFFF; padding:10px 14px; border-radius:var(--radius-md); border:1px solid var(--border-color); border-left:4px solid ${c.winner === 'A' ? '#10B981' : '#0284C7'};">
+            <span style="font-weight:${c.winner==='A'?'800':'600'}; color:${c.winner==='A'?'#059669':'var(--brand-navy-dark)'};">${c.teamA.map(p=>p.name).join(' & ')} ${c.winner==='A'?'(Win)':''}</span>
+            <strong style="color:var(--brand-orange); font-size:1rem;">${c.scoreA || 0} - ${c.scoreB || 0}</strong>
+            <span style="font-weight:${c.winner==='B'?'800':'600'}; color:${c.winner==='B'?'#059669':'var(--brand-navy-dark)'};">${c.teamB.map(p=>p.name).join(' & ')} ${c.winner==='B'?'(Win)':''}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
   `).join('');
+}
+
+// ============================================================================
+//  RENDER FINAL PODIUM (Image 2)
+// ============================================================================
+
+function renderFinalPodium() {
+  const podiumContainer = document.getElementById('podiumTop3Container');
+  const tbody = document.getElementById('finalTableBody');
+
+  const statsList = calculatePlayerStats();
+  statsList.sort((a, b) => {
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    if (b.diff !== a.diff) return b.diff - a.diff;
+    return b.totalPoints - a.totalPoints;
+  });
+
+  const p1 = statsList[0];
+  const p2 = statsList[1];
+  const p3 = statsList[2];
+
+  podiumContainer.innerHTML = `
+    <!-- Rank 2 -->
+    <div class="podium-column">
+      <div class="podium-player-meta">
+        <span class="podium-medal-label silver">Juara 2</span>
+        <div class="podium-name">${p2 ? p2.player.name : '—'}</div>
+        <div class="podium-stat-line">${p2 ? `${p2.wins}M • ${p2.diff >= 0 ? '+'+p2.diff : p2.diff}` : '-'}</div>
+      </div>
+      <div class="podium-pillar rank-2">2</div>
+    </div>
+
+    <!-- Rank 1 -->
+    <div class="podium-column">
+      <div class="podium-player-meta">
+        <span class="podium-medal-label gold">Juara 1</span>
+        <div class="podium-name" style="font-size:1.05rem; font-weight:900;">${p1 ? p1.player.name : '—'}</div>
+        <div class="podium-stat-line">${p1 ? `${p1.wins}M • ${p1.diff >= 0 ? '+'+p1.diff : p1.diff}` : '-'}</div>
+      </div>
+      <div class="podium-pillar rank-1">1</div>
+    </div>
+
+    <!-- Rank 3 -->
+    <div class="podium-column">
+      <div class="podium-player-meta">
+        <span class="podium-medal-label bronze">Juara 3</span>
+        <div class="podium-name">${p3 ? p3.player.name : '—'}</div>
+        <div class="podium-stat-line">${p3 ? `${p3.wins}M • ${p3.diff >= 0 ? '+'+p3.diff : p3.diff}` : '-'}</div>
+      </div>
+      <div class="podium-pillar rank-3">3</div>
+    </div>
+  `;
+
+  tbody.innerHTML = statsList.map((s, idx) => {
+    const rank = idx + 1;
+    const diffFormatted = s.diff > 0 ? `+${s.diff}` : `${s.diff}`;
+    const diffColor = s.diff > 0 ? '#059669' : (s.diff < 0 ? '#DC2626' : 'var(--text-muted)');
+    const bonusFormatted = s.bonusM > 0 ? `+${s.bonusM}` : '-';
+
+    return `
+      <tr>
+        <td class="col-center" style="font-weight:800; color:var(--text-muted);">${rank}</td>
+        <td class="col-left" style="font-weight:800; color:var(--brand-navy-dark);">${s.player.name}</td>
+        <td class="col-center">${s.wins}</td>
+        <td class="col-center">${s.losses}</td>
+        <td class="col-center">${s.winRate}%</td>
+        <td class="col-center" style="color:#059669; font-weight:700;">${bonusFormatted}</td>
+        <td class="col-center" style="color:${diffColor}; font-weight:800;">${diffFormatted}</td>
+        <td class="col-right" style="color:var(--brand-orange); font-weight:900;">${s.totalPoints}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function shareFinalResults() {
+  const statsList = calculatePlayerStats();
+  statsList.sort((a, b) => b.wins - a.wins || b.diff - a.diff);
+
+  let text = `HASIL AKHIR ${sessionTitle.toUpperCase()}\n\n`;
+  text += `1. Juara 1: ${statsList[0] ? statsList[0].player.name : '-'} (${statsList[0] ? statsList[0].wins : 0}M / Diff ${statsList[0] ? statsList[0].diff : 0})\n`;
+  if (statsList[1]) text += `2. Juara 2: ${statsList[1].player.name} (${statsList[1].wins}M / Diff ${statsList[1].diff})\n`;
+  if (statsList[2]) text += `3. Juara 3: ${statsList[2].player.name} (${statsList[2].wins}M / Diff ${statsList[2].diff})\n\n`;
+  text += `Klasemen Lengkap:\n`;
+
+  statsList.forEach((s, idx) => {
+    text += `${idx + 1}. ${s.player.name} | M: ${s.wins} K: ${s.losses} | WR: ${s.winRate}% | Poin: ${s.totalPoints}\n`;
+  });
+
+  text += `\nONESPORT Badminton Rotation Engine`;
+
+  if (navigator.share) {
+    navigator.share({ title: sessionTitle, text: text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text);
+    alert('Rekap hasil akhir berhasil disalin ke clipboard.');
+  }
+}
+
+function startNewMabarSession() {
+  if (!confirm('Mulai sesi mabar baru? Skor akan direset, namun daftar pemain tetap tersimpan.')) return;
+  schedule = [];
+  courtTimers = {};
+  generateInitialSchedule();
+  switchTab('tab-lapangan');
+}
+
+// ── SETTINGS MODAL ──
+function openSettingsModal() {
+  document.getElementById('settingsModalOverlay').classList.add('open');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModalOverlay').classList.remove('open');
+}
+
+function saveSettings() {
+  sessionTitle = document.getElementById('settingSessionTitle').value.trim() || sessionTitle;
+  numCourts = parseInt(document.getElementById('settingNumCourts').value) || 2;
+  minPlaysPerPlayer = parseInt(document.getElementById('settingMinPlays').value) || 3;
+  targetPoints = parseInt(document.getElementById('settingTargetPoints').value) || 21;
+  plannedRounds = parseInt(document.getElementById('settingTotalRounds').value) || 8;
+
+  document.getElementById('finalTitleHeader').textContent = sessionTitle;
+  updateSessionLabels();
+  smartRebalanceUpcoming(false);
+  closeSettingsModal();
 }
 
 function exportCSV() {
   if (players.length === 0) {
-    alert('Tidak ada data pemain untuk diexport.');
+    alert('Belum ada data pemain.');
     return;
   }
-  const header = ['No', 'Nama Pemain', 'Jenis Kelamin', 'Ukuran Jersey', 'No. Telepon', 'Role', 'Status Jago', 'Pembayaran'];
-  const rows = players.map((p, idx) => [
+  const statsList = calculatePlayerStats();
+  const header = ['No', 'Nama Pemain', 'Gender', 'Role Level', 'Menang', 'Kalah', 'Win Rate %', 'Diff Poin', 'Total Poin'];
+  const rows = statsList.map((s, idx) => [
     idx + 1,
-    `"${p.name}"`,
-    p.gender === 'P' ? 'Perempuan (P)' : 'Laki-laki (L)',
-    p.ukuran || '-',
-    `"${p.telp || '-'}"`,
-    p.role || '-',
-    p.jago ? 'JAGO' : 'Biasa',
-    p.paid ? 'LUNAS (V)' : 'BELUM'
+    `"${s.player.name}"`,
+    s.player.gender === 'P' ? 'Putri' : 'Putra',
+    s.player.role || 'Pemula',
+    s.wins,
+    s.losses,
+    `${s.winRate}%`,
+    s.diff,
+    s.totalPoints
   ]);
-  
-  const csvContent = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  const csv = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `rekap-badminton-onesport-${new Date().toISOString().slice(0,10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ONESPORT-Badminton-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
-
-// ── STATS BREAKDOWN (Tab 4) ──
-function renderStats() {
-  const gridEl = document.getElementById('statsCardsGrid');
-  const tableBody = document.getElementById('statsTableBody');
-
-  const playCounts = {};
-  const restCounts = {};
-  const uniquePartners = {};
-
-  players.forEach(p => {
-    playCounts[p.id] = 0;
-    restCounts[p.id] = 0;
-    uniquePartners[p.id] = new Set();
-  });
-
-  schedule.forEach(round => {
-    round.courts.forEach(court => {
-      [court.team1, court.team2].forEach(team => {
-        team.forEach(p => {
-          if (!p) return;
-          playCounts[p.id] = (playCounts[p.id] || 0) + 1;
-          team.filter(partner => partner && partner.id !== p.id).forEach(partner => {
-            uniquePartners[p.id].add(partner.id);
-          });
-        });
-      });
-    });
-    round.resting.forEach(p => {
-      if (!p) return;
-      restCounts[p.id] = (restCounts[p.id] || 0) + 1;
-    });
-  });
-
-  const totalPaid = players.filter(p => p.paid).length;
-  const totalJago = players.filter(p => p.jago).length;
-  const totalMale = players.filter(p => p.gender === 'L').length;
-  const totalFemale = players.filter(p => p.gender === 'P').length;
-
-  gridEl.innerHTML = `
-    <div class="stat-tile orange">
-      <div class="stat-tile-num">${players.length}</div>
-      <div class="stat-tile-label">Total Pemain</div>
-    </div>
-    <div class="stat-tile indigo">
-      <div class="stat-tile-num">${totalMale}</div>
-      <div class="stat-tile-label">👨 Pemain Putra</div>
-    </div>
-    <div class="stat-tile rose">
-      <div class="stat-tile-num">${totalFemale}</div>
-      <div class="stat-tile-label">👩 Pemain Putri</div>
-    </div>
-    <div class="stat-tile gold">
-      <div class="stat-tile-num">${totalJago}</div>
-      <div class="stat-tile-label">⭐ Bintang (JAGO)</div>
-    </div>
-    <div class="stat-tile navy">
-      <div class="stat-tile-num">${schedule.length}</div>
-      <div class="stat-tile-label">Total Ronde</div>
-    </div>
-    <div class="stat-tile emerald">
-      <div class="stat-tile-num">${totalPaid}</div>
-      <div class="stat-tile-label">Sudah Bayar</div>
-    </div>
-    <div class="stat-tile terra">
-      <div class="stat-tile-num">${players.length - totalPaid}</div>
-      <div class="stat-tile-label">Belum Bayar</div>
-    </div>
-  `;
-
-  if (players.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted)">Belum ada data pertandingan.</td></tr>`;
-    return;
-  }
-
-  tableBody.innerHTML = players.map((p, idx) => `
-    <tr>
-      <td style="color:var(--text-muted); font-weight:600;">${idx + 1}</td>
-      <td>
-        <strong style="color:var(--brand-navy-dark)">${p.name}</strong>
-        ${p.jago ? '<span class="chip-badge-jago" style="margin-left:6px;">⭐ JAGO</span>' : ''}
-      </td>
-      <td style="text-align:center;">
-        <span class="${p.gender === 'P' ? 'chip-badge-gender-p' : 'chip-badge-gender-l'}">
-          ${p.gender === 'P' ? '👩 Putri' : '👨 Putra'}
-        </span>
-      </td>
-      <td style="text-align:center">
-        <span style="background:var(--brand-navy-light); color:var(--brand-navy); font-weight:800; padding:3px 10px; border-radius:999px; font-size:0.82rem;">
-          ${playCounts[p.id] || 0} Game
-        </span>
-      </td>
-      <td style="text-align:center">
-        <span style="background:#F1F5F9; color:#475569; font-weight:700; padding:3px 10px; border-radius:999px; font-size:0.82rem;">
-          ${restCounts[p.id] || 0} Ronde
-        </span>
-      </td>
-      <td style="text-align:center">
-        <span style="background:var(--brand-orange-light); color:var(--brand-orange); font-weight:800; padding:3px 10px; border-radius:999px; font-size:0.82rem;">
-          ${uniquePartners[p.id] ? uniquePartners[p.id].size : 0} Pasangan
-        </span>
-      </td>
-      <td style="text-align:center">
-        ${p.jago 
-          ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem; text-transform:uppercase;">Unggulan ⭐</span>' 
-          : '<span style="color:var(--text-muted); font-size:0.75rem;">Reguler</span>'}
-      </td>
-    </tr>
-  `).join('');
-}
-
-// ── INITIALIZATION ──
-window.addEventListener('DOMContentLoaded', () => {
-  loadDefaultPlayers();
-  generateInitialSchedule();
-});
 </script>
 </body>
 </html>
