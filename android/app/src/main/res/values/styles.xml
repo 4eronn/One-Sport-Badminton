@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ONESPORT" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#0F1E36</item>
+        <item name="android:navigationBarColor">#0F1E36</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

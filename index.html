@@ -1720,6 +1720,9 @@
     </button>
 
     <div style="border-top:1px solid var(--border-color); margin-top:14px; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
+      <button class="btn-court-action" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan (v1.0.0)
+      </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
       </button>
@@ -1985,10 +1988,15 @@
         <div style="font-weight:900; font-size:1.05rem; color:var(--brand-navy-dark);">ONESPORT Web App</div>
         <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px;">Pasang langsung di HP Android atau iPhone tanpa lewat App Store</div>
         
-        <button class="btn-os-orange" id="btnInstallPwaModal" style="width:100%; font-size:0.88rem; margin-bottom:14px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="triggerPwaInstall()">
+        <button class="btn-os-orange" id="btnInstallPwaModal" style="width:100%; font-size:0.88rem; margin-bottom:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="triggerPwaInstall()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
           <span>Pasang Aplikasi di HP Ini</span>
         </button>
+
+        <a href="https://github.com/4eronn/One-Sport-Badminton/releases" target="_blank" class="btn-court-action" style="width:100%; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; margin-bottom:14px; font-weight:800;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Unduh File APK Android (GitHub Releases)</span>
+        </a>
 
         <div style="text-align:left; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; font-size:0.75rem; color:var(--text-secondary); line-height:1.6;">
           <strong>Cara Manual:</strong><br>
@@ -1996,6 +2004,42 @@
           • <strong>Android / Chrome:</strong> Tekan titik tiga di pojok kanan atas → Pilih <em>"Install App"</em> atau <em>"Tambahkan ke Layar Utama"</em>.
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: AUTO UPDATE NOTIFICATION ── -->
+<div class="modal-overlay" id="updateModalOverlay" style="z-index: 99999;">
+  <div class="modal-box" style="max-width: 420px; text-align: center;">
+    <div style="font-size: 2.6rem; margin-bottom: 6px;">🚀</div>
+    <div style="font-weight: 900; font-size: 1.22rem; color: var(--brand-navy-dark); margin-bottom: 4px;">
+      Pembaruan Baru Tersedia!
+    </div>
+    <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+      Versi terbaru ONESPORT siap diunduh di GitHub Releases.
+    </div>
+    
+    <div style="background: var(--brand-navy-light); border: 1.5px solid #BFDBFE; border-radius: var(--radius-lg); padding: 12px; margin-bottom: 16px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 6px;">
+        <span style="color: var(--text-secondary);">Versi Anda Saat Ini:</span>
+        <strong id="updateCurrentVersionText" style="color: var(--brand-navy-dark);">v1.0.0</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800;">
+        <span style="color: #059669;">Versi Terbaru:</span>
+        <span id="updateLatestVersionBadge" style="background: #059669; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.78rem;">v1.0.1</span>
+      </div>
+      <div id="updateNotesBox" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; border-top: 1px dashed #BFDBFE; padding-top: 6px; display: none; max-height: 90px; overflow-y: auto; white-space: pre-wrap;">
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a id="btnGoToReleasePage" href="https://github.com/4eronn/One-Sport-Badminton/releases" target="_blank" class="btn-os-orange" style="width: 100%; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 11px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Unduh Update (Buka GitHub Release)</span>
+      </a>
+      <button class="btn-court-action" style="width: 100%; font-size: 0.8rem; padding: 9px;" onclick="closeUpdateModal()">
+        Nanti Saja
+      </button>
     </div>
   </div>
 </div>
@@ -2064,6 +2108,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splashScreen');
     if (splash) splash.classList.add('hide');
   }, 1100);
+
+  // Auto detect updates in background
+  setTimeout(() => {
+    checkAppUpdates(false);
+  }, 2200);
 });
 
 // ── SPORT SWITCHER ──
@@ -4120,8 +4169,99 @@ function triggerPwaInstall() {
       window._deferredPwaPrompt = null;
     });
   } else {
-    alert('Untuk memasang aplikasi:\\n\\n• Android: Tekan titik tiga (⋮) di browser lalu pilih "Install App" atau "Tambahkan ke Layar Utama".\\n• iPhone: Tekan tombol Bagikan/Share lalu pilih "Add to Home Screen".');
+    alert('Untuk memasang aplikasi:\n\n• Android: Tekan titik tiga (⋮) di browser lalu pilih "Install App" atau "Tambahkan ke Layar Utama".\n• iPhone: Tekan tombol Bagikan/Share lalu pilih "Add to Home Screen".');
   }
+}
+
+// ── AUTO UPDATE CHECKER VIA GITHUB RELEASES ──
+const CURRENT_APP_VERSION = 'v1.0.0';
+const GITHUB_REPO = '4eronn/One-Sport-Badminton';
+const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
+const GITHUB_API_LATEST = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+
+let targetReleaseUrl = GITHUB_RELEASES_URL;
+
+async function checkAppUpdates(isManual = false) {
+  if (isManual) showToast('Memeriksa pembaruan di GitHub...');
+  try {
+    const res = await fetch(GITHUB_API_LATEST, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) {
+      if (isManual) {
+        showToast('Buka halaman GitHub Releases untuk cek rilis terbaru.');
+        window.open(GITHUB_RELEASES_URL, '_blank');
+      }
+      return;
+    }
+    const data = await res.json();
+    const latestTag = data.tag_name || data.name || '';
+    targetReleaseUrl = data.html_url || GITHUB_RELEASES_URL;
+    const bodyText = (data.body || '').trim();
+
+    if (isNewerVersion(latestTag, CURRENT_APP_VERSION)) {
+      showUpdateModal(latestTag, targetReleaseUrl, bodyText);
+    } else {
+      if (isManual) {
+        showToast(`ONESPORT sudah dalam versi terbaru (${CURRENT_APP_VERSION})!`);
+      }
+    }
+  } catch (e) {
+    console.warn('Update check failed:', e);
+    if (isManual) {
+      window.open(GITHUB_RELEASES_URL, '_blank');
+    }
+  }
+}
+
+function isNewerVersion(latest, current) {
+  if (!latest) return false;
+  const cleanL = latest.replace(/^v/i, '').trim();
+  const cleanC = current.replace(/^v/i, '').trim();
+  if (cleanL === cleanC) return false;
+
+  const partsL = cleanL.split(/[-.]/).map(n => parseInt(n.replace(/\D/g, '')) || 0);
+  const partsC = cleanC.split(/[-.]/).map(n => parseInt(n.replace(/\D/g, '')) || 0);
+  const maxLen = Math.max(partsL.length, partsC.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const vL = partsL[i] || 0;
+    const vC = partsC[i] || 0;
+    if (vL > vC) return true;
+    if (vL < vC) return false;
+  }
+  return cleanL !== cleanC;
+}
+
+function showUpdateModal(latestTag, url, notes) {
+  const modal = document.getElementById('updateModalOverlay');
+  const curVer = document.getElementById('updateCurrentVersionText');
+  const latVer = document.getElementById('updateLatestVersionBadge');
+  const btnGo = document.getElementById('btnGoToReleasePage');
+  const notesBox = document.getElementById('updateNotesBox');
+
+  if (curVer) curVer.textContent = CURRENT_APP_VERSION;
+  if (latVer) latVer.textContent = latestTag;
+  if (btnGo) {
+    btnGo.href = url;
+    btnGo.onclick = (e) => {
+      closeUpdateModal();
+    };
+  }
+  if (notesBox) {
+    if (notes) {
+      notesBox.textContent = notes.slice(0, 300) + (notes.length > 300 ? '...' : '');
+      notesBox.style.display = 'block';
+    } else {
+      notesBox.style.display = 'none';
+    }
+  }
+  if (modal) modal.classList.add('open');
+}
+
+function closeUpdateModal() {
+  const modal = document.getElementById('updateModalOverlay');
+  if (modal) modal.classList.remove('open');
 }
 </script>
 </body>
