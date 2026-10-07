@@ -753,6 +753,37 @@
     cursor: pointer;
     outline: none;
   }
+  .btn-rules-pill {
+    background: #FFF1EB;
+    border: 1.5px solid #FED7AA;
+    color: var(--brand-orange);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .btn-rules-pill:hover {
+    background: var(--brand-orange);
+    color: #FFFFFF;
+    border-color: var(--brand-orange);
+  }
+  .tiebreak-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
 
   .lb-table {
     width: 100%;
@@ -1289,6 +1320,9 @@
         <span class="online-status-dot" id="headerOnlineDot"></span>
         <span id="headerOnlineText">Mode Online</span>
       </button>
+      <button class="btn-header-icon" onclick="openRulesModal()" title="Peraturan Penentuan Juara">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
+      </button>
       <button class="btn-header-icon" onclick="openSettingsModal()" title="Pengaturan Sesi">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </button>
@@ -1490,11 +1524,16 @@
     <!-- Leaderboard Table Container -->
     <div class="leaderboard-container">
       <div class="leaderboard-top-row">
-        <span class="card-title-text" style="font-size:1rem;" id="leaderboardTitleText">Leaderboard</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="card-title-text" style="font-size:1rem;" id="leaderboardTitleText">Leaderboard</span>
+          <button class="btn-rules-pill" onclick="openRulesModal()" title="Lihat Aturan Penentuan Juara">
+            <span>📜 Aturan Juara</span>
+          </button>
+        </div>
         <select class="filter-select-styled" id="lbSortSelect" onchange="renderLeaderboard()">
-          <option value="wins">BY WINS</option>
-          <option value="points">BY POINTS</option>
-          <option value="diff">BY DIFF</option>
+          <option value="wins">BY WINS (Regulasi)</option>
+          <option value="points">BY TOTAL SKOR</option>
+          <option value="diff">BY SELISIH SKOR</option>
           <option value="wr">BY WIN RATE</option>
         </select>
       </div>
@@ -1504,10 +1543,10 @@
           <thead id="leaderboardTableHeader">
             <tr>
               <th class="col-left">Pemain</th>
-              <th class="col-center">W-L-T</th>
+              <th class="col-center">M-K</th>
+              <th class="col-center">SKOR</th>
               <th class="col-center">DIFF</th>
-              <th class="col-center">+M</th>
-              <th class="col-right">P</th>
+              <th class="col-right">STATUS</th>
             </tr>
           </thead>
           <tbody id="leaderboardTableBody"></tbody>
@@ -1536,9 +1575,18 @@
   <!-- TAB 5: SELESAI / HASIL AKHIR                                 -->
   <!-- ============================================================ -->
   <section id="tab-selesai" class="app-tab-pane">
-    <div style="text-align: center; margin-bottom: 10px;">
+    <div style="text-align: center; margin-bottom: 8px;">
       <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Hasil Akhir</div>
       <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.7rem; font-weight: 900; color:var(--brand-navy-dark);" id="finalTitleHeader">Mabar Sesi</h2>
+    </div>
+
+    <!-- Official Rules Banner -->
+    <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 0.76rem;">
+      <div style="display: flex; align-items: center; gap: 6px; color: #92400E; font-weight: 700;">
+        <span style="font-size: 1rem;">⚖️</span>
+        <span>Aturan: <strong>Menang ➔ H2H (2 Tim) ➔ Total Skor</strong></span>
+      </div>
+      <button class="btn-rules-pill" style="font-size: 0.7rem; padding: 2px 8px;" onclick="openRulesModal()">Lihat Regulasi</button>
     </div>
 
     <!-- 3D Podium for Top 3 -->
@@ -1554,9 +1602,9 @@
             <th class="col-center">M</th>
             <th class="col-center">K</th>
             <th class="col-center">WR</th>
-            <th class="col-center">+M</th>
+            <th class="col-center">Skor</th>
             <th class="col-center">Diff</th>
-            <th class="col-right">Poin</th>
+            <th class="col-left">Penentuan & Catatan</th>
           </tr>
         </thead>
         <tbody id="finalTableBody"></tbody>
@@ -1683,6 +1731,129 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Reset & Kosongkan Semua Pemain
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ── MODAL: REGULASI & PERATURAN PENENTUAN JUARA ── -->
+<div class="modal-overlay" id="rulesModalOverlay">
+  <div class="modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:1.3rem;">📜</span>
+        <span>Peraturan Penentuan Juara</span>
+      </div>
+      <button class="btn-del-player" onclick="closeRulesModal()">✕</button>
+    </div>
+
+    <!-- Official Badge -->
+    <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.4rem;">🏆</span>
+      <div>
+        <div style="font-size: 0.72rem; font-weight: 800; color: #92400E; text-transform: uppercase; letter-spacing: 0.6px;">Standar Sistem Klasemen Resmi</div>
+        <div style="font-size: 0.82rem; font-weight: 700; color: #78350F;">Regulasi Hierarkis & Recursive Tie-Break</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.83rem; line-height: 1.55; color: var(--text-primary);">
+      <!-- Pasal 1 -->
+      <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px;">
+        <div style="font-weight: 800; color: var(--brand-navy-dark); font-size: 0.88rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <span style="background: var(--brand-navy-dark); color: #FFF; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">1</span>
+          <span>Sistem Klasemen Utama</span>
+        </div>
+        <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 4px; color: var(--text-secondary);">
+          <li>Setiap tim/pemain bertanding sesuai jadwal yang ditetapkan panitia.</li>
+          <li>Peringkat ditentukan dari <strong>jumlah kemenangan terbanyak</strong>.</li>
+          <li><strong>Juara 1, 2, dan 3</strong> diambil dari tiga peringkat teratas.</li>
+        </ul>
+      </div>
+
+      <!-- Pasal 2 -->
+      <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px;">
+        <div style="font-weight: 800; color: var(--brand-navy-dark); font-size: 0.88rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <span style="background: var(--brand-orange); color: #FFF; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">2</span>
+          <span>Penentuan Jika Jumlah Menang Sama</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">
+          Dicek berurutan secara hierarkis. Jika satu aturan sudah memisahkan peringkat, aturan berikutnya tidak dipakai:
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
+            <strong style="color: var(--brand-navy-mid);">A. Head-to-Head (H2H):</strong>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Hasil pertandingan langsung antar tim/pemain yang seri. <em>Khusus berlaku jika yang seri tepat 2 tim.</em>
+            </div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
+            <strong style="color: var(--brand-navy-mid);">B. Total Skor yang Didapat:</strong>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Jumlah seluruh poin yang dicetak tim di semua pertandingan. Tim dengan total skor lebih besar berada di atas.
+            </div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
+            <strong style="color: var(--brand-navy-mid);">C. Jumlah Gelar Juara:</strong>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Jika ada lebih dari satu seri atau event, tim yang lebih sering juara berada di atas.
+            </div>
+          </div>
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
+            <strong style="color: var(--brand-navy-mid);">D. Undian atau Pertandingan Tambahan:</strong>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Dijalankan jika seluruh aturan di atas masih bernilai sama persis.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pasal 3 -->
+      <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px;">
+        <div style="font-weight: 800; color: var(--brand-navy-dark); font-size: 0.88rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <span style="background: #059669; color: #FFF; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem;">3</span>
+          <span>Ketentuan Tambahan & Rekursif</span>
+        </div>
+        <ul style="padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 4px; color: var(--text-secondary);">
+          <li><strong>Seri 3 Tim atau Lebih:</strong> Head-to-head tidak dipakai, langsung beralih ke aturan total skor didapat.</li>
+          <li><strong>Evaluasi Ulang (Rekursif):</strong> Jika setelah dihitung ada satu tim yang terpisah, tim yang masih seri dihitung ulang dari aturan nomor 1 (H2H jika tersisa 2 tim).</li>
+          <li><strong>Definisi Skor:</strong> Poin riil pada papan skor pertandingan (misalnya 21-15), bukan jumlah game.</li>
+          <li><strong>Keputusan Panitia:</strong> Bersifat mutlak, mengikat, dan final.</li>
+        </ul>
+      </div>
+
+      <!-- Simulasi Contoh Kasus -->
+      <div style="background: #FFF7ED; border: 1px solid #FED7AA; border-radius: var(--radius-md); padding: 12px;">
+        <div style="font-weight: 800; color: #9A3412; font-size: 0.84rem; margin-bottom: 6px;">💡 Contoh Kasus Penerapan:</div>
+        <div style="overflow-x: auto; margin-bottom: 6px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.76rem; background: #FFF; border-radius: 6px; overflow: hidden;">
+            <tr style="background: #FED7AA; font-weight: 800; text-align: center;">
+              <th style="padding: 4px 6px;">Tim</th>
+              <th style="padding: 4px 6px;">Menang</th>
+              <th style="padding: 4px 6px;">Total Skor</th>
+              <th style="padding: 4px 6px;">Peringkat</th>
+              <th style="padding: 4px 6px; text-align: left;">Keterangan</th>
+            </tr>
+            <tr style="border-bottom: 1px solid #FED7AA; text-align: center;">
+              <td style="font-weight: 800;">A</td><td>3</td><td>126</td><td>1</td><td style="text-align: left;">Menang terbanyak</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #FED7AA; text-align: center; background: #FFFBEB;">
+              <td style="font-weight: 800;">B</td><td>2</td><td>118</td><td>2</td><td style="text-align: left;">Unggul H2H vs C</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #FED7AA; text-align: center; background: #FFFBEB;">
+              <td style="font-weight: 800;">C</td><td>2</td><td>104</td><td>3</td><td style="text-align: left;">Kalah H2H dari B</td>
+            </tr>
+            <tr style="text-align: center;">
+              <td style="font-weight: 800;">D</td><td>1</td><td>110</td><td>4</td><td style="text-align: left;">Menang paling sedikit</td>
+            </tr>
+          </table>
+        </div>
+        <div style="font-size: 0.74rem; color: #9A3412; line-height: 1.4;">
+          *B dan C sama-sama 2 menang. Jika B mengalahkan C di pertandingan langsung, B di atas C lewat Head-to-Head. Jika tidak ada pertemuan langsung, B tetap di atas C karena total skornya lebih besar (118 > 104).
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-os-orange" style="width: 100%; margin-top: 14px;" onclick="closeRulesModal()">
+      Tutup & Paham
+    </button>
   </div>
 </div>
 
@@ -2808,72 +2979,351 @@ function saveScoresAndAdvance() {
   showToast('Skor berhasil disimpan dan disiarkan live!');
 }
 
+// ============================================================================
+//  REGULASI RESMI PENENTUAN JUARA & TIE-BREAKER ENGINE
+// ============================================================================
+
+/**
+ * Aturan Penentuan Peringkat Hierarkis & Rekursif:
+ * 1. Peringkat utama: Jumlah Kemenangan terbanyak.
+ * 2. Jika menang sama:
+ *    - Jika seri tepat 2 tim/pemain: Head-to-Head pertandingan langsung.
+ *    - Jika seri >= 3 tim/pemain: H2H dilewati, langsung ke Total Skor yang Didapat.
+ *    - Jika Total Skor memisahkan sebagian tim, sisa tim yang masih seri dihitung ulang dari Aturan #1 (rekursif).
+ *    - Jika masih sama: Rekam Jejak Juara (titles), lalu Undian panitia.
+ */
+function resolveStandingsByRules(items, getH2H) {
+  const groups = {};
+  items.forEach(it => {
+    const w = it.wins || 0;
+    if (!groups[w]) groups[w] = [];
+    groups[w].push(it);
+  });
+  const winKeys = Object.keys(groups).map(Number).sort((a, b) => b - a);
+  let result = [];
+  winKeys.forEach(w => {
+    result = result.concat(resolveTiedSubset(groups[w], getH2H));
+  });
+  return result;
+}
+
+function resolveTiedSubset(subset, getH2H) {
+  if (subset.length <= 1) return subset;
+
+  // 1. Kasus Tepat 2 Tim/Pemain Seri: Gunakan Head-to-Head
+  if (subset.length === 2) {
+    const h2h = getH2H(subset[0], subset[1]);
+    if (h2h > 0) {
+      subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
+      return [subset[0], subset[1]];
+    } else if (h2h < 0) {
+      subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
+      return [subset[1], subset[0]];
+    }
+
+    // Jika H2H imbang atau belum pernah bertanding langsung: Total Skor Didapat
+    if (subset[0].totalScore !== subset[1].totalScore) {
+      subset.sort((a, b) => b.totalScore - a.totalScore);
+      subset[0].tieBreakNote = `Total Skor (${subset[0].totalScore} vs ${subset[1].totalScore})`;
+      return subset;
+    }
+
+    // Kriteria 3: Jumlah Juara Sebelumnya
+    const t0 = subset[0].titles || 0;
+    const t1 = subset[1].titles || 0;
+    if (t0 !== t1) {
+      subset.sort((a, b) => (b.titles || 0) - (a.titles || 0));
+      subset[0].tieBreakNote = `Gelar Juara (${subset[0].titles} gelar)`;
+      return subset;
+    }
+
+    // Kriteria 4: Undian
+    subset[0].tieBreakNote = 'Undian / Nilai Sama';
+    return subset;
+  }
+
+  // 2. Kasus >= 3 Tim Seri: H2H dilewati, langsung ke Total Skor yang Didapat
+  const scoreGroups = {};
+  subset.forEach(it => {
+    const s = it.totalScore || 0;
+    if (!scoreGroups[s]) scoreGroups[s] = [];
+    scoreGroups[s].push(it);
+  });
+  const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
+
+  // Jika Total Skor memisahkan peringkat:
+  if (scoreKeys.length > 1) {
+    let result = [];
+    scoreKeys.forEach(s => {
+      const sub = scoreGroups[s];
+      if (sub.length === 1) {
+        sub[0].tieBreakNote = `Total Skor (${sub[0].totalScore} Poin)`;
+        result.push(sub[0]);
+      } else {
+        // Rekursif: Tim yang masih seri dihitung ulang dari aturan nomor 1 (H2H jika tinggal 2 tim)
+        result = result.concat(resolveTiedSubset(sub, getH2H));
+      }
+    });
+    return result;
+  }
+
+  // Jika Total Skor sama semua pada >= 3 tim: Cek Riwayat Juara
+  const titleGroups = {};
+  subset.forEach(it => {
+    const t = it.titles || 0;
+    if (!titleGroups[t]) titleGroups[t] = [];
+    titleGroups[t].push(it);
+  });
+  const titleKeys = Object.keys(titleGroups).map(Number).sort((a, b) => b - a);
+  if (titleKeys.length > 1) {
+    let result = [];
+    titleKeys.forEach(t => {
+      const sub = titleGroups[t];
+      if (sub.length === 1) {
+        sub[0].tieBreakNote = `Gelar Juara (${sub[0].titles} kali)`;
+        result.push(sub[0]);
+      } else {
+        result = result.concat(resolveTiedSubset(sub, getH2H));
+      }
+    });
+    return result;
+  }
+
+  // Undian / Playoff
+  return subset;
+}
+
+// ── PERHITUNGAN STATISTIK & KLASEMEN BADMINTON ──
+function getBadmintonStatsAndRankings(sortMode = 'wins') {
+  const stats = {};
+  bPlayers.forEach(p => {
+    stats[p.id] = {
+      player: p,
+      id: p.id,
+      name: p.name,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      matches: 0,
+      scored: 0,
+      conceded: 0,
+      diff: 0,
+      totalScore: 0,
+      titles: p.titles || 0,
+      winRate: 0,
+      tieBreakNote: ''
+    };
+  });
+
+  const h2hMatrix = {};
+  bPlayers.forEach(p1 => {
+    h2hMatrix[p1.id] = {};
+    bPlayers.forEach(p2 => { h2hMatrix[p1.id][p2.id] = 0; });
+  });
+
+  bSchedule.forEach(r => {
+    r.courts.forEach(c => {
+      if (c.status !== 'finished') return;
+      const sA = (c.scoreA !== null && c.scoreA !== undefined && !isNaN(c.scoreA)) ? Number(c.scoreA) : (c.winner === 'A' ? 21 : 0);
+      const sB = (c.scoreB !== null && c.scoreB !== undefined && !isNaN(c.scoreB)) ? Number(c.scoreB) : (c.winner === 'B' ? 21 : 0);
+      const isWinA = c.winner === 'A';
+      const isWinB = c.winner === 'B';
+
+      c.teamA.forEach(p => {
+        if (!p || !stats[p.id]) return;
+        stats[p.id].matches++;
+        stats[p.id].scored += sA;
+        stats[p.id].conceded += sB;
+        if (isWinA) stats[p.id].wins++;
+        else if (isWinB) stats[p.id].losses++;
+        else stats[p.id].ties++;
+      });
+
+      c.teamB.forEach(p => {
+        if (!p || !stats[p.id]) return;
+        stats[p.id].matches++;
+        stats[p.id].scored += sB;
+        stats[p.id].conceded += sA;
+        if (isWinB) stats[p.id].wins++;
+        else if (isWinA) stats[p.id].losses++;
+        else stats[p.id].ties++;
+      });
+
+      // Rekap head-to-head antar lawan langsung
+      if (isWinA) {
+        c.teamA.forEach(pA => {
+          if (!pA) return;
+          c.teamB.forEach(pB => {
+            if (!pB || !h2hMatrix[pA.id]) return;
+            h2hMatrix[pA.id][pB.id] = (h2hMatrix[pA.id][pB.id] || 0) + 1;
+            if (h2hMatrix[pB.id]) h2hMatrix[pB.id][pA.id] = (h2hMatrix[pB.id][pA.id] || 0) - 1;
+          });
+        });
+      } else if (isWinB) {
+        c.teamB.forEach(pB => {
+          if (!pB) return;
+          c.teamA.forEach(pA => {
+            if (!pA || !h2hMatrix[pB.id]) return;
+            h2hMatrix[pB.id][pA.id] = (h2hMatrix[pB.id][pA.id] || 0) + 1;
+            if (h2hMatrix[pA.id]) h2hMatrix[pA.id][pB.id] = (h2hMatrix[pA.id][pB.id] || 0) - 1;
+          });
+        });
+      }
+    });
+  });
+
+  const list = Object.values(stats).map(s => {
+    s.diff = s.scored - s.conceded;
+    s.totalScore = s.scored;
+    s.winRate = s.matches > 0 ? Math.round((s.wins / s.matches) * 100) : 0;
+    return s;
+  });
+
+  const getH2H = (p1, p2) => {
+    if (!h2hMatrix[p1.id] || h2hMatrix[p1.id][p2.id] === undefined) return 0;
+    const diff = h2hMatrix[p1.id][p2.id];
+    if (diff > 0) return 1;
+    if (diff < 0) return -1;
+    return 0;
+  };
+
+  if (sortMode === 'points') {
+    return list.sort((a, b) => b.totalScore - a.totalScore || b.wins - a.wins || b.diff - a.diff);
+  } else if (sortMode === 'diff') {
+    return list.sort((a, b) => b.diff - a.diff || b.wins - a.wins || b.totalScore - a.totalScore);
+  } else if (sortMode === 'wr') {
+    return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.totalScore - a.totalScore);
+  } else {
+    // Sesuai Regulasi Penentuan Juara
+    return resolveStandingsByRules(list, getH2H);
+  }
+}
+
+// ── PERHITUNGAN STATISTIK & KLASEMEN MINI SOCCER ──
+function getSoccerStatsAndRankings(sortMode = 'wins') {
+  const teamStats = {};
+  sTeams.forEach(t => {
+    teamStats[t.name] = {
+      team: t,
+      name: t.name,
+      p: 0,
+      w: 0,
+      d: 0,
+      l: 0,
+      wins: 0,
+      losses: 0,
+      ties: 0,
+      gf: 0,
+      ga: 0,
+      gd: 0,
+      diff: 0,
+      pts: 0,
+      totalScore: 0,
+      titles: 0,
+      winRate: 0,
+      tieBreakNote: ''
+    };
+  });
+
+  const soccerH2H = {};
+  sTeams.forEach(t1 => {
+    soccerH2H[t1.name] = {};
+    sTeams.forEach(t2 => { soccerH2H[t1.name][t2.name] = 0; });
+  });
+
+  sMatches.forEach(m => {
+    if (m.status !== 'finished') return;
+    const tA = teamStats[m.teamA.name];
+    const tB = teamStats[m.teamB.name];
+    if (!tA || !tB) return;
+
+    const sA = Number(m.scoreA || 0);
+    const sB = Number(m.scoreB || 0);
+    tA.p++; tB.p++;
+    tA.gf += sA; tA.ga += sB;
+    tB.gf += sB; tB.ga += sA;
+
+    if (m.winner === 'A') {
+      tA.w++; tA.wins++; tA.pts += 3;
+      tB.l++; tB.losses++;
+      soccerH2H[tA.name][tB.name] = (soccerH2H[tA.name][tB.name] || 0) + 1;
+      soccerH2H[tB.name][tA.name] = (soccerH2H[tB.name][tA.name] || 0) - 1;
+    } else if (m.winner === 'B') {
+      tB.w++; tB.wins++; tB.pts += 3;
+      tA.l++; tA.losses++;
+      soccerH2H[tB.name][tA.name] = (soccerH2H[tB.name][tA.name] || 0) + 1;
+      soccerH2H[tA.name][tB.name] = (soccerH2H[tA.name][tB.name] || 0) - 1;
+    } else {
+      tA.d++; tA.ties++; tA.pts += 1;
+      tB.d++; tB.ties++; tB.pts += 1;
+    }
+  });
+
+  const list = Object.values(teamStats).map(s => {
+    s.gd = s.gf - s.ga;
+    s.diff = s.gd;
+    s.totalScore = s.gf;
+    s.winRate = s.p > 0 ? Math.round((s.w / s.p) * 100) : 0;
+    return s;
+  });
+
+  const getH2H = (t1, t2) => {
+    if (!soccerH2H[t1.name] || soccerH2H[t1.name][t2.name] === undefined) return 0;
+    const diff = soccerH2H[t1.name][t2.name];
+    if (diff > 0) return 1;
+    if (diff < 0) return -1;
+    return 0;
+  };
+
+  if (sortMode === 'points') {
+    return list.sort((a, b) => b.totalScore - a.totalScore || b.wins - a.wins || b.diff - a.diff);
+  } else if (sortMode === 'diff') {
+    return list.sort((a, b) => b.diff - a.diff || b.wins - a.wins || b.totalScore - a.totalScore);
+  } else if (sortMode === 'wr') {
+    return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.totalScore - a.totalScore);
+  } else {
+    return resolveStandingsByRules(list, getH2H);
+  }
+}
+
 // ── LEADERBOARD & STATS ──
 function renderLeaderboard() {
   const tbody = document.getElementById('leaderboardTableBody');
   const spotlightName = document.getElementById('spotlightPlayerName');
   const thead = document.getElementById('leaderboardTableHeader');
+  const sortMode = document.getElementById('lbSortSelect') ? document.getElementById('lbSortSelect').value : 'wins';
 
   if (currentSport === 'badminton') {
     thead.innerHTML = `
       <tr>
         <th class="col-left">Pemain</th>
-        <th class="col-center">W-L-T</th>
+        <th class="col-center">M-K</th>
+        <th class="col-center">SKOR</th>
         <th class="col-center">DIFF</th>
-        <th class="col-center">+M</th>
-        <th class="col-right">P</th>
+        <th class="col-right">STATUS</th>
       </tr>
     `;
 
-    const stats = {};
-    bPlayers.forEach(p => {
-      stats[p.id] = { player: p, wins: 0, losses: 0, ties: 0, scored: 0, conceded: 0, diff: 0, bonus: 0, pts: 0 };
-    });
-
-    bSchedule.forEach(r => {
-      r.courts.forEach(c => {
-        if (c.status !== 'finished') return;
-        const isWinA = c.winner === 'A';
-        const isWinB = c.winner === 'B';
-        c.teamA.forEach(p => {
-          if (!p || !stats[p.id]) return;
-          stats[p.id].scored += (c.scoreA || 21);
-          stats[p.id].conceded += (c.scoreB || 18);
-          if (isWinA) { stats[p.id].wins++; stats[p.id].bonus += 25; }
-          else if (isWinB) { stats[p.id].losses++; }
-          else { stats[p.id].ties++; }
-        });
-        c.teamB.forEach(p => {
-          if (!p || !stats[p.id]) return;
-          stats[p.id].scored += (c.scoreB || 18);
-          stats[p.id].conceded += (c.scoreA || 21);
-          if (isWinB) { stats[p.id].wins++; stats[p.id].bonus += 25; }
-          else if (isWinA) { stats[p.id].losses++; }
-          else { stats[p.id].ties++; }
-        });
-      });
-    });
-
-    const list = Object.values(stats).map(s => {
-      s.diff = s.scored - s.conceded;
-      s.pts = s.scored + s.bonus;
-      return s;
-    }).sort((a, b) => b.wins - a.wins || b.diff - a.diff);
-
-    spotlightName.textContent = list[0] ? list[0].player.name : '—';
+    const list = getBadmintonStatsAndRankings(sortMode);
+    spotlightName.textContent = list[0] ? list[0].name : '—';
 
     tbody.innerHTML = list.map((s, idx) => `
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-left">
           <div class="player-rank-cell">
             <span class="player-rank-num">${idx + 1}.</span>
-            <span class="player-rank-name">${s.player.name}</span>
+            <div>
+              <span class="player-rank-name">${s.name}</span>
+              ${s.tieBreakNote ? `<div class="tiebreak-badge">${s.tieBreakNote}</div>` : ''}
+            </div>
           </div>
         </td>
-        <td class="col-center"><strong>${s.wins}-${s.losses}-${s.ties}</strong></td>
+        <td class="col-center"><strong>${s.wins}-${s.losses}</strong></td>
+        <td class="col-center" style="color:var(--brand-orange); font-weight:900;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:800;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
-        <td class="col-center">${s.bonus}</td>
-        <td class="col-right" style="color:var(--brand-orange); font-weight:900;">${s.pts}</td>
+        <td class="col-right" style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-mid);">
+          ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (s.tieBreakNote || '-')))}
+        </td>
       </tr>
     `).join('');
   } else {
@@ -2882,50 +3332,27 @@ function renderLeaderboard() {
       <tr>
         <th class="col-left">Tim</th>
         <th class="col-center">P</th>
-        <th class="col-center">W</th>
-        <th class="col-center">D</th>
-        <th class="col-center">L</th>
+        <th class="col-center">W-D-L</th>
+        <th class="col-center">SKOR (GF)</th>
         <th class="col-center">GD</th>
         <th class="col-right">PTS</th>
       </tr>
     `;
 
-    const teamStats = {};
-    sTeams.forEach(t => {
-      teamStats[t.name] = { team: t, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
-    });
-
-    sMatches.forEach(m => {
-      if (m.status !== 'finished') return;
-      const tA = teamStats[m.teamA.name];
-      const tB = teamStats[m.teamB.name];
-      if (!tA || !tB) return;
-
-      tA.p++; tB.p++;
-      tA.gf += (m.scoreA || 0); tA.ga += (m.scoreB || 0);
-      tB.gf += (m.scoreB || 0); tB.ga += (m.scoreA || 0);
-
-      if (m.winner === 'A') { tA.w++; tA.pts += 3; tB.l++; }
-      else if (m.winner === 'B') { tB.w++; tB.pts += 3; tA.l++; }
-      else { tA.d++; tA.pts += 1; tB.d++; tB.pts += 1; }
-    });
-
-    const list = Object.values(teamStats).map(s => {
-      s.gd = s.gf - s.ga;
-      return s;
-    }).sort((a, b) => b.pts - a.pts || b.gd - a.gd);
-
-    spotlightName.textContent = list[0] ? list[0].team.name : '—';
+    const list = getSoccerStatsAndRankings(sortMode);
+    spotlightName.textContent = list[0] ? list[0].name : '—';
 
     tbody.innerHTML = list.map((s, idx) => `
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
-        <td class="col-left"><strong>${idx + 1}. ${s.team.name}</strong></td>
+        <td class="col-left">
+          <strong>${idx + 1}. ${s.name}</strong>
+          ${s.tieBreakNote ? `<br><span class="tiebreak-badge">${s.tieBreakNote}</span>` : ''}
+        </td>
         <td class="col-center">${s.p}</td>
-        <td class="col-center">${s.w}</td>
-        <td class="col-center">${s.d}</td>
-        <td class="col-center">${s.l}</td>
-        <td class="col-center" style="font-weight:800;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
-        <td class="col-right" style="color:var(--brand-orange); font-weight:900; font-size:1rem;">${s.pts}</td>
+        <td class="col-center">${s.w}-${s.d}-${s.l}</td>
+        <td class="col-center" style="font-weight:800; color:var(--brand-orange);">${s.totalScore}</td>
+        <td class="col-center" style="font-weight:800; color:${s.gd >= 0 ? '#059669' : '#DC2626'};">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
+        <td class="col-right" style="color:var(--brand-navy-dark); font-weight:900; font-size:1rem;">${s.pts}</td>
       </tr>
     `).join('');
   }
@@ -2974,93 +3401,147 @@ function renderFinalPodium() {
   const tbody = document.getElementById('finalTableBody');
 
   if (currentSport === 'badminton') {
-    const stats = {};
-    bPlayers.forEach(p => { stats[p.id] = { player: p, wins: 0, losses: 0, diff: 0, pts: 0 }; });
-    bSchedule.forEach(r => {
-      r.courts.forEach(c => {
-        if (c.status !== 'finished') return;
-        c.teamA.forEach(p => { if (p && stats[p.id]) { stats[p.id].pts += (c.scoreA||21); if(c.winner==='A') stats[p.id].wins++; else stats[p.id].losses++; } });
-        c.teamB.forEach(p => { if (p && stats[p.id]) { stats[p.id].pts += (c.scoreB||18); if(c.winner==='B') stats[p.id].wins++; else stats[p.id].losses++; } });
-      });
-    });
-    const list = Object.values(stats).sort((a, b) => b.wins - a.wins || b.pts - a.pts);
+    const list = getBadmintonStatsAndRankings('wins');
     const p1 = list[0], p2 = list[1], p3 = list[2];
 
     podium.innerHTML = `
       <div class="podium-column">
-        <div class="podium-player-meta"><span class="podium-medal-label silver">Juara 2</span><div class="podium-name">${p2?p2.player.name:'-'}</div></div>
+        <div class="podium-player-meta">
+          <span class="podium-medal-label silver">Juara 2</span>
+          <div class="podium-name">${p2 ? p2.name : '-'}</div>
+          ${p2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p2.wins} Menang · ${p2.totalScore} Skor</div>` : ''}
+        </div>
         <div class="podium-pillar rank-2">2</div>
       </div>
       <div class="podium-column">
-        <div class="podium-player-meta"><span class="podium-medal-label gold">Juara 1</span><div class="podium-name">${p1?p1.player.name:'-'}</div></div>
+        <div class="podium-player-meta">
+          <span class="podium-medal-label gold">Juara 1</span>
+          <div class="podium-name">${p1 ? p1.name : '-'}</div>
+          ${p1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${p1.wins} Menang · ${p1.totalScore} Skor</div>` : ''}
+        </div>
         <div class="podium-pillar rank-1">1</div>
       </div>
       <div class="podium-column">
-        <div class="podium-player-meta"><span class="podium-medal-label bronze">Juara 3</span><div class="podium-name">${p3?p3.player.name:'-'}</div></div>
+        <div class="podium-player-meta">
+          <span class="podium-medal-label bronze">Juara 3</span>
+          <div class="podium-name">${p3 ? p3.name : '-'}</div>
+          ${p3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p3.wins} Menang · ${p3.totalScore} Skor</div>` : ''}
+        </div>
         <div class="podium-pillar rank-3">3</div>
       </div>
     `;
 
     tbody.innerHTML = list.map((s, idx) => `
-      <tr>
-        <td class="col-center">${idx + 1}</td>
-        <td class="col-left"><strong>${s.player.name}</strong></td>
-        <td class="col-center">${s.wins}</td>
+      <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
+        <td class="col-center" style="font-weight:900;">${idx + 1}</td>
+        <td class="col-left">
+          <strong>${s.name}</strong>
+          ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
+        </td>
+        <td class="col-center"><strong>${s.wins}</strong></td>
         <td class="col-center">${s.losses}</td>
-        <td class="col-center">-</td>
-        <td class="col-center">-</td>
-        <td class="col-center">-</td>
-        <td class="col-right" style="color:var(--brand-orange); font-weight:900;">${s.pts}</td>
+        <td class="col-center">${s.winRate}%</td>
+        <td class="col-center" style="color:var(--brand-orange); font-weight:900;">${s.totalScore}</td>
+        <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:800;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
+        <td class="col-left">
+          ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
+        </td>
       </tr>
     `).join('');
   } else {
     // Mini Soccer Podium
-    const teamStats = {};
-    sTeams.forEach(t => { teamStats[t.name] = { team: t, pts: 0, w: 0, gd: 0 }; });
-    sMatches.forEach(m => {
-      if (m.status !== 'finished') return;
-      if (m.winner === 'A') { teamStats[m.teamA.name].pts += 3; teamStats[m.teamA.name].w++; }
-      else if (m.winner === 'B') { teamStats[m.teamB.name].pts += 3; teamStats[m.teamB.name].w++; }
-      else { teamStats[m.teamA.name].pts += 1; teamStats[m.teamB.name].pts += 1; }
-    });
-    const list = Object.values(teamStats).sort((a, b) => b.pts - a.pts || b.w - a.w);
+    const list = getSoccerStatsAndRankings('wins');
     const t1 = list[0], t2 = list[1], t3 = list[2];
 
     podium.innerHTML = `
       <div class="podium-column">
-        <div class="podium-player-meta"><span class="podium-medal-label silver">Juara 2</span><div class="podium-name">${t2?t2.team.name:'-'}</div></div>
+        <div class="podium-player-meta">
+          <span class="podium-medal-label silver">Juara 2</span>
+          <div class="podium-name">${t2 ? t2.name : '-'}</div>
+          ${t2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t2.w} Menang · ${t2.totalScore} Gol</div>` : ''}
+        </div>
         <div class="podium-pillar rank-2">2</div>
       </div>
       <div class="podium-column">
-        <div class="podium-player-meta"><span class="podium-medal-label gold">Juara 1</span><div class="podium-name">${t1?t1.team.name:'-'}</div></div>
+        <div class="podium-player-meta">
+          <span class="podium-medal-label gold">Juara 1</span>
+          <div class="podium-name">${t1 ? t1.name : '-'}</div>
+          ${t1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${t1.w} Menang · ${t1.totalScore} Gol</div>` : ''}
+        </div>
         <div class="podium-pillar rank-1">1</div>
       </div>
       <div class="podium-column">
-        <div class="podium-player-meta"><span class="podium-medal-label bronze">Juara 3</span><div class="podium-name">${t3?t3.team.name:'-'}</div></div>
+        <div class="podium-player-meta">
+          <span class="podium-medal-label bronze">Juara 3</span>
+          <div class="podium-name">${t3 ? t3.name : '-'}</div>
+          ${t3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t3.w} Menang · ${t3.totalScore} Gol</div>` : ''}
+        </div>
         <div class="podium-pillar rank-3">3</div>
       </div>
     `;
 
     tbody.innerHTML = list.map((s, idx) => `
-      <tr>
-        <td class="col-center">${idx + 1}</td>
-        <td class="col-left"><strong>${s.team.name}</strong></td>
-        <td class="col-center">${s.w}</td>
-        <td class="col-center">-</td>
-        <td class="col-center">-</td>
-        <td class="col-center">-</td>
-        <td class="col-center">-</td>
-        <td class="col-right" style="color:var(--brand-orange); font-weight:900;">${s.pts} Pts</td>
+      <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
+        <td class="col-center" style="font-weight:900;">${idx + 1}</td>
+        <td class="col-left">
+          <strong>${s.name}</strong>
+          ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
+        </td>
+        <td class="col-center"><strong>${s.w}</strong></td>
+        <td class="col-center">${s.l}</td>
+        <td class="col-center">${s.winRate}%</td>
+        <td class="col-center" style="color:var(--brand-orange); font-weight:900;">${s.totalScore}</td>
+        <td class="col-center" style="color:${s.gd >= 0 ? '#059669' : '#DC2626'}; font-weight:800;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
+        <td class="col-left">
+          ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
+        </td>
       </tr>
     `).join('');
   }
 }
 
 function shareFinalResults() {
-  let text = `HASIL AKHIR ${sessionTitle.toUpperCase()} (${currentSport.toUpperCase()})\n\n`;
+  const isBadm = currentSport === 'badminton';
+  const list = isBadm ? getBadmintonStatsAndRankings('wins') : getSoccerStatsAndRankings('wins');
+  if (list.length === 0) {
+    alert('Belum ada data pertandingan.');
+    return;
+  }
+  const p1 = list[0], p2 = list[1], p3 = list[2];
+  let text = `🏸 *HASIL AKHIR & PENENTUAN JUARA* 🏆\n`;
+  text += `📌 ${sessionTitle.toUpperCase()} (${isBadm ? 'BADMINTON' : 'MINI SOCCER'})\n`;
+  text += `⚖️ *Sesuai Regulasi Resmi Klasemen & Tie-Breaker*\n\n`;
+
+  if (p1) text += `🥇 *JUARA 1:* ${p1.name} (${p1.wins} Menang | Total Skor: ${p1.totalScore})\n`;
+  if (p2) text += `🥈 *JUARA 2:* ${p2.name} (${p2.wins} Menang | Total Skor: ${p2.totalScore}${p2.tieBreakNote ? ' — ' + p2.tieBreakNote : ''})\n`;
+  if (p3) text += `🥉 *JUARA 3:* ${p3.name} (${p3.wins} Menang | Total Skor: ${p3.totalScore}${p3.tieBreakNote ? ' — ' + p3.tieBreakNote : ''})\n`;
+
+  text += `\n📊 *KLASEMEN LENGKAP:*\n`;
+  list.forEach((s, idx) => {
+    const medal = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : `${idx + 1}. `));
+    text += `${medal}${s.name} | ${s.wins}M-${s.losses}K | Skor: ${s.totalScore} | Diff: ${s.diff >= 0 ? '+' + s.diff : s.diff}${s.tieBreakNote ? ' (' + s.tieBreakNote + ')' : ''}\n`;
+  });
+
+  text += `\n_Aturan: Menang Terbanyak ➔ H2H (2 Tim) ➔ Total Skor Didapat_\n`;
   text += `Generated with ONESPORT Platform`;
-  if (navigator.share) navigator.share({ title: sessionTitle, text: text }).catch(()=>{});
-  else { navigator.clipboard.writeText(text); alert('Rekap berhasil disalin ke clipboard.'); }
+
+  if (navigator.share) {
+    navigator.share({ title: sessionTitle, text: text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text);
+    if (typeof showToast === 'function') showToast('Rekap hasil juara berhasil disalin!');
+    else alert('Rekap berhasil disalin ke clipboard.');
+  }
+}
+
+// ── RULES MODAL OPEN/CLOSE ──
+function openRulesModal() {
+  const modal = document.getElementById('rulesModalOverlay');
+  if (modal) modal.classList.add('open');
+}
+function closeRulesModal() {
+  const modal = document.getElementById('rulesModalOverlay');
+  if (modal) modal.classList.remove('open');
 }
 
 function startNewMabarSession() {
