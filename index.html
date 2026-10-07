@@ -114,13 +114,41 @@
   
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-page);
+    background: #0B132B;
+    background-image: radial-gradient(circle at 50% 15%, #172B4D 0%, #0B132B 80%);
+    background-attachment: fixed;
     color: var(--text-primary);
     min-height: 100vh;
-    padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+
+  /* ── MOBILE APP CONTAINER / SHELL ── */
+  .mobile-app-shell {
+    width: 100%;
+    max-width: 440px;
+    min-height: 100vh;
+    background: var(--bg-page);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    padding-bottom: calc(75px + env(safe-area-inset-bottom, 12px));
+  }
+
+  @media (max-width: 480px) {
+    body {
+      background: var(--bg-page);
+      background-image: none;
+    }
+    .mobile-app-shell {
+      max-width: 100%;
+      box-shadow: none;
+    }
   }
 
   /* ── SPLASH / LOADING SCREEN (White Background with Logo) ── */
@@ -189,37 +217,48 @@
   /* ── TOP MULTISPORT SWITCHER BAR ── */
   .top-sport-bar {
     background: var(--brand-navy-dark);
-    padding: 8px 16px;
+    padding: 8px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
+    color: #94A3B8;
+  }
+  .top-sport-brand {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 0.75rem;
+    letter-spacing: 0.8px;
     color: #94A3B8;
   }
   .sport-toggle-pills {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
   }
   .sport-switch-btn {
     border: none;
-    padding: 5px 14px;
+    padding: 4px 10px;
     border-radius: var(--radius-full);
     font-weight: 800;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     color: #CBD5E1;
     background: rgba(255, 255, 255, 0.08);
     cursor: pointer;
     transition: all 0.2s;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
   .sport-switch-btn:hover { color: #FFFFFF; background: rgba(255, 255, 255, 0.16); }
   .sport-switch-btn.active {
     background: var(--brand-orange);
     color: #FFFFFF;
     box-shadow: 0 2px 8px var(--brand-orange-glow);
+  }
+  .sport-icon-accent {
+    font-size: 0.82rem;
+    line-height: 1;
   }
 
   /* ── NAVBAR ── */
@@ -230,10 +269,10 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 10px 16px;
+    padding: 10px 14px;
   }
   .header-inner {
-    max-width: 680px;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -242,11 +281,11 @@
   .header-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     cursor: pointer;
   }
   .header-logo-img {
-    height: 36px;
+    height: 32px;
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 1px 3px rgba(15, 30, 54, 0.08));
@@ -257,14 +296,14 @@
   }
   .header-title-text .app-name {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 900;
     color: var(--brand-navy-dark);
     line-height: 1;
   }
   .header-title-text .app-name span { color: var(--brand-orange); }
   .header-title-text .app-sub {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 0.8px;
     color: var(--brand-navy-soft);
@@ -276,32 +315,36 @@
     color: var(--brand-navy-dark);
     font-weight: 700;
     font-size: 0.78rem;
-    padding: 6px 14px;
+    padding: 6px 9px;
     border-radius: var(--radius-full);
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
     transition: all 0.2s;
+  }
+  .btn-header-icon:hover {
+    border-color: var(--brand-orange);
+    color: var(--brand-orange);
   }
 
   /* ── SUB-HEADER / CONFIG SELECTOR ── */
   .app-subbar {
     background: var(--brand-navy-light);
     border-bottom: 1px solid var(--border-color);
-    padding: 10px 16px;
+    padding: 8px 12px;
   }
   .subbar-inner {
-    max-width: 680px;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 6px;
     flex-wrap: wrap;
   }
   .subbar-picker-label {
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     font-weight: 800;
     color: var(--brand-navy-soft);
     text-transform: uppercase;
@@ -310,15 +353,15 @@
   .subbar-pills-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
   .subbar-pill-btn {
     background: #FFFFFF;
     border: 1.5px solid #CBD5E1;
     color: var(--brand-navy-dark);
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: var(--radius-full);
-    font-size: 0.76rem;
+    font-size: 0.74rem;
     font-weight: 800;
     cursor: pointer;
     transition: all 0.2s;
@@ -332,9 +375,10 @@
 
   /* ── MAIN CONTENT CONTAINER ── */
   .app-main-content {
-    max-width: 680px;
+    width: 100%;
     margin: 0 auto;
-    padding: 16px 14px;
+    padding: 12px 10px;
+    flex: 1;
   }
 
   /* ── TAB PANES ── */
@@ -842,12 +886,71 @@
     border-color: var(--brand-orange);
     box-shadow: 0 0 0 3px var(--brand-orange-light);
   }
-  .add-player-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1.2fr;
+  /* ── MOBILE FORM & QUICK ACTIONS ── */
+  .add-player-form-box {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
+  .add-player-options-row {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .btn-add-player-submit {
+    padding: 9px 14px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    border: none;
+    background: linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.22);
+    transition: all 0.2s;
+  }
+  .btn-add-player-submit:active { transform: scale(0.96); }
+  .quick-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .btn-quick-pill {
+    background: #F1F5F9;
+    border: 1.5px solid var(--border-color);
+    color: var(--brand-navy-dark);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 7px 4px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-quick-pill:hover {
+    border-color: var(--brand-orange);
+    background: #FFFFFF;
+  }
+  .btn-quick-pill.btn-quick-danger {
+    background: #FEF2F2;
+    border-color: #FECACA;
+    color: #DC2626;
+  }
+  .btn-quick-pill.btn-quick-danger:hover {
+    background: #FEE2E2;
+  }
+
   .player-roster-list {
     display: grid;
     grid-template-columns: 1fr;
@@ -922,20 +1025,20 @@
   .bottom-navbar {
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 440px;
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     border-top: 1.5px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 8px 10px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    padding: 6px 4px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
     z-index: 1000;
-    max-width: 680px;
-    margin: 0 auto;
-    box-shadow: 0 -4px 20px rgba(15, 30, 54, 0.05);
+    box-shadow: 0 -4px 20px rgba(15, 30, 54, 0.08);
   }
   .nav-item-btn {
     background: transparent;
@@ -944,21 +1047,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    font-size: 0.72rem;
+    gap: 2px;
+    font-size: 0.7rem;
     font-weight: 700;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 4px 6px;
     border-radius: var(--radius-sm);
     transition: all 0.2s;
-    min-width: 52px;
+    min-width: 48px;
   }
   .nav-item-btn .nav-icon {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s;
   }
   .nav-item-btn.active {
     color: var(--brand-orange);
@@ -967,20 +1071,20 @@
     transform: translateY(-2px);
   }
 
-  /* ── MODALS ── */
+  /* ── MODALS (BOTTOM SHEET ON MOBILE) ── */
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 30, 54, 0.7);
+    background: rgba(15, 30, 54, 0.65);
     backdrop-filter: blur(4px);
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     z-index: 2000;
-    padding: 16px;
+    padding: 0;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.22s ease;
   }
   .modal-overlay.open {
     opacity: 1;
@@ -989,13 +1093,35 @@
   .modal-box {
     background: #FFFFFF;
     border: 1.5px solid var(--border-color);
-    border-radius: var(--radius-xl);
+    border-radius: 22px 22px 0 0;
     width: 100%;
-    max-width: 480px;
-    max-height: 90vh;
+    max-width: 440px;
+    max-height: 88vh;
     overflow-y: auto;
-    padding: 22px;
-    box-shadow: 0 20px 50px rgba(15, 30, 54, 0.25);
+    padding: 20px 16px;
+    box-shadow: 0 -10px 40px rgba(15, 30, 54, 0.25);
+    animation: modalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @media (min-width: 481px) {
+    .modal-overlay {
+      align-items: center;
+      padding: 16px;
+    }
+    .modal-box {
+      border-radius: var(--radius-xl);
+      animation: modalFadeScale 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bottom-navbar {
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+  }
+  @keyframes modalSlideUp {
+    from { transform: translateY(30px); opacity: 0.7; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes modalFadeScale {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
   .modal-header {
     display: flex;
@@ -1007,15 +1133,9 @@
   }
   .modal-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 900;
     color: var(--brand-navy-dark);
-  }
-
-  @media (min-width: 681px) {
-    .bottom-navbar {
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    }
   }
 
   /* ── ONLINE SYNC & PWA STYLES ── */
@@ -1092,28 +1212,36 @@
   }
   #liveToastNotification {
     position: fixed;
-    top: 70px;
+    top: 60px;
     left: 50%;
     transform: translateX(-50%) translateY(-20px);
-    background: rgba(15, 30, 54, 0.95);
-    backdrop-filter: blur(8px);
+    background: rgba(15, 30, 54, 0.96);
+    backdrop-filter: blur(10px);
     color: #FFFFFF;
-    padding: 8px 18px;
+    padding: 7px 16px;
     border-radius: var(--radius-full);
-    font-size: 0.78rem;
-    font-weight: 800;
+    font-size: 0.76rem;
+    font-weight: 700;
     z-index: 99999;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     opacity: 0;
     pointer-events: none;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
+    max-width: 90%;
   }
   #liveToastNotification.show {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
+  }
+  .toast-indicator-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand-orange);
+    flex-shrink: 0;
   }
 </style>
 </head>
@@ -1130,15 +1258,18 @@
   </div>
 </div>
 
+<!-- ── MOBILE APP CONTAINER / SHELL ── -->
+<div class="mobile-app-shell">
+
 <!-- ── TOP SPORT SWITCHER (Badminton & Mini Soccer) ── -->
 <div class="top-sport-bar">
-  <div style="font-weight: 800; font-size:0.75rem; letter-spacing: 0.5px;">ONESPORT MULTISPORT</div>
+  <div class="top-sport-brand">ONESPORT</div>
   <div class="sport-toggle-pills">
     <button class="sport-switch-btn active" id="sportBtnBadminton" onclick="switchSport('badminton')">
-      🏸 Badminton
+      <span class="sport-icon-accent">🏸</span> Badminton
     </button>
     <button class="sport-switch-btn" id="sportBtnSoccer" onclick="switchSport('minisoccer')">
-      ⚽ Mini Soccer
+      <span class="sport-icon-accent">⚽</span> Mini Soccer
     </button>
   </div>
 </div>
@@ -1158,8 +1289,8 @@
         <span class="online-status-dot" id="headerOnlineDot"></span>
         <span id="headerOnlineText">Mode Online</span>
       </button>
-      <button class="btn-header-icon" onclick="openSettingsModal()">
-        Pengaturan
+      <button class="btn-header-icon" onclick="openSettingsModal()" title="Pengaturan Sesi">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </button>
     </div>
   </div>
@@ -1176,7 +1307,7 @@
 
 <!-- ── LIVE TOAST NOTIFICATION ── -->
 <div id="liveToastNotification">
-  <span id="toastIcon">⚡</span>
+  <span class="toast-indicator-dot" id="toastIcon"></span>
   <span id="toastMessage">Pemberitahuan</span>
 </div>
 
@@ -1223,43 +1354,46 @@
         <span style="font-size: 0.78rem; color: var(--text-muted); font-weight:800;" id="rosterCountBadge">0 Pemain</span>
       </div>
 
-      <!-- Add Player Form -->
-      <div class="add-player-grid">
-        <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Nama pemain..." onkeypress="if(event.key==='Enter')addNewPlayer()">
-        
-        <select id="inputPlayerGender" class="input-styled-os">
-          <option value="L">Putra (L)</option>
-          <option value="P">Putri (P)</option>
-        </select>
-        
-        <select id="inputPlayerRole" class="input-styled-os" style="font-weight: 700;">
-          <!-- Badminton Roles -->
-          <option value="Pemula" class="badminton-role-opt">Pemula</option>
-          <option value="Amatir" class="badminton-role-opt">Amatir</option>
-          <option value="Intermadiate" class="badminton-role-opt" selected>Intermadiate</option>
-          <option value="Advance" class="badminton-role-opt">Advance</option>
-          <!-- Mini Soccer Positions -->
-          <option value="GK" class="soccer-role-opt" style="display:none;">GK (Kiper)</option>
-          <option value="DF" class="soccer-role-opt" style="display:none;">DF (Bek)</option>
-          <option value="MF" class="soccer-role-opt" style="display:none;">MF (Gelandang)</option>
-          <option value="FW" class="soccer-role-opt" style="display:none;">FW (Penyerang)</option>
-        </select>
+      <!-- Add Player Form Mobile-Optimized -->
+      <div class="add-player-form-box">
+        <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Ketik nama pemain..." onkeypress="if(event.key==='Enter')addNewPlayer()">
+        <div class="add-player-options-row">
+          <select id="inputPlayerGender" class="input-styled-os">
+            <option value="L">Putra (L)</option>
+            <option value="P">Putri (P)</option>
+          </select>
+          <select id="inputPlayerRole" class="input-styled-os" style="font-weight: 700;">
+            <!-- Badminton Roles -->
+            <option value="Pemula" class="badminton-role-opt">Pemula</option>
+            <option value="Amatir" class="badminton-role-opt">Amatir</option>
+            <option value="Intermadiate" class="badminton-role-opt" selected>Intermadiate</option>
+            <option value="Advance" class="badminton-role-opt">Advance</option>
+            <!-- Mini Soccer Positions -->
+            <option value="GK" class="soccer-role-opt" style="display:none;">GK (Kiper)</option>
+            <option value="DF" class="soccer-role-opt" style="display:none;">DF (Bek)</option>
+            <option value="MF" class="soccer-role-opt" style="display:none;">MF (Gelandang)</option>
+            <option value="FW" class="soccer-role-opt" style="display:none;">FW (Penyerang)</option>
+          </select>
+          <button class="btn-add-player-submit" onclick="addNewPlayer()" title="Tambah Pemain">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Tambah</span>
+          </button>
+        </div>
       </div>
 
-      <button class="btn-os-cyan" style="width: 100%; margin-bottom: 14px;" onclick="addNewPlayer()">
-        Tambah Pemain
-      </button>
-
       <!-- Quick Action Buttons -->
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-        <button class="btn-os-cyan" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1.5px solid var(--border-color); padding:8px 12px; font-size:0.75rem;" onclick="loadPresetPlayers()">
-          Muat Contoh Pemain
+      <div class="quick-actions-row">
+        <button class="btn-quick-pill" onclick="loadPresetPlayers()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+          <span>Contoh</span>
         </button>
-        <button class="btn-os-orange" style="background:#FEE2E2; color:#DC2626; border:1.5px solid #FECACA; padding:8px 12px; font-size:0.75rem;" onclick="clearAllPlayers()">
-          Reset Semua
+        <button class="btn-quick-pill" onclick="exportCSV()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export CSV</span>
         </button>
-        <button class="btn-os-cyan" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1.5px solid var(--border-color); padding:8px 12px; font-size:0.75rem;" onclick="exportCSV()">
-          Export CSV
+        <button class="btn-quick-pill btn-quick-danger" onclick="clearAllPlayers()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <span>Reset</span>
         </button>
       </div>
 
@@ -1284,9 +1418,11 @@
     <!-- Top Action Buttons -->
     <div class="action-grid-2">
       <button class="btn-os-cyan" onclick="smartRebalanceUpcoming()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
         <span id="rebalanceBtnText">Susun Ulang</span>
       </button>
       <button class="btn-os-orange" onclick="openFinishScoreModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         <span>Finish & Skor</span>
       </button>
     </div>
@@ -1317,12 +1453,14 @@
     <div id="activeCourtsList"></div>
 
     <!-- Bottom Actions -->
-    <div class="court-bottom-actions" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;">
+    <div class="court-bottom-actions" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
       <button class="btn-os-cyan" style="background:#0F1E36;" onclick="smartRebalanceUpcoming()">
-        <span>Smart Matchmaking</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+        <span>Smart Match</span>
       </button>
       <button class="btn-os-orange" style="background:#10B981; box-shadow:0 4px 12px rgba(16,185,129,0.25);" onclick="addNewCourt()">
-        <span id="btnAddMatchLabel">+ Tambah Lapangan</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span id="btnAddMatchLabel">Tambah Lapangan</span>
       </button>
     </div>
 
@@ -1343,9 +1481,10 @@
     <!-- Spotlight Champion Banner -->
     <div class="champion-spotlight-box" id="championSpotlight">
       <div class="champion-pill-wrap">
+        <span class="champion-trophy-accent" style="margin-right:2px;">🏆</span>
         <span id="spotlightPlayerName">—</span>
       </div>
-      <div class="champion-sub-label" id="spotlightSubtitle">Tournament Champion</div>
+      <div class="champion-sub-label" id="spotlightSubtitle">Peringkat 1 Saat Ini</div>
     </div>
 
     <!-- Leaderboard Table Container -->
@@ -1425,11 +1564,13 @@
     </div>
 
     <!-- Bottom Actions: Bagikan & Mabar Baru -->
-    <div class="action-grid-2" style="margin-top: 18px;">
+    <div class="action-grid-2" style="margin-top: 16px;">
       <button class="btn-os-cyan" style="background:#FFFFFF; color:var(--brand-navy-dark); border:1.5px solid var(--border-color);" onclick="shareFinalResults()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
         <span>Bagikan Rekap</span>
       </button>
       <button class="btn-os-orange" style="background:#10B981; box-shadow:0 4px 14px rgba(16,185,129,0.3);" onclick="startNewMabarSession()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
         <span>Mabar Baru</span>
       </button>
     </div>
@@ -1470,6 +1611,8 @@
     <span>Selesai</span>
   </button>
 </nav>
+
+</div> <!-- /.mobile-app-shell -->
 
 <!-- ── MODAL: INPUT SKOR & SELESAIKAN RONDE ── -->
 <div class="modal-overlay" id="scoreModalOverlay">
@@ -1534,10 +1677,10 @@
 
     <div style="border-top:1px solid var(--border-color); margin-top:14px; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px;" onclick="loadPresetPlayers(); closeSettingsModal();">
-        🔄 Muat Ulang Pemain Contoh (Preset)
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg> Muat Contoh Pemain (Preset)
       </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
-        🗑 Reset & Kosongkan Semua Pemain
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Reset & Kosongkan Semua Pemain
       </button>
     </div>
   </div>
@@ -1545,10 +1688,11 @@
 
 <!-- ── MODAL: MODE ONLINE & SINKRONISASI REALTIME ── -->
 <div class="modal-overlay" id="onlineModalOverlay">
-  <div class="modal-box" style="max-width: 480px;">
+  <div class="modal-box" style="max-width: 440px;">
     <div class="modal-header">
       <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
-        <span>🌐 Sesi Online & Realtime</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <span>Sesi Online & Realtime</span>
       </div>
       <button class="btn-del-player" onclick="closeOnlineModal()">✕</button>
     </div>
@@ -1572,14 +1716,17 @@
           <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">KODE ROOM MABAR:</div>
           <div style="font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:900; letter-spacing:2px; color:var(--brand-orange);" id="onlineDisplayRoomCode">ONESPORT-88</div>
           <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:700; margin-top:2px;" id="onlineDisplayRoleText">Peran: Host / Admin</div>
-          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;" id="onlineDisplayPeerCount">👥 1 Perangkat Terhubung</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px; display:inline-flex; align-items:center; gap:5px;" id="onlineDisplayPeerCount">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>1 Perangkat Terhubung</span>
+          </div>
         </div>
       </div>
 
       <!-- Actions when Offline / Not in Room -->
       <div id="onlineSetupForm">
         <div style="background:#FFF7ED; border:1px solid #FFEDD5; border-radius:var(--radius-md); padding:10px; margin-bottom:14px; font-size:0.76rem; color:#9A3412;">
-          💡 <strong>Siaran Realtime Gratis:</strong> Wasit & pemain bisa membuka skor pertandingan live dari HP masing-masing di lapangan secara bersamaan!
+          <strong>Siaran Realtime Gratis:</strong> Wasit & pemain bisa membuka skor pertandingan live dari HP masing-masing di lapangan secara bersamaan!
         </div>
 
         <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
@@ -1587,7 +1734,10 @@
             <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">Kode Room (Unik)</label>
             <div style="display:flex; gap:6px; margin-top:4px;">
               <input type="text" id="inputRoomCode" class="input-styled-os" placeholder="Contoh: MABAR-88" style="text-transform:uppercase; font-weight:800;">
-              <button class="btn-court-action" onclick="generateRandomRoomCode()" style="white-space:nowrap; padding:0 12px;">Acak 🎲</button>
+              <button class="btn-court-action" onclick="generateRandomRoomCode()" style="white-space:nowrap; padding:0 12px; display:inline-flex; align-items:center; gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                <span>Acak</span>
+              </button>
             </div>
           </div>
           <div>
@@ -1598,11 +1748,13 @@
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button class="btn-os-orange" style="width:100%; font-size:0.82rem;" onclick="startHostRoom()">
-            🚀 Buat Sesi Host
+          <button class="btn-os-orange" style="width:100%; font-size:0.82rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="startHostRoom()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Buat Sesi Host</span>
           </button>
-          <button class="btn-os-cyan" style="width:100%; font-size:0.82rem;" onclick="joinSpectatorRoom()">
-            👀 Gabung Nonton
+          <button class="btn-os-cyan" style="width:100%; font-size:0.82rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="joinSpectatorRoom()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Gabung Nonton</span>
           </button>
         </div>
       </div>
@@ -1614,7 +1766,10 @@
             <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-soft);">Tautan Bagikan ke Pemain / Penonton</label>
             <div style="display:flex; gap:6px; margin-top:4px;">
               <input type="text" id="shareRoomUrlInput" class="input-styled-os" readonly style="font-size:0.75rem; background:#F8FAFC;">
-              <button class="btn-os-cyan" onclick="copyShareUrl()" style="white-space:nowrap; padding:0 12px; font-size:0.78rem;">📋 Salin</button>
+              <button class="btn-os-cyan" onclick="copyShareUrl()" style="white-space:nowrap; padding:0 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Salin</span>
+              </button>
             </div>
           </div>
 
@@ -1634,8 +1789,9 @@
           </div>
         </div>
 
-        <button class="btn-court-action" style="width:100%; background:#FEE2E2; border-color:#FECACA; color:#DC2626; font-weight:800; padding:10px;" onclick="leaveOnlineRoom()">
-          🚪 Tinggalkan Room (Kembali ke Offline)
+        <button class="btn-court-action" style="width:100%; background:#FEE2E2; border-color:#FECACA; color:#DC2626; font-weight:800; padding:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="leaveOnlineRoom()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Tinggalkan Room (Offline)</span>
         </button>
       </div>
     </div>
@@ -1646,16 +1802,19 @@
         Semua data pertandingan Anda disimpan secara otomatis di memori browser (LocalStorage). Anda juga bisa mengekspor file cadangan agar data tidak hilang.
       </div>
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <button class="btn-os-cyan" style="width:100%; font-size:0.82rem;" onclick="exportSessionJSON()">
-          📤 Ekspor Cadangan Data (.JSON)
+        <button class="btn-os-cyan" style="width:100%; font-size:0.82rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="exportSessionJSON()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Ekspor Cadangan Data (.JSON)</span>
         </button>
-        <button class="btn-court-action" style="width:100%; font-size:0.82rem; padding:9px;" onclick="document.getElementById('importFileInput').click()">
-          📥 Pulihkan Cadangan Data (.JSON)
+        <button class="btn-court-action" style="width:100%; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="document.getElementById('importFileInput').click()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Pulihkan Cadangan Data (.JSON)</span>
         </button>
         <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importSessionJSON(event)">
         <div style="border-top:1px solid var(--border-color); margin-top:8px; padding-top:10px;">
-          <button class="btn-court-action" style="width:100%; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-size:0.82rem; padding:9px;" onclick="resetToPresetDefault()">
-            ⚠️ Reset ke Data Contoh Bawaan
+          <button class="btn-court-action" style="width:100%; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="resetToPresetDefault()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Reset ke Data Contoh Bawaan</span>
           </button>
         </div>
       </div>
@@ -1668,8 +1827,9 @@
         <div style="font-weight:900; font-size:1.05rem; color:var(--brand-navy-dark);">ONESPORT Web App</div>
         <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px;">Pasang langsung di HP Android atau iPhone tanpa lewat App Store</div>
         
-        <button class="btn-os-orange" id="btnInstallPwaModal" style="width:100%; font-size:0.88rem; margin-bottom:14px;" onclick="triggerPwaInstall()">
-          📲 Pasang Aplikasi di HP Ini
+        <button class="btn-os-orange" id="btnInstallPwaModal" style="width:100%; font-size:0.88rem; margin-bottom:14px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="triggerPwaInstall()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          <span>Pasang Aplikasi di HP Ini</span>
         </button>
 
         <div style="text-align:left; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; font-size:0.75rem; color:var(--text-secondary); line-height:1.6;">
@@ -2645,7 +2805,7 @@ function saveScoresAndAdvance() {
   renderHistory();
   renderFinalPodium();
   persistAndBroadcast();
-  showToast('Skor berhasil disimpan dan disiarkan live!', '✅');
+  showToast('Skor berhasil disimpan dan disiarkan live!');
 }
 
 // ── LEADERBOARD & STATS ──
@@ -2898,7 +3058,7 @@ function renderFinalPodium() {
 
 function shareFinalResults() {
   let text = `HASIL AKHIR ${sessionTitle.toUpperCase()} (${currentSport.toUpperCase()})\n\n`;
-  text += `Generated with ONESPORT Platform 🏸⚽`;
+  text += `Generated with ONESPORT Platform`;
   if (navigator.share) navigator.share({ title: sessionTitle, text: text }).catch(()=>{});
   else { navigator.clipboard.writeText(text); alert('Rekap berhasil disalin ke clipboard.'); }
 }
@@ -3036,7 +3196,7 @@ function checkEditPermission() {
   if (pin && pin === hostPin) {
     userRole = 'host';
     updateOnlineUI('connected');
-    showToast('Akses Wasit Berhasil Diberikan! 🛡️', '✅');
+    showToast('Akses Wasit Berhasil Diberikan!');
     return true;
   } else if (pin) {
     alert('PIN Host salah.');
@@ -3091,7 +3251,7 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
           <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
           <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • ${cand.player.gender} • ${cand.player.role}</div>
         </div>
-        <button class="btn-court-action" style="font-size:0.72rem; padding:4px 10px;">Tukar ⇄</button>
+        <button class="btn-court-action" style="font-size:0.72rem; padding:4px 10px;">Tukar</button>
       </div>
     `).join('');
   }
@@ -3131,7 +3291,7 @@ function executeSwap(candidateIdx) {
   closeSwapModal();
   renderCourtsView();
   persistAndBroadcast();
-  showToast('Pemain berhasil ditukar!', '⇄');
+  showToast('Pemain berhasil ditukar!');
 }
 
 // ── REALTIME ONLINE SYNC ENGINE ──
@@ -3165,7 +3325,7 @@ function generateRandomRoomCode() {
 
 function toggleCollabSetting(enabled) {
   isCollabMode = enabled;
-  showToast(enabled ? 'Mode Kolaborasi: Semua wasit bisa input skor' : 'Mode Kolaborasi Nonaktif: Hanya Host', '🛡️');
+  showToast(enabled ? 'Mode Kolaborasi: Semua wasit bisa input skor' : 'Mode Kolaborasi Nonaktif: Hanya Host');
   if (isOnlineActive && mqttClient && currentRoomId) {
     mqttClient.publish(`onesport/v2/room/${currentRoomId}`, JSON.stringify({
       type: 'COLLAB_TOGGLE',
@@ -3247,7 +3407,7 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234') {
         role: userRole
       }));
 
-      showToast(`Terhubung ke Room: ${currentRoomId} (${userRole === 'host' ? 'Host' : 'Penonton'})`, '🟢');
+      showToast(`Terhubung ke Room: ${currentRoomId} (${userRole === 'host' ? 'Host' : 'Penonton'})`);
     });
 
     mqttClient.on('message', (topic, message) => {
@@ -3278,7 +3438,7 @@ function leaveOnlineRoom() {
   currentRoomId = null;
   userRole = 'host';
   updateOnlineUI('offline');
-  showToast('Kembali ke Mode Lokal Offline', '⚪');
+  showToast('Kembali ke Mode Lokal Offline');
 }
 
 function broadcastStateUpdate() {
@@ -3313,7 +3473,7 @@ function handleIncomingMessage(rawText) {
     if (msg.type === 'PEER_PING') {
       connectedPeersCount = Math.max(connectedPeersCount + 1, 2);
       const peerEl = document.getElementById('onlineDisplayPeerCount');
-      if (peerEl) peerEl.textContent = `👥 ${connectedPeersCount} Perangkat Terhubung`;
+      if (peerEl) peerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>${connectedPeersCount} Perangkat Terhubung</span>`;
       return;
     }
 
@@ -3321,14 +3481,14 @@ function handleIncomingMessage(rawText) {
       isCollabMode = !!msg.isCollabMode;
       const toggleEl = document.getElementById('toggleCollabMode');
       if (toggleEl) toggleEl.checked = isCollabMode;
-      showToast(isCollabMode ? 'Host mengizinkan wasit bersama' : 'Host mengunci izin ubah skor', '🛡️');
+      showToast(isCollabMode ? 'Host mengizinkan wasit bersama' : 'Host mengunci izin ubah skor');
       return;
     }
 
     if (msg.type === 'STATE_UPDATE') {
       if (userRole === 'spectator' || isCollabMode) {
         applyReceivedState(msg.payload);
-        showToast('⚡ Data pertandingan diperbarui langsung oleh Host', '🔄');
+        showToast('Data pertandingan diperbarui langsung oleh Host');
       }
       return;
     }
@@ -3383,7 +3543,7 @@ function updateOnlineUI(status) {
     if (cardBadge) {
       cardBadge.style.background = '#ECFDF5';
       cardBadge.style.color = '#065F46';
-      cardStatusText.textContent = '🟢 Terhubung Online';
+      cardStatusText.textContent = 'Terhubung Online';
     }
     if (roomDetails) roomDetails.style.display = 'block';
     if (setupForm) setupForm.style.display = 'none';
@@ -3405,7 +3565,7 @@ function updateOnlineUI(status) {
     if (cardBadge) {
       cardBadge.style.background = '#FFFBEB';
       cardBadge.style.color = '#92400E';
-      cardStatusText.textContent = '🟡 Menghubungkan...';
+      cardStatusText.textContent = 'Menghubungkan...';
     }
   } else {
     if (headerPill) {
@@ -3451,31 +3611,29 @@ function copyShareUrl() {
   if (!input || !input.value) return;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(input.value).then(() => {
-      showToast('Tautan room berhasil disalin!', '📋');
+      showToast('Tautan room berhasil disalin!');
     }).catch(() => {
       input.select();
       document.execCommand('copy');
-      showToast('Tautan room disalin!', '📋');
+      showToast('Tautan room disalin!');
     });
   } else {
     input.select();
     document.execCommand('copy');
-    showToast('Tautan room disalin!', '📋');
+    showToast('Tautan room disalin!');
   }
 }
 
-function showToast(msg, icon = '⚡') {
+function showToast(msg) {
   const toast = document.getElementById('liveToastNotification');
   const msgEl = document.getElementById('toastMessage');
-  const iconEl = document.getElementById('toastIcon');
   if (!toast) return;
   if (msgEl) msgEl.textContent = msg;
-  if (iconEl) iconEl.textContent = icon;
   toast.classList.add('show');
   clearTimeout(window._toastTimeout);
   window._toastTimeout = setTimeout(() => {
     toast.classList.remove('show');
-  }, 3200);
+  }, 2800);
 }
 
 function checkUrlParamsAndAutoJoin() {
@@ -3503,7 +3661,7 @@ function exportSessionJSON() {
   document.body.appendChild(dlAnchor);
   dlAnchor.click();
   dlAnchor.remove();
-  showToast('Cadangan data berhasil diekspor!', '📤');
+  showToast('Cadangan data berhasil diekspor!');
 }
 
 function importSessionJSON(event) {
@@ -3516,7 +3674,7 @@ function importSessionJSON(event) {
       if (data && (data.bPlayers || data.sPlayers)) {
         applyReceivedState(data);
         persistAndBroadcast();
-        showToast('Data berhasil dipulihkan dari cadangan!', '📥');
+        showToast('Data berhasil dipulihkan dari cadangan!');
         closeOnlineModal();
       } else {
         alert('File JSON tidak valid untuk ONESPORT.');
@@ -3539,7 +3697,7 @@ function resetToPresetDefault() {
   persistAndBroadcast();
   closeOnlineModal();
   switchTab('tab-match');
-  showToast('Data dikembalikan ke pengaturan bawaan!', '🔄');
+  showToast('Data dikembalikan ke pengaturan bawaan!');
 }
 
 // ── PWA SERVICE WORKER & INSTALL ──
@@ -3567,7 +3725,7 @@ function triggerPwaInstall() {
     window._deferredPwaPrompt.prompt();
     window._deferredPwaPrompt.userChoice.then((choice) => {
       if (choice.outcome === 'accepted') {
-        showToast('Aplikasi ONESPORT berhasil dipasang!', '📲');
+        showToast('Aplikasi ONESPORT berhasil dipasang!');
       }
       window._deferredPwaPrompt = null;
     });
