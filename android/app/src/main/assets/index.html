@@ -1252,11 +1252,8 @@
 
       <!-- Quick Action Buttons -->
       <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-        <button class="btn-os-cyan" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1.5px solid var(--border-color); padding:8px 12px; font-size:0.75rem;" onclick="loadPresetPlayers()">
-          Muat Contoh Pemain
-        </button>
-        <button class="btn-os-orange" style="background:#FEE2E2; color:#DC2626; border:1.5px solid #FECACA; padding:8px 12px; font-size:0.75rem;" onclick="clearAllPlayers()">
-          Reset Semua
+        <button class="btn-os-orange" style="background:#FEE2E2; color:#DC2626; border:1.5px solid #FECACA; padding:8px 12px; font-size:0.75rem;" onclick="clearAllPlayers()" title="Kosongkan Semua Pemain">
+          Kosongkan Semua
         </button>
         <button class="btn-os-cyan" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1.5px solid var(--border-color); padding:8px 12px; font-size:0.75rem;" onclick="exportCSV()">
           Export CSV
@@ -1533,11 +1530,8 @@
     </button>
 
     <div style="border-top:1px solid var(--border-color); margin-top:14px; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <button class="btn-court-action" style="font-size:0.76rem; padding:8px;" onclick="loadPresetPlayers(); closeSettingsModal();">
-        🔄 Muat Ulang Pemain Contoh (Preset)
-      </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
-        🗑 Reset & Kosongkan Semua Pemain
+        🗑 Kosongkan / Hapus Semua Pemain
       </button>
     </div>
   </div>
@@ -1653,11 +1647,6 @@
           📥 Pulihkan Cadangan Data (.JSON)
         </button>
         <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importSessionJSON(event)">
-        <div style="border-top:1px solid var(--border-color); margin-top:8px; padding-top:10px;">
-          <button class="btn-court-action" style="width:100%; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-size:0.82rem; padding:9px;" onclick="resetToPresetDefault()">
-            ⚠️ Reset ke Data Contoh Bawaan
-          </button>
-        </div>
       </div>
     </div>
 
@@ -1725,10 +1714,11 @@ const ROLE_SCORES = {
 window.addEventListener('DOMContentLoaded', () => {
   const hasSaved = loadFromLocalStorage();
   if (!hasSaved) {
-    loadPresetBadminton();
-    loadPresetSoccer();
-    generateInitialBadminton();
-    generateSoccerTeams();
+    bPlayers = [];
+    sPlayers = [];
+    bSchedule = [];
+    sTeams = [];
+    sMatches = [];
   }
 
   document.getElementById('finalTitleHeader').textContent = sessionTitle;
@@ -1836,77 +1826,10 @@ function switchTab(tabId) {
   if (tabId === 'tab-selesai') renderFinalPodium();
 }
 
-// ── PRESET DATA LOADERS ──
-function loadPresetBadminton() {
-  const presets = [
-    { name: 'alwan', gender: 'L', role: 'Intermadiate' },
-    { name: 'rocky', gender: 'L', role: 'Advance' },
-    { name: 'rizky pede', gender: 'L', role: 'Amatir' },
-    { name: 'vindi', gender: 'P', role: 'Pemula' },
-    { name: 'fiqih', gender: 'L', role: 'Intermadiate' },
-    { name: 'putri', gender: 'P', role: 'Pemula' },
-    { name: 'nadhil', gender: 'P', role: 'Pemula' },
-    { name: 'puji', gender: 'P', role: 'Intermadiate' },
-    { name: 'rere', gender: 'P', role: 'Advance' },
-    { name: 'addrian', gender: 'L', role: 'Intermadiate' },
-    { name: 'awal', gender: 'L', role: 'Amatir' },
-    { name: 'novry', gender: 'L', role: 'Amatir' },
-    { name: 'zakki', gender: 'L', role: 'Pemula' },
-    { name: 'boy', gender: 'L', role: 'Advance' },
-    { name: 'vivi', gender: 'P', role: 'Amatir' },
-    { name: 'yusuf', gender: 'L', role: 'Intermadiate' }
-  ];
-
-  bPlayers = presets.map((p, idx) => ({
-    id: idx + 1,
-    name: p.name,
-    gender: p.gender,
-    role: p.role,
-    paid: true
-  }));
-}
-
-function loadPresetSoccer() {
-  const presets = [
-    { name: 'Budi (GK)', gender: 'L', role: 'GK' },
-    { name: 'Andi (GK)', gender: 'L', role: 'GK' },
-    { name: 'Rocky (DF)', gender: 'L', role: 'DF' },
-    { name: 'Dimas (DF)', gender: 'L', role: 'DF' },
-    { name: 'Fahri (DF)', gender: 'L', role: 'DF' },
-    { name: 'Alwan (MF)', gender: 'L', role: 'MF' },
-    { name: 'Fiqih (MF)', gender: 'L', role: 'MF' },
-    { name: 'Rizky (MF)', gender: 'L', role: 'MF' },
-    { name: 'Reza (MF)', gender: 'L', role: 'MF' },
-    { name: 'Yusuf (FW)', gender: 'L', role: 'FW' },
-    { name: 'Addrian (FW)', gender: 'L', role: 'FW' },
-    { name: 'Taufan (FW)', gender: 'L', role: 'FW' },
-    { name: 'Putri (MF)', gender: 'P', role: 'MF' },
-    { name: 'Vindi (FW)', gender: 'P', role: 'FW' }
-  ];
-
-  sPlayers = presets.map((p, idx) => ({
-    id: idx + 101,
-    name: p.name,
-    gender: p.gender,
-    role: p.role,
-    paid: true
-  }));
-}
-
-function loadPresetPlayers() {
-  if (!checkEditPermission()) return;
-  if (currentSport === 'badminton') {
-    loadPresetBadminton();
-    generateInitialBadminton();
-  } else {
-    loadPresetSoccer();
-    generateSoccerTeams();
-  }
-  updateSessionLabels();
-  renderPlayersList();
-  renderCourtsView();
-  persistAndBroadcast();
-}
+// ── PRESET DATA LOADERS (DISABLED) ──
+function loadPresetBadminton() {}
+function loadPresetSoccer() {}
+function loadPresetPlayers() {}
 
 function clearAllPlayers() {
   if (!checkEditPermission()) return;
@@ -3528,19 +3451,7 @@ function importSessionJSON(event) {
   reader.readAsText(file);
 }
 
-function resetToPresetDefault() {
-  if (!confirm('Kembalikan semua data ke pengaturan awal & daftar pemain contoh bawaan?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  loadPresetBadminton();
-  loadPresetSoccer();
-  generateInitialBadminton();
-  generateSoccerTeams();
-  updateSessionLabels();
-  persistAndBroadcast();
-  closeOnlineModal();
-  switchTab('tab-match');
-  showToast('Data dikembalikan ke pengaturan bawaan!', '🔄');
-}
+function resetToPresetDefault() {}
 
 // ── PWA SERVICE WORKER & INSTALL ──
 function registerPwaServiceWorker() {

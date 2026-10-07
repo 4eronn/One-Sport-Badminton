@@ -1297,10 +1297,10 @@
   <div class="top-sport-brand">ONESPORT</div>
   <div class="sport-toggle-pills">
     <button class="sport-switch-btn active" id="sportBtnBadminton" onclick="switchSport('badminton')">
-      <span class="sport-icon-accent">🏸</span> Badminton
+      Badminton
     </button>
     <button class="sport-switch-btn" id="sportBtnSoccer" onclick="switchSport('minisoccer')">
-      <span class="sport-icon-accent">⚽</span> Mini Soccer
+      Mini Soccer
     </button>
   </div>
 </div>
@@ -1417,17 +1417,13 @@
 
       <!-- Quick Action Buttons -->
       <div class="quick-actions-row">
-        <button class="btn-quick-pill" onclick="loadPresetPlayers()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
-          <span>Contoh</span>
-        </button>
         <button class="btn-quick-pill" onclick="exportCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>Export CSV</span>
         </button>
-        <button class="btn-quick-pill btn-quick-danger" onclick="clearAllPlayers()">
+        <button class="btn-quick-pill btn-quick-danger" onclick="clearAllPlayers()" title="Kosongkan Semua Pemain">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-          <span>Reset</span>
+          <span>Kosongkan</span>
         </button>
       </div>
 
@@ -1724,11 +1720,8 @@
     </button>
 
     <div style="border-top:1px solid var(--border-color); margin-top:14px; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <button class="btn-court-action" style="font-size:0.76rem; padding:8px;" onclick="loadPresetPlayers(); closeSettingsModal();">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg> Muat Contoh Pemain (Preset)
-      </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Reset & Kosongkan Semua Pemain
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
       </button>
     </div>
   </div>
@@ -1982,12 +1975,6 @@
           <span>Pulihkan Cadangan Data (.JSON)</span>
         </button>
         <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importSessionJSON(event)">
-        <div style="border-top:1px solid var(--border-color); margin-top:8px; padding-top:10px;">
-          <button class="btn-court-action" style="width:100%; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="resetToPresetDefault()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span>Reset ke Data Contoh Bawaan</span>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -2056,10 +2043,11 @@ const ROLE_SCORES = {
 window.addEventListener('DOMContentLoaded', () => {
   const hasSaved = loadFromLocalStorage();
   if (!hasSaved) {
-    loadPresetBadminton();
-    loadPresetSoccer();
-    generateInitialBadminton();
-    generateSoccerTeams();
+    bPlayers = [];
+    sPlayers = [];
+    bSchedule = [];
+    sTeams = [];
+    sMatches = [];
   }
 
   document.getElementById('finalTitleHeader').textContent = sessionTitle;
@@ -2167,77 +2155,10 @@ function switchTab(tabId) {
   if (tabId === 'tab-selesai') renderFinalPodium();
 }
 
-// ── PRESET DATA LOADERS ──
-function loadPresetBadminton() {
-  const presets = [
-    { name: 'alwan', gender: 'L', role: 'Intermadiate' },
-    { name: 'rocky', gender: 'L', role: 'Advance' },
-    { name: 'rizky pede', gender: 'L', role: 'Amatir' },
-    { name: 'vindi', gender: 'P', role: 'Pemula' },
-    { name: 'fiqih', gender: 'L', role: 'Intermadiate' },
-    { name: 'putri', gender: 'P', role: 'Pemula' },
-    { name: 'nadhil', gender: 'P', role: 'Pemula' },
-    { name: 'puji', gender: 'P', role: 'Intermadiate' },
-    { name: 'rere', gender: 'P', role: 'Advance' },
-    { name: 'addrian', gender: 'L', role: 'Intermadiate' },
-    { name: 'awal', gender: 'L', role: 'Amatir' },
-    { name: 'novry', gender: 'L', role: 'Amatir' },
-    { name: 'zakki', gender: 'L', role: 'Pemula' },
-    { name: 'boy', gender: 'L', role: 'Advance' },
-    { name: 'vivi', gender: 'P', role: 'Amatir' },
-    { name: 'yusuf', gender: 'L', role: 'Intermadiate' }
-  ];
-
-  bPlayers = presets.map((p, idx) => ({
-    id: idx + 1,
-    name: p.name,
-    gender: p.gender,
-    role: p.role,
-    paid: true
-  }));
-}
-
-function loadPresetSoccer() {
-  const presets = [
-    { name: 'Budi (GK)', gender: 'L', role: 'GK' },
-    { name: 'Andi (GK)', gender: 'L', role: 'GK' },
-    { name: 'Rocky (DF)', gender: 'L', role: 'DF' },
-    { name: 'Dimas (DF)', gender: 'L', role: 'DF' },
-    { name: 'Fahri (DF)', gender: 'L', role: 'DF' },
-    { name: 'Alwan (MF)', gender: 'L', role: 'MF' },
-    { name: 'Fiqih (MF)', gender: 'L', role: 'MF' },
-    { name: 'Rizky (MF)', gender: 'L', role: 'MF' },
-    { name: 'Reza (MF)', gender: 'L', role: 'MF' },
-    { name: 'Yusuf (FW)', gender: 'L', role: 'FW' },
-    { name: 'Addrian (FW)', gender: 'L', role: 'FW' },
-    { name: 'Taufan (FW)', gender: 'L', role: 'FW' },
-    { name: 'Putri (MF)', gender: 'P', role: 'MF' },
-    { name: 'Vindi (FW)', gender: 'P', role: 'FW' }
-  ];
-
-  sPlayers = presets.map((p, idx) => ({
-    id: idx + 101,
-    name: p.name,
-    gender: p.gender,
-    role: p.role,
-    paid: true
-  }));
-}
-
-function loadPresetPlayers() {
-  if (!checkEditPermission()) return;
-  if (currentSport === 'badminton') {
-    loadPresetBadminton();
-    generateInitialBadminton();
-  } else {
-    loadPresetSoccer();
-    generateSoccerTeams();
-  }
-  updateSessionLabels();
-  renderPlayersList();
-  renderCourtsView();
-  persistAndBroadcast();
-}
+// ── PRESET DATA LOADERS (DISABLED) ──
+function loadPresetBadminton() {}
+function loadPresetSoccer() {}
+function loadPresetPlayers() {}
 
 function clearAllPlayers() {
   if (!checkEditPermission()) return;
@@ -4167,19 +4088,7 @@ function importSessionJSON(event) {
   reader.readAsText(file);
 }
 
-function resetToPresetDefault() {
-  if (!confirm('Kembalikan semua data ke pengaturan awal & daftar pemain contoh bawaan?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  loadPresetBadminton();
-  loadPresetSoccer();
-  generateInitialBadminton();
-  generateSoccerTeams();
-  updateSessionLabels();
-  persistAndBroadcast();
-  closeOnlineModal();
-  switchTab('tab-match');
-  showToast('Data dikembalikan ke pengaturan bawaan!');
-}
+function resetToPresetDefault() {}
 
 // ── PWA SERVICE WORKER & INSTALL ──
 function registerPwaServiceWorker() {

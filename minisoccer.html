@@ -1071,8 +1071,8 @@
   <div style="font-weight: 700;">ONESPORT ARENA MANAGEMENT</div>
   <div class="sport-toggle-group">
     <span style="margin-right: 6px;">Pilih Cabang Olahraga:</span>
-    <a href="badminton.html" class="sport-link-btn">🏸 Badminton</a>
-    <a href="minisoccer.html" class="sport-link-btn active">⚽ Mini Soccer</a>
+    <a href="badminton.html" class="sport-link-btn">Badminton</a>
+    <a href="minisoccer.html" class="sport-link-btn active">Mini Soccer</a>
   </div>
 </div>
 
@@ -1231,9 +1231,6 @@
           <h3 class="card-title-clean">Data Pemain Terdaftar (<span id="totalPlayerHeaderCount">0</span>)</h3>
         </div>
         <div style="display: flex; gap: 8px;">
-          <button class="btn-os-outline" onclick="loadSampleMiniSoccer()">
-            🎯 Muat Data Lengkap Mini Soccer
-          </button>
           <button class="btn-os-danger" onclick="clearPlayers()">
             🗑️ Hapus Semua
           </button>
@@ -1538,54 +1535,8 @@ function clearPlayers() {
   updateHeroStats();
 }
 
-// Load exact data from user screenshot
-function loadSampleMiniSoccer() {
-  const sampleData = [
-    { name: 'Andika Rajeswara', ukuran: 'XL', telp: '08318955791', role: '', paid: false, requestTeam: '' },
-    { name: 'Raihan Mikdad Hawari', ukuran: 'XL', telp: '083838787182', role: '', paid: false, requestTeam: '' },
-    { name: 'Samsudin Alparisi', ukuran: 'L', telp: '087875378881', role: '', paid: false, requestTeam: '' },
-    { name: 'Muhammad Nurilham', ukuran: 'L', telp: '082118369160', role: '', paid: false, requestTeam: '' },
-    { name: 'Rehan', ukuran: 'M', telp: '085697833476', role: '', paid: false, requestTeam: '' },
-    { name: 'Agan', ukuran: 'M', telp: '085950120875', role: '', paid: false, requestTeam: '' },
-    { name: 'Aji', ukuran: 'M', telp: '087861357937', role: '', paid: false, requestTeam: '' },
-    { name: 'Aldi Ramadani', ukuran: 'L', telp: '085795198815', role: '', paid: false, requestTeam: '' },
-    { name: 'Ardi Kelana', ukuran: 'L', telp: '085601875259', role: '', paid: false, requestTeam: '' },
-    { name: 'Pakoy', ukuran: 'L', telp: '085722218310', role: '', paid: false, requestTeam: '' },
-    { name: 'Wildan', ukuran: 'M', telp: '087779496582', role: '', paid: false, requestTeam: '' },
-    { name: 'Agung', ukuran: 'L', telp: '', role: '', paid: true, requestTeam: '' },
-    { name: 'Deni', ukuran: 'L', telp: '', role: '', paid: true, requestTeam: '' },
-    { name: 'Gin2', ukuran: 'M', telp: '', role: '', paid: true, requestTeam: '' },
-    { name: 'Zaqi', ukuran: 'L', telp: '', role: '', paid: true, requestTeam: '' },
-    { name: 'Yusuf', ukuran: '', telp: '', role: 'Keeper', paid: true, requestTeam: '' },
-    { name: 'Ujang', ukuran: 'L', telp: '', role: '', paid: true, requestTeam: '' },
-    { name: 'Rizki', ukuran: 'L', telp: '', role: '', paid: true, requestTeam: '' },
-    { name: 'Fikri', ukuran: 'M', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Taufan', ukuran: 'L', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Ananda', ukuran: 'M', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Fuja G', ukuran: 'M', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Jalul', ukuran: 'L', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Dani', ukuran: 'XL', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Ade', ukuran: 'L', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Kaka', ukuran: 'L', telp: '', role: '', paid: false, requestTeam: '' },
-    { name: 'Ilham', ukuran: 'M', telp: '', role: 'Keeper', paid: false, requestTeam: '' },
-    { name: 'Cundori', ukuran: 'L', telp: '', role: '', paid: false, requestTeam: '' }
-  ];
-
-  players = sampleData.map((s, idx) => ({
-    id: nextId(),
-    name: s.name,
-    ukuran: s.ukuran,
-    telp: s.telp,
-    role: s.role,
-    requestTeam: (idx === 0) ? 'Tim A' : (idx === 1) ? 'Tim A' : '',
-    jago: (idx % 7 === 0),
-    paid: s.paid
-  }));
-
-  renderPlayers();
-  renderRecap();
-  updateHeroStats();
-}
+// Sample Data Loader (Disabled)
+function loadSampleMiniSoccer() {}
 
 function renderPlayers() {
   const container = document.getElementById('playerChipsGrid');
@@ -1985,8 +1936,9 @@ function exportCSV() {
 
 // ── INITIALIZATION ──
 window.addEventListener('DOMContentLoaded', () => {
-  loadSampleMiniSoccer();
-  generateTeams();
+  renderPlayers();
+  renderTeams();
+  updateHeroStats();
 });
 </script>
 </body>
