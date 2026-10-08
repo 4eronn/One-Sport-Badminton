@@ -1079,13 +1079,13 @@
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    font-size: 0.7rem;
+    font-size: 0.67rem;
     font-weight: 700;
     cursor: pointer;
-    padding: 4px 6px;
+    padding: 4px 2px;
     border-radius: var(--radius-sm);
     transition: all 0.2s;
-    min-width: 48px;
+    min-width: 40px;
   }
   .nav-item-btn .nav-icon {
     font-size: 1.05rem;
@@ -1181,12 +1181,14 @@
     color: var(--brand-navy-dark);
     font-weight: 800;
     font-size: 0.74rem;
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: var(--radius-full);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 1px 3px rgba(15, 30, 54, 0.05);
   }
@@ -1226,6 +1228,46 @@
     0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
     70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+  /* Live Match Banner Card in Lapangan Tab */
+  .match-live-indicator-card {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 9px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(15, 30, 54, 0.04);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .match-live-indicator-card:hover {
+    border-color: var(--brand-orange);
+    background: #FFFBF9;
+  }
+  .match-live-indicator-card.is-live {
+    background: #ECFDF5;
+    border-color: #10B981;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.15);
+  }
+  .btn-live-card-action {
+    background: var(--brand-navy-light);
+    color: var(--brand-navy-dark);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    pointer-events: none;
+    transition: all 0.2s;
+  }
+  .match-live-indicator-card.is-live .btn-live-card-action {
+    background: #10B981;
+    color: #FFFFFF;
+    border-color: #10B981;
   }
   .spectator-live-banner {
     display: none;
@@ -1425,7 +1467,7 @@
     <div class="header-actions">
       <button class="btn-online-pill" id="btnHeaderOnlinePill" onclick="openOnlineModal()" title="Buka Mode Online & Live Sync">
         <span class="online-status-dot" id="headerOnlineDot"></span>
-        <span id="headerOnlineText">Mode Online</span>
+        <span id="headerOnlineText">Siaran Live</span>
         <span id="headerLiveBadge" class="header-live-count-badge" style="display:none;">0 Live</span>
       </button>
       <button class="btn-header-icon" onclick="openRulesModal()" title="Peraturan Penentuan Juara">
@@ -1556,6 +1598,21 @@
   <!-- ============================================================ -->
   <section id="tab-match" class="app-tab-pane active">
     
+    <!-- Online / Live Broadcast Banner Card -->
+    <div class="match-live-indicator-card" id="matchLiveCard" onclick="openOnlineModal()" title="Buka Pengaturan Siaran Langsung Online">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="online-status-dot" id="matchCardOnlineDot"></span>
+        <div>
+          <div style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark);" id="matchCardLiveTitle">Mode Online & Siaran Live</div>
+          <div style="font-size:0.68rem; color:var(--text-muted);" id="matchCardLiveSub">Tap di sini untuk mulai siaran atau gabung room</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span id="matchCardLiveBadge" class="header-live-count-badge" style="display:none;">0 Live</span>
+        <button class="btn-live-card-action" id="matchCardActionBtn" type="button">Buka</button>
+      </div>
+    </div>
+
     <!-- Top Action Buttons -->
     <div class="action-grid-2">
       <button class="btn-os-cyan" onclick="smartRebalanceUpcoming()">
@@ -1753,6 +1810,13 @@
     </span>
     <span id="navSkorLabel">Skor</span>
   </button>
+  <button class="nav-item-btn" id="nav-tab-online" onclick="openOnlineModal()" title="Mode Online & Siaran Langsung">
+    <span class="nav-icon" style="position: relative;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
+      <span id="navLiveDot" class="online-status-dot" style="position:absolute; top:-2px; right:-3px; width:7px; height:7px; display:none;"></span>
+    </span>
+    <span id="navLiveText" style="color:var(--brand-orange); font-weight:800;">Live</span>
+  </button>
   <button class="nav-item-btn" id="nav-tab-history" onclick="switchTab('tab-history')">
     <span class="nav-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -1831,8 +1895,12 @@
     </button>
 
     <div style="border-top:1px solid var(--border-color); margin-top:14px; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
+      <button class="btn-court-action" style="font-size:0.78rem; padding:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:#FFF1EB; color:#FF5B14; border-color:#FF5B14;" onclick="closeSettingsModal(); openOnlineModal();">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
+        Buka Mode Online & Siaran Live
+      </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan (v1.0.0)
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan (v1.1.0)
       </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
@@ -4564,10 +4632,32 @@ function updateOnlineUI(status) {
   const hostActionBtns = document.getElementById('hostActiveActionButtons');
   const specActionBtns = document.getElementById('spectatorActiveActionButtons');
 
+  const navLiveDot = document.getElementById('navLiveDot');
+  const navLiveText = document.getElementById('navLiveText');
+  const matchCard = document.getElementById('matchLiveCard');
+  const matchCardOnlineDot = document.getElementById('matchCardOnlineDot');
+  const matchCardLiveTitle = document.getElementById('matchCardLiveTitle');
+  const matchCardLiveSub = document.getElementById('matchCardLiveSub');
+  const matchCardActionBtn = document.getElementById('matchCardActionBtn');
+
   if (status === 'connected') {
     if (headerPill) {
       headerPill.className = 'btn-online-pill is-online';
       headerText.textContent = `LIVE: ${currentRoomId} (${userRole === 'host' ? 'Host' : 'Nonton'})`;
+    }
+    if (navLiveDot) {
+      navLiveDot.style.display = 'inline-block';
+      navLiveDot.style.background = '#10B981';
+    }
+    if (navLiveText) {
+      navLiveText.textContent = 'Live (' + currentRoomId + ')';
+    }
+    if (matchCard) matchCard.classList.add('is-live');
+    if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#10B981';
+    if (matchCardLiveTitle) matchCardLiveTitle.textContent = `LIVE: ${currentRoomId} (${userRole === 'host' ? 'Host / Wasit' : 'Penonton'})`;
+    if (matchCardLiveSub) matchCardLiveSub.textContent = userRole === 'host' ? `Siaran aktif realtime • PIN Host: ${hostPin}` : 'Sedang menonton siaran live real-time';
+    if (matchCardActionBtn) {
+      matchCardActionBtn.textContent = 'Kelola';
     }
     if (cardBadge) {
       cardBadge.style.background = '#ECFDF5';
@@ -4598,6 +4688,15 @@ function updateOnlineUI(status) {
       headerPill.className = 'btn-online-pill is-connecting';
       headerText.textContent = 'Menghubungkan...';
     }
+    if (navLiveDot) {
+      navLiveDot.style.display = 'inline-block';
+      navLiveDot.style.background = '#F59E0B';
+    }
+    if (navLiveText) navLiveText.textContent = 'Connecting...';
+    if (matchCard) matchCard.classList.remove('is-live');
+    if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#F59E0B';
+    if (matchCardLiveTitle) matchCardLiveTitle.textContent = 'Menghubungkan ke Room...';
+    if (matchCardLiveSub) matchCardLiveSub.textContent = 'Sedang menyambungkan broker realtime';
     if (cardBadge) {
       cardBadge.style.background = '#FFFBEB';
       cardBadge.style.color = '#92400E';
@@ -4606,8 +4705,15 @@ function updateOnlineUI(status) {
   } else {
     if (headerPill) {
       headerPill.className = 'btn-online-pill';
-      headerText.textContent = 'Mode Online';
+      headerText.textContent = 'Siaran Live';
     }
+    if (navLiveDot) navLiveDot.style.display = 'none';
+    if (navLiveText) navLiveText.textContent = 'Live';
+    if (matchCard) matchCard.classList.remove('is-live');
+    if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#94A3B8';
+    if (matchCardLiveTitle) matchCardLiveTitle.textContent = 'Mode Online & Siaran Live';
+    if (matchCardLiveSub) matchCardLiveSub.textContent = 'Tap di sini untuk mulai siaran atau gabung room';
+    if (matchCardActionBtn) matchCardActionBtn.textContent = 'Buka';
     if (cardBadge) {
       cardBadge.style.background = '#E2E8F0';
       cardBadge.style.color = '#475569';
@@ -4767,6 +4873,16 @@ function updateLiveRoomsDirectoryUI() {
       headerLiveBadge.textContent = `${count} Live`;
     } else {
       headerLiveBadge.style.display = 'none';
+    }
+  }
+
+  const matchCardBadge = document.getElementById('matchCardLiveBadge');
+  if (matchCardBadge) {
+    if (count > 0 && !isOnlineActive) {
+      matchCardBadge.style.display = 'inline-block';
+      matchCardBadge.textContent = `${count} Live`;
+    } else {
+      matchCardBadge.style.display = 'none';
     }
   }
 
@@ -5505,7 +5621,7 @@ function triggerPwaInstall() {
 }
 
 // ── AUTO UPDATE CHECKER VIA GITHUB RELEASES ──
-const CURRENT_APP_VERSION = 'v1.0.0';
+const CURRENT_APP_VERSION = 'v1.1.0';
 const GITHUB_REPO = '4eronn/One-Sport-Badminton';
 const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 const GITHUB_API_LATEST = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
