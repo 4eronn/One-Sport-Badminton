@@ -2704,7 +2704,7 @@ function addNewPlayer() {
 
   if (currentSport === 'badminton') {
     bPlayers.push(newP);
-    if (bSchedule.length > 0) smartRebalanceUpcoming(false);
+    if (bSchedule.length > 0 || bPlayers.length >= 4) smartRebalanceUpcoming(false);
   } else {
     sPlayers.push(newP);
     generateSoccerTeams();
@@ -2821,8 +2821,13 @@ function renderPlayersList() {
 // ============================================================================
 
 function generateInitialBadminton() {
-  if (bPlayers.length < bNumCourts * 4) return;
-  const minRequiredRounds = Math.max(plannedRounds, Math.ceil((bPlayers.length * bMinPlays) / (bNumCourts * 4)));
+  if (bPlayers.length < 4) {
+    bSchedule = [];
+    return;
+  }
+  const maxPossibleCourts = Math.max(1, Math.floor(bPlayers.length / 4));
+  const effectiveCourts = Math.min(bNumCourts, maxPossibleCourts);
+  const minRequiredRounds = Math.max(plannedRounds, Math.ceil((bPlayers.length * bMinPlays) / (effectiveCourts * 4)));
   plannedRounds = minRequiredRounds;
   bSchedule = [];
   const pairHistory = {};
@@ -2831,16 +2836,20 @@ function generateInitialBadminton() {
   bPlayers.forEach(p => { playCountMap[p.id] = 0; restCountMap[p.id] = 0; });
 
   for (let r = 0; r < plannedRounds; r++) {
-    const roundData = buildSmartBadmintonRound(bPlayers, bNumCourts, pairHistory, playCountMap, restCountMap);
-    if (roundData) {
+    const roundData = buildSmartBadmintonRound(bPlayers, effectiveCourts, pairHistory, playCountMap, restCountMap);
+    if (roundData && roundData.courts.length > 0) {
       roundData.resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
       roundData.courts.forEach(c => {
         c.teamA.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
         c.teamB.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
-        const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
-        const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
-        pairHistory[k1] = (pairHistory[k1] || 0) + 1;
-        pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+        if (c.teamA && c.teamA.length >= 2 && c.teamA[0] && c.teamA[1]) {
+          const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k1] = (pairHistory[k1] || 0) + 1;
+        }
+        if (c.teamB && c.teamB.length >= 2 && c.teamB[0] && c.teamB[1]) {
+          const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+        }
       });
       bSchedule.push({
         roundNumber: r + 1,
@@ -3023,18 +3032,108 @@ function smartRebalanceUpcoming(showToast = true) {
   persistAndBroadcast();
 }
 
+function regenerateUpcomingRoundsFrom(fromRoundIdx) {
+  if (bPlayers.length < 4) return;
+  const maxPossibleCourts = Math.max(1, Math.floor(bPlayers.length / 4));
+  const effectiveCourts = Math.min(bNumCourts, maxPossibleCourts);
+  
+  const playCountMap = {};
+  const restCountMap = {};
+  const pairHistory = {};
+  bPlayers.forEach(p => { playCountMap[p.id] = 0; restCountMap[p.id] = 0; });
+  
+  for (let r = 0; r < fromRoundIdx; r++) {
+    if (bSchedule[r]) {
+      (bSchedule[r].resting || []).forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
+      (bSchedule[r].courts || []).forEach(c => {
+        (c.teamA || []).forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        (c.teamB || []).forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        if (c.teamA && c.teamA.length >= 2 && c.teamA[0] && c.teamA[1]) {
+          const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k1] = (pairHistory[k1] || 0) + 1;
+        }
+        if (c.teamB && c.teamB.length >= 2 && c.teamB[0] && c.teamB[1]) {
+          const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+        }
+      });
+    }
+  }
+
+  const keptRounds = bSchedule.slice(0, fromRoundIdx);
+  const neededRounds = Math.max(plannedRounds, fromRoundIdx + 3, Math.ceil((bPlayers.length * bMinPlays) / (effectiveCourts * 4)));
+  plannedRounds = neededRounds;
+
+  for (let r = fromRoundIdx; r < neededRounds; r++) {
+    const roundData = buildSmartBadmintonRound(bPlayers, effectiveCourts, pairHistory, playCountMap, restCountMap);
+    if (roundData && roundData.courts.length > 0) {
+      roundData.resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
+      roundData.courts.forEach(c => {
+        c.teamA.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        c.teamB.forEach(p => { if (p) playCountMap[p.id] = (playCountMap[p.id] || 0) + 1; });
+        if (c.teamA && c.teamA.length >= 2 && c.teamA[0] && c.teamA[1]) {
+          const k1 = [c.teamA[0].id, c.teamA[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k1] = (pairHistory[k1] || 0) + 1;
+        }
+        if (c.teamB && c.teamB.length >= 2 && c.teamB[0] && c.teamB[1]) {
+          const k2 = [c.teamB[0].id, c.teamB[1].id].sort((a,b)=>a-b).join('-');
+          pairHistory[k2] = (pairHistory[k2] || 0) + 1;
+        }
+      });
+      keptRounds.push({
+        roundNumber: r + 1,
+        status: r === bCurrentRoundIndex ? 'ongoing' : 'pending',
+        courts: roundData.courts,
+        resting: roundData.resting
+      });
+    }
+  }
+  bSchedule = keptRounds;
+}
+
 function addNewCourt() {
   if (!checkEditPermission()) return;
   if (currentSport === 'badminton') {
     bNumCourts++;
     updateSessionLabels();
-    smartRebalanceUpcoming(false);
+    if (bSchedule.length === 0 || bPlayers.length < 4) {
+      smartRebalanceUpcoming(false);
+    } else {
+      const currentRound = bSchedule[bCurrentRoundIndex];
+      if (currentRound && currentRound.resting && currentRound.resting.length >= 4) {
+        const newCourtIdx = currentRound.courts.length + 1;
+        const available = [...currentRound.resting];
+        const s4 = available.slice(0, 4);
+        currentRound.resting = available.slice(4);
+        const split = { t1: [s4[0], s4[3]], t2: [s4[1], s4[2]] };
+        const hasFemale = s4.some(p => p.gender === 'P');
+        currentRound.courts.push({
+          courtNumber: newCourtIdx,
+          courtName: `Lapangan ${newCourtIdx}`,
+          category: hasFemale ? 'CAMPURAN' : 'PUTRA',
+          categoryLabel: hasFemale ? 'Terbuka / Advance' : 'Ganda Putra',
+          teamA: split.t1,
+          teamB: split.t2,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+        regenerateUpcomingRoundsFrom(bCurrentRoundIndex + 1);
+      } else {
+        regenerateUpcomingRoundsFrom(bCurrentRoundIndex);
+      }
+    }
+    renderCourtsView();
+    renderLeaderboard();
+    persistAndBroadcast();
+    showToast(`Lapangan berhasil ditambah (${bNumCourts} Lapangan)`);
   } else {
     sMatches.push({
       roundNumber: sMatches.length + 1,
       title: `Match Tambahan ${sMatches.length + 1}`,
-      teamA: sTeams[0],
-      teamB: sTeams[1],
+      teamA: sTeams[0] || { name: 'Tim Garuda (A)' },
+      teamB: sTeams[1] || { name: 'Tim Rajawali (B)' },
       scoreA: null,
       scoreB: null,
       winner: null,
@@ -3042,6 +3141,7 @@ function addNewCourt() {
     });
     renderCourtsView();
     persistAndBroadcast();
+    showToast('Match Mini Soccer berhasil ditambahkan');
   }
 }
 
@@ -3090,13 +3190,24 @@ function renderCourtsView() {
       nextMatchContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:8px;">Tidak ada antrean ronde berikutnya</div>`;
     }
 
-    activeCourtsContainer.innerHTML = currentRound.courts.map((court, cIdx) => {
+    const courtsCount = currentRound.courts.length;
+    const roundHeaderHtml = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; margin-bottom:4px; padding:0 4px;">
+        <div style="font-size:0.82rem; font-weight:900; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px;">
+          <span style="background:var(--brand-orange); color:#fff; font-size:0.68rem; padding:2px 7px; border-radius:999px; font-weight:800;">Ronde ${currentRound.roundNumber}</span>
+          <span>Lapangan Aktif (${courtsCount} Lapangan Bertanding)</span>
+        </div>
+        <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">${courtsCount * 4} Pemain Main</span>
+      </div>
+    `;
+
+    activeCourtsContainer.innerHTML = roundHeaderHtml + currentRound.courts.map((court, cIdx) => {
       const isFinished = court.status === 'finished';
       const isOngoing = court.status === 'ongoing';
       return `
-        <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px;">
+        <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:8px;">
           <div class="card-top-title">
-            <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+            <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${currentRound.roundNumber})</span>
             <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
           </div>
 
@@ -3974,8 +4085,14 @@ const STORAGE_KEY = 'onesport_platform_state_v2';
 const STORAGE_OFFLINE_BACKUP = 'onesport_offline_saved_backup';
 const STORAGE_LIVE_HISTORY = 'onesport_live_history';
 
-const MQTT_BROKER_URL = 'wss://broker.hivemq.com:8884/mqtt';
+const MQTT_BROKER_URLS = [
+  'wss://broker.hivemq.com:8884/mqtt',
+  'wss://broker.emqx.io:8084/mqtt',
+  'wss://test.mosquitto.org:8081/mqtt'
+];
+let currentBrokerIndex = 0;
 const LOBBY_DISCOVERY_TOPIC = 'onesport/v3/lobby/discovery';
+const LOBBY_ROOMS_PREFIX = 'onesport/v3/lobby/rooms/';
 
 let mqttClient = null;
 let currentRoomId = null;
@@ -4498,7 +4615,7 @@ function handleIncomingMessage(topic, rawText) {
     const msg = JSON.parse(rawText);
     if (!msg) return;
 
-    if (topic === LOBBY_DISCOVERY_TOPIC) {
+    if (topic === LOBBY_DISCOVERY_TOPIC || (typeof LOBBY_ROOMS_PREFIX !== 'undefined' && topic.startsWith(LOBBY_ROOMS_PREFIX))) {
       handleLobbyDiscoveryMessage(msg);
       return;
     }
@@ -4731,22 +4848,32 @@ function updateOnlineUI(status) {
 // ── LOBBY DISCOVERY ENGINE (TRACKING ACTIVE ROOMS) ──
 function initMqttDiscovery() {
   if (typeof mqtt === 'undefined') return;
-  if (mqttClient) return;
+  if (mqttClient && (mqttClient.connected || mqttClient.connecting)) return;
+
+  const brokerUrl = MQTT_BROKER_URLS[currentBrokerIndex % MQTT_BROKER_URLS.length];
 
   try {
-    mqttClient = mqtt.connect(MQTT_BROKER_URL, {
+    mqttClient = mqtt.connect(brokerUrl, {
       clientId: myClientId,
       keepalive: 30,
       clean: true,
-      reconnectPeriod: 4000
+      reconnectPeriod: 4000,
+      connectTimeout: 7000
     });
 
     mqttClient.on('connect', () => {
+      console.log('Connected to MQTT Live Broker:', brokerUrl);
       mqttClient.subscribe(LOBBY_DISCOVERY_TOPIC, { qos: 1 });
+      mqttClient.subscribe(LOBBY_ROOMS_PREFIX + '+', { qos: 1 });
       mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
         type: 'DISCOVER_ROOMS_REQUEST',
         senderId: myClientId
       }));
+      if (isOnlineActive && currentRoomId) {
+        mqttClient.subscribe(`onesport/v3/room/${currentRoomId}`, { qos: 1 });
+        mqttClient.subscribe(`onesport/v3/room/${currentRoomId}/state`, { qos: 1 });
+      }
+      updateLiveRoomsDirectoryUI();
     });
 
     mqttClient.on('message', (topic, message) => {
@@ -4754,7 +4881,10 @@ function initMqttDiscovery() {
     });
 
     mqttClient.on('error', (err) => {
-      console.warn('MQTT error:', err);
+      console.warn('MQTT error on broker', brokerUrl, err);
+      if (!mqttClient || !mqttClient.connected) {
+        tryNextBroker();
+      }
     });
 
     mqttClient.on('close', () => {
@@ -4771,7 +4901,17 @@ function initMqttDiscovery() {
   }
 }
 
+function tryNextBroker() {
+  if (mqttClient) {
+    try { mqttClient.end(true); } catch(e){}
+    mqttClient = null;
+  }
+  currentBrokerIndex = (currentBrokerIndex + 1) % MQTT_BROKER_URLS.length;
+  setTimeout(() => initMqttDiscovery(), 1200);
+}
+
 function handleLobbyDiscoveryMessage(msg) {
+  if (!msg) return;
   if (msg.type === 'DISCOVER_ROOMS_REQUEST') {
     if (isOnlineActive && userRole === 'host' && currentRoomId) {
       broadcastRoomLobbyAnnounce('ROOM_HEARTBEAT');
@@ -4805,17 +4945,19 @@ function handleLobbyDiscoveryMessage(msg) {
 
 function broadcastRoomLobbyAnnounce(type = 'ROOM_HEARTBEAT') {
   if (!mqttClient || !isOnlineActive || !currentRoomId || userRole !== 'host') return;
+  const payload = {
+    type: type,
+    roomId: currentRoomId,
+    title: sessionTitle || `Mabar ${currentRoomId}`,
+    sport: currentSport,
+    hostId: myClientId,
+    hasPin: !!hostPin,
+    startedAt: roomStartTime || Date.now(),
+    timestamp: Date.now()
+  };
   try {
-    mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
-      type: type,
-      roomId: currentRoomId,
-      title: sessionTitle || `Mabar ${currentRoomId}`,
-      sport: currentSport,
-      hostId: myClientId,
-      hasPin: !!hostPin,
-      startedAt: roomStartTime || Date.now(),
-      timestamp: Date.now()
-    }));
+    mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify(payload));
+    mqttClient.publish(LOBBY_ROOMS_PREFIX + currentRoomId, JSON.stringify(payload), { qos: 1, retain: true });
   } catch(e){}
 }
 
@@ -4823,7 +4965,7 @@ function startHeartbeatTimer() {
   stopHeartbeatTimer();
   heartbeatInterval = setInterval(() => {
     broadcastRoomLobbyAnnounce('ROOM_HEARTBEAT');
-  }, 15000);
+  }, 12000);
 }
 
 function stopHeartbeatTimer() {
@@ -4837,7 +4979,7 @@ function sweepInactiveRooms() {
   const now = Date.now();
   let changed = false;
   for (const rid in activeLiveRooms) {
-    if (now - activeLiveRooms[rid].lastSeen > 40000) {
+    if (now - activeLiveRooms[rid].lastSeen > 35000) {
       delete activeLiveRooms[rid];
       changed = true;
     }
@@ -4853,8 +4995,11 @@ function refreshLiveRoomsList() {
       type: 'DISCOVER_ROOMS_REQUEST',
       senderId: myClientId
     }));
+  } else {
+    initMqttDiscovery();
   }
   updateLiveRoomsDirectoryUI();
+  showToast('Memperbarui daftar siaran langsung...');
 }
 
 function updateLiveRoomsDirectoryUI() {
@@ -4877,12 +5022,30 @@ function updateLiveRoomsDirectoryUI() {
   }
 
   const matchCardBadge = document.getElementById('matchCardLiveBadge');
-  if (matchCardBadge) {
-    if (count > 0 && !isOnlineActive) {
-      matchCardBadge.style.display = 'inline-block';
-      matchCardBadge.textContent = `${count} Live`;
+  const matchCard = document.getElementById('matchLiveCard');
+  const matchCardOnlineDot = document.getElementById('matchCardOnlineDot');
+  const matchCardLiveTitle = document.getElementById('matchCardLiveTitle');
+  const matchCardLiveSub = document.getElementById('matchCardLiveSub');
+  const matchCardActionBtn = document.getElementById('matchCardActionBtn');
+
+  if (!isOnlineActive) {
+    if (count > 0) {
+      if (matchCardBadge) {
+        matchCardBadge.style.display = 'inline-block';
+        matchCardBadge.textContent = `${count} Live`;
+      }
+      if (matchCard) matchCard.classList.add('is-live');
+      if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#FF5B14';
+      if (matchCardLiveTitle) matchCardLiveTitle.textContent = `🔴 Ada ${count} Siaran Mabar Sedang Live!`;
+      if (matchCardLiveSub) matchCardLiveSub.textContent = 'Tap untuk menonton siaran langsung publik secara realtime';
+      if (matchCardActionBtn) matchCardActionBtn.textContent = 'Tonton';
     } else {
-      matchCardBadge.style.display = 'none';
+      if (matchCardBadge) matchCardBadge.style.display = 'none';
+      if (matchCard) matchCard.classList.remove('is-live');
+      if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#94A3B8';
+      if (matchCardLiveTitle) matchCardLiveTitle.textContent = 'Mode Online & Siaran Live';
+      if (matchCardLiveSub) matchCardLiveSub.textContent = 'Tap di sini untuk mulai siaran atau gabung room';
+      if (matchCardActionBtn) matchCardActionBtn.textContent = 'Buka';
     }
   }
 
@@ -4912,19 +5075,19 @@ function updateLiveRoomsDirectoryUI() {
             <span class="live-pulse-badge">LIVE</span>
             <strong style="font-family:'Outfit',sans-serif; font-size:0.95rem; color:var(--brand-navy-dark);">${r.roomId}</strong>
           </div>
-          <span style="font-size:0.68rem; font-weight:800; background:#F1F5F9; color:var(--brand-navy-mid); padding:2px 6px; border-radius:999px;">
+          <span style="font-size:0.68rem; font-weight:800; background:#F1F5F9; color:var(--brand-navy-mid); padding:2px 8px; border-radius:999px;">
             ${sportIcon} ${sportName}
           </span>
         </div>
-        <div style="font-size:0.75rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-          ${r.title}
+        <div style="font-size:0.78rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          ${r.title || ('Pertandingan ' + r.roomId)}
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-          <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="joinRoomAsSpectator('${r.roomId}')">
-            <span>👁️ Nonton</span>
+        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:6px;">
+          <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" onclick="joinRoomAsSpectator('${r.roomId}')">
+            <span>👁️ Nonton Live</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" onclick="showJoinChoiceModal('${r.roomId}', '${r.title}')">
-            <span>👑 Jadi Host</span>
+          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" onclick="showJoinChoiceModal('${r.roomId}', '${(r.title || '').replace(/'/g, "\\'")}')">
+            <span>👑 Wasit/Host</span>
           </button>
         </div>
       </div>
@@ -5003,6 +5166,10 @@ function executeFinishLiveBroadcast() {
         roomId: finishedRoomId,
         timestamp: Date.now()
       }));
+      mqttClient.publish(LOBBY_ROOMS_PREFIX + finishedRoomId, JSON.stringify({
+        type: 'ROOM_ENDED',
+        roomId: finishedRoomId
+      }), { qos: 1, retain: true });
     } catch(e){}
   }
 
@@ -5055,6 +5222,10 @@ function leaveOnlineRoom(keepRoomData = false) {
           roomId: leftRoom,
           timestamp: Date.now()
         }));
+        mqttClient.publish(LOBBY_ROOMS_PREFIX + leftRoom, JSON.stringify({
+          type: 'ROOM_ENDED',
+          roomId: leftRoom
+        }), { qos: 1, retain: true });
       } catch(e){}
     }
     try {
