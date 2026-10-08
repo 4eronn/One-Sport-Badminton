@@ -2511,6 +2511,9 @@ window.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
 
   switchSport(currentSport);
+  if (!hasSaved || (bPlayers.length === 0 && sPlayers.length === 0)) {
+    switchTab('tab-pemain');
+  }
   initMqttDiscovery();
   renderLiveHistoryList();
   updateLiveHistoryBadges();
@@ -3022,6 +3025,15 @@ function renderSoccerTeams() {
   const container = document.getElementById('soccerTeamsGrid');
   if (!container) return;
 
+  if (sTeams.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.8rem;">
+        Belum ada tim terbentuk. Tambahkan pemain di tab Pemain.
+      </div>
+    `;
+    return;
+  }
+
   container.innerHTML = sTeams.map(t => `
     <div style="margin-bottom:10px;">
       <div class="team-card-header ${t.key}">
@@ -3203,8 +3215,23 @@ function renderCourtsView() {
     benchTitle.textContent = 'Istirahat Ronde Ini';
     const nextMatchContainer = document.getElementById('nextMatchGridContainer');
 
-    if (bSchedule.length === 0 || !bSchedule[bCurrentRoundIndex]) {
-      activeCourtsContainer.innerHTML = `<div class="os-card" style="text-align:center; padding:28px; color:var(--text-muted);">Belum ada jadwal.</div>`;
+    if (bPlayers.length === 0 || bSchedule.length === 0 || !bSchedule[bCurrentRoundIndex]) {
+      activeCourtsContainer.innerHTML = `
+        <div class="os-card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+          <div style="font-size:2.2rem; margin-bottom:8px;">🏸</div>
+          <div style="font-weight:800; font-size:1rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Pemain & Jadwal</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Tambahkan pemain di menu <strong>Pemain</strong> untuk membuat bagan dan jadwal pertandingan otomatis.</div>
+          <button class="btn-os-cyan" style="display:inline-flex; width:auto; padding:8px 18px; margin:0 auto; font-size:0.82rem;" onclick="switchTab('tab-pemain')">
+            + Tambah Pemain Sekarang
+          </button>
+        </div>
+      `;
+      if (nextMatchContainer) {
+        nextMatchContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:12px;">Belum ada antrean ronde berikutnya.</div>`;
+      }
+      if (restingWrap) {
+        restingWrap.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">Belum ada pemain terdaftar.</span>`;
+      }
       return;
     }
 
@@ -3302,6 +3329,23 @@ function renderCourtsView() {
     // Mini Soccer View
     benchTitle.textContent = 'Tim Cadangan / Istirahat';
     renderSoccerTeams();
+
+    if (sPlayers.length === 0 || sMatches.length === 0) {
+      activeCourtsContainer.innerHTML = `
+        <div class="os-card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
+          <div style="font-size:2.2rem; margin-bottom:8px;">⚽</div>
+          <div style="font-weight:800; font-size:1rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Pemain & Match Soccer</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Tambahkan pemain di menu <strong>Pemain</strong> untuk pembagian tim dan jadwal match otomatis.</div>
+          <button class="btn-os-cyan" style="display:inline-flex; width:auto; padding:8px 18px; margin:0 auto; font-size:0.82rem;" onclick="switchTab('tab-pemain')">
+            + Tambah Pemain Sekarang
+          </button>
+        </div>
+      `;
+      if (restingWrap) {
+        restingWrap.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">Belum ada tim terdaftar.</span>`;
+      }
+      return;
+    }
 
     activeCourtsContainer.innerHTML = sMatches.map((m, idx) => {
       const isFinished = m.status === 'finished';
@@ -3844,6 +3888,18 @@ function renderLeaderboard() {
     `;
 
     const list = getBadmintonStatsAndRankings(sortMode);
+    if (list.length === 0) {
+      spotlightName.textContent = '—';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+            Belum ada data pemain terdaftar.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     spotlightName.textContent = list[0] ? list[0].name : '—';
 
     tbody.innerHTML = list.map((s, idx) => `
@@ -3879,6 +3935,18 @@ function renderLeaderboard() {
     `;
 
     const list = getSoccerStatsAndRankings(sortMode);
+    if (list.length === 0) {
+      spotlightName.textContent = '—';
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+            Belum ada data tim terdaftar.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     spotlightName.textContent = list[0] ? list[0].name : '—';
 
     tbody.innerHTML = list.map((s, idx) => `
@@ -3970,6 +4038,17 @@ function renderFinalPodium() {
       </div>
     `;
 
+    if (list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+            Belum ada data pertandingan selesai.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     tbody.innerHTML = list.map((s, idx) => `
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
@@ -4018,6 +4097,17 @@ function renderFinalPodium() {
         <div class="podium-pillar rank-3">3</div>
       </div>
     `;
+
+    if (list.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+            Belum ada data pertandingan selesai.
+          </td>
+        </tr>
+      `;
+      return;
+    }
 
     tbody.innerHTML = list.map((s, idx) => `
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
