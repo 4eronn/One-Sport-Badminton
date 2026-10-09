@@ -2517,7 +2517,12 @@ window.addEventListener('DOMContentLoaded', () => {
   initMqttDiscovery();
   renderLiveHistoryList();
   updateLiveHistoryBadges();
-  checkUrlParamsAndAutoJoin();
+
+  // Restore live session if active before refresh/reload (persists room & server)
+  const isRestoredLive = restoreActiveLiveSessionIfAny();
+  if (!isRestoredLive) {
+    checkUrlParamsAndAutoJoin();
+  }
   registerPwaServiceWorker();
 
   setTimeout(() => {
@@ -4219,6 +4224,7 @@ function exportCSV() {
 const STORAGE_KEY = 'onesport_platform_state_v2';
 const STORAGE_OFFLINE_BACKUP = 'onesport_offline_saved_backup';
 const STORAGE_LIVE_HISTORY = 'onesport_live_history';
+const STORAGE_ACTIVE_LIVE_SESSION = 'onesport_active_live_session';
 
 const MQTT_BROKER_URLS = [
   'wss://broker.hivemq.com:8884/mqtt',
@@ -4234,6 +4240,8 @@ let currentRoomId = null;
 let currentRoomTitle = '';
 let isOnlineActive = false;
 let userRole = 'host'; // 'host' | 'spectator'
+let isHostCreator = false;
+let pendingHostCandidatePin = null;
 let hostPin = '1234';
 let currentRoomPinHash = '';
 let isCollabMode = false;
@@ -4243,7 +4251,93 @@ let qrcodeInstance = null;
 let roomStartTime = null;
 let heartbeatInterval = null;
 let discoverySweepInterval = null;
-let activeLiveRooms = {}; // roomId -> { roomId, title, sport, hostId, hasPin, lastSeen, startedAt }
+let activeLiveRooms = {}; // roomId -> { roomId, title, sport, hostId, hasPin, pinHash, lastSeen, startedAt }
+
+// ── PERSISTENT LIVE SESSION HELPERS (TERSIMPAN DI PERANGKAT HINGGA HOST BERHENTI) ──
+function saveActiveLiveSession() {
+  if (!isOnlineActive || !currentRoomId) return;
+  try {
+    const sessionData = {
+      roomId: currentRoomId,
+      role: userRole,
+      isHostCreator: userRole === 'host' && (isHostCreator || !pendingHostCandidatePin),
+      hostPin: hostPin,
+      pinHash: currentRoomPinHash || hashPin(hostPin),
+      roomStartTime: roomStartTime || Date.now(),
+      sessionTitle: sessionTitle,
+      currentSport: currentSport,
+      isCollabMode: isCollabMode,
+      savedAt: Date.now()
+    };
+    localStorage.setItem(STORAGE_ACTIVE_LIVE_SESSION, JSON.stringify(sessionData));
+
+    // Sinkronkan juga URL browser (?room=CODE) tanpa reload
+    if (window.history && window.history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('room', currentRoomId);
+      window.history.replaceState({}, '', url.toString());
+    }
+  } catch(e) {
+    console.warn('Failed saving active live session:', e);
+  }
+}
+
+function clearActiveLiveSession() {
+  try {
+    localStorage.removeItem(STORAGE_ACTIVE_LIVE_SESSION);
+    if (window.history && window.history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('room');
+      url.searchParams.delete('role');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+  } catch(e) {
+    console.warn('Failed clearing active live session:', e);
+  }
+}
+
+function restoreActiveLiveSessionIfAny() {
+  try {
+    const raw = localStorage.getItem(STORAGE_ACTIVE_LIVE_SESSION);
+    if (!raw) return false;
+    const session = JSON.parse(raw);
+    if (!session || !session.roomId) return false;
+
+    // 1. Pulihkan state terakhir dari cache room jika ada
+    const roomCacheRaw = localStorage.getItem('onesport_room_cache_' + session.roomId);
+    if (roomCacheRaw) {
+      try {
+        const cachedState = JSON.parse(roomCacheRaw);
+        if (cachedState) {
+          applyReceivedState(cachedState);
+        }
+      } catch(err){}
+    }
+
+    // 2. Pulihkan metadata sesi live
+    currentRoomId = session.roomId;
+    userRole = session.role || 'host';
+    isHostCreator = session.isHostCreator !== false;
+    hostPin = session.hostPin || '1234';
+    currentRoomPinHash = session.pinHash || hashPin(hostPin);
+    roomStartTime = session.roomStartTime || Date.now();
+    isCollabMode = !!session.isCollabMode;
+    if (session.sessionTitle) sessionTitle = session.sessionTitle;
+    if (session.currentSport && session.currentSport !== currentSport) {
+      switchSport(session.currentSport);
+    }
+
+    // 3. Sambungkan kembali ke room MQTT realtime
+    updateOnlineUI('connecting');
+    connectOnlineRoom(session.roomId, userRole, hostPin, true /* isReconnecting */, isHostCreator);
+
+    showToast(`🔴 Sesi Live Room ${session.roomId} dipulihkan (Aktif di Perangkat)`, 'success');
+    return true;
+  } catch(e) {
+    console.warn('Failed restoring active live session:', e);
+    return false;
+  }
+}
 
 // ── STATE PERSISTENCE (LOCALSTORAGE) ──
 function getCurrentAppState() {
@@ -4308,9 +4402,9 @@ function persistAndBroadcast(skipBroadcast = false) {
     try {
       localStorage.setItem('onesport_room_cache_' + currentRoomId, JSON.stringify(getCurrentAppState()));
     } catch(e){}
-  } else {
-    saveToLocalStorage();
+    saveActiveLiveSession();
   }
+  saveToLocalStorage();
   if (!skipBroadcast && isOnlineActive && mqttClient && currentRoomId && (userRole === 'host' || isCollabMode)) {
     broadcastStateUpdate();
   }
@@ -4521,7 +4615,8 @@ function startHostRoom() {
     document.getElementById('inputRoomCode').value = code;
   }
   const pin = document.getElementById('inputHostPin').value.trim() || '1234';
-  connectOnlineRoom(code, 'host', pin);
+  connectOnlineRoom(code, 'host', pin, false /* isReconnecting */, true /* isCreator */);
+  closeOnlineModal();
 }
 
 function submitJoinRoomForm() {
@@ -4542,6 +4637,15 @@ function submitJoinRoomForm() {
       if (pinInput) pinInput.focus();
       return;
     }
+    const roomInfo = activeLiveRooms[code];
+    if (roomInfo && roomInfo.pinHash) {
+      if (hashPin(pin) !== roomInfo.pinHash) {
+        showToast('❌ PIN Host salah! Silakan periksa kembali PIN Anda.', 'error');
+        alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + code + '.');
+        if (pinInput) { pinInput.focus(); pinInput.select(); }
+        return;
+      }
+    }
     joinRoomAsHost(code, pin);
   } else {
     joinRoomAsSpectator(code);
@@ -4549,15 +4653,15 @@ function submitJoinRoomForm() {
 }
 
 function joinRoomAsSpectator(roomId) {
-  connectOnlineRoom(roomId.trim().toUpperCase(), 'spectator');
   closeJoinChoiceModal();
   closeOnlineModal();
+  connectOnlineRoom(roomId.trim().toUpperCase(), 'spectator', '', false, false);
 }
 
 function joinRoomAsHost(roomId, candidatePin) {
-  connectOnlineRoom(roomId.trim().toUpperCase(), 'host', candidatePin);
   closeJoinChoiceModal();
   closeOnlineModal();
+  connectOnlineRoom(roomId.trim().toUpperCase(), 'host', candidatePin, false, false);
 }
 
 // ── JOIN CHOICE MODAL (FOR LINK OR DIRECTORY CLICKS) ──
@@ -4603,6 +4707,15 @@ function executeSelectedJoinChoice() {
       if (pinInput) pinInput.focus();
       return;
     }
+    const roomInfo = activeLiveRooms[pendingJoinRoomId];
+    if (roomInfo && roomInfo.pinHash) {
+      if (hashPin(pin) !== roomInfo.pinHash) {
+        showToast('❌ PIN Host salah! Silakan periksa kembali PIN Anda.', 'error');
+        alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + pendingJoinRoomId + '.');
+        if (pinInput) { pinInput.focus(); pinInput.select(); }
+        return;
+      }
+    }
     joinRoomAsHost(pendingJoinRoomId, pin);
   } else {
     joinRoomAsSpectator(pendingJoinRoomId);
@@ -4620,15 +4733,23 @@ function promptUpgradeToHost() {
   if (!pin) return;
 
   const inputPinHash = hashPin(pin);
-  if ((currentRoomPinHash && inputPinHash === currentRoomPinHash) || pin === hostPin) {
-    userRole = 'host';
-    hostPin = pin;
-    updateOnlineUI('connected');
-    showToast('Akses Host / Wasit Berhasil Diberikan! Anda dapat mengubah skor.');
-    return;
+  if (currentRoomPinHash) {
+    if (inputPinHash === currentRoomPinHash || pin === hostPin) {
+      userRole = 'host';
+      hostPin = pin;
+      updateOnlineUI('connected');
+      saveActiveLiveSession();
+      showToast('✅ Akses Host / Wasit Berhasil Diberikan! Anda dapat mengubah skor.', 'success');
+      return;
+    } else {
+      showToast('❌ PIN Host salah! Akses wasit ditolak.', 'error');
+      alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + (currentRoomId || '') + '.');
+      return;
+    }
   }
 
   if (mqttClient && isOnlineActive && currentRoomId) {
+    pendingHostCandidatePin = pin;
     mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
       type: 'VERIFY_HOST_PIN_REQUEST',
       roomId: currentRoomId,
@@ -4637,24 +4758,39 @@ function promptUpgradeToHost() {
     }));
     showToast('Memverifikasi PIN Host...');
   } else {
+    showToast('❌ PIN Host salah!', 'error');
     alert('PIN Host salah!');
   }
 }
 
 // ── CONNECT TO ISOLATED ONLINE ROOM ──
-function connectOnlineRoom(roomId, role = 'host', pin = '1234') {
+function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting = false, isCreator = false) {
   const cleanRoomId = roomId.trim().toUpperCase();
   currentRoomId = cleanRoomId;
-  userRole = role;
   hostPin = pin;
-  currentRoomPinHash = hashPin(pin);
-  roomStartTime = Date.now();
+  currentRoomPinHash = pin ? hashPin(pin) : '';
+  if (!isReconnecting || !roomStartTime) {
+    roomStartTime = Date.now();
+  }
+  isHostCreator = !!isCreator;
 
-  // Backup current offline session
-  try {
-    const currentState = getCurrentAppState();
-    localStorage.setItem(STORAGE_OFFLINE_BACKUP, JSON.stringify(currentState));
-  } catch(e){}
+  // Jika masuk ke room yang sudah ada sebagai host (bukan pembuat baru dan bukan reconnect),
+  // tahan peran sebagai spectator sementara menunggu verifikasi PIN dari broker / host awal.
+  if (role === 'host' && !isCreator && !isReconnecting) {
+    userRole = 'spectator';
+    pendingHostCandidatePin = pin;
+  } else {
+    userRole = role;
+    pendingHostCandidatePin = null;
+  }
+
+  // Backup sesi offline hanya jika koneksi baru (bukan saat reconnect / refresh)
+  if (!isReconnecting && !localStorage.getItem(STORAGE_OFFLINE_BACKUP)) {
+    try {
+      const currentState = getCurrentAppState();
+      localStorage.setItem(STORAGE_OFFLINE_BACKUP, JSON.stringify(currentState));
+    } catch(e){}
+  }
 
   updateOnlineUI('connecting');
 
@@ -4684,17 +4820,30 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234') {
       generateQrCode(fullUrl);
 
       if (userRole === 'host') {
+        saveActiveLiveSession();
         broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
         startHeartbeatTimer();
         broadcastStateUpdate();
+        showToast(`🔴 Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
+      } else if (pendingHostCandidatePin) {
+        // Minta verifikasi PIN Host ke host yang sedang aktif
+        mqttClient.publish(roomTopic, JSON.stringify({
+          type: 'VERIFY_HOST_PIN_REQUEST',
+          roomId: currentRoomId,
+          senderId: myClientId,
+          candidatePin: pendingHostCandidatePin
+        }));
+        showToast(`Memverifikasi PIN Host untuk Room: ${currentRoomId}...`);
       } else {
-        // Request state from active host
+        // Penonton biasa
+        saveActiveLiveSession();
         mqttClient.publish(roomTopic, JSON.stringify({
           type: 'REQUEST_STATE',
           roomId: currentRoomId,
           senderId: myClientId,
           timestamp: Date.now()
         }));
+        showToast(`Terhubung ke Room: ${currentRoomId} (Penonton)`);
       }
 
       mqttClient.publish(roomTopic, JSON.stringify({
@@ -4703,8 +4852,6 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234') {
         senderId: myClientId,
         role: userRole
       }));
-
-      showToast(`Terhubung ke Room: ${currentRoomId} (${userRole === 'host' ? 'Host' : 'Penonton'})`);
     };
 
     if (mqttClient.connected) {
@@ -4798,11 +4945,19 @@ function handleIncomingMessage(topic, rawText) {
       if (msg.targetId === myClientId) {
         if (msg.success) {
           userRole = 'host';
-          currentRoomPinHash = msg.hostPinHash || '';
+          if (pendingHostCandidatePin) hostPin = pendingHostCandidatePin;
+          pendingHostCandidatePin = null;
+          currentRoomPinHash = msg.hostPinHash || (hostPin ? hashPin(hostPin) : '');
           updateOnlineUI('connected');
-          showToast('PIN Terverifikasi! Akses Wasit / Host Diberikan.');
+          saveActiveLiveSession();
+          showToast('✅ PIN Terverifikasi! Akses Wasit / Host Diberikan.', 'success');
         } else {
-          alert('PIN Host salah! Hubungi host room untuk meminta PIN.');
+          pendingHostCandidatePin = null;
+          userRole = 'spectator';
+          updateOnlineUI('connected');
+          saveActiveLiveSession();
+          showToast('❌ PIN Host salah! Akses wasit ditolak.', 'error');
+          alert('PIN Host salah!\n\nPIN yang Anda masukkan salah. Hubungi host pembuat room untuk meminta PIN yang benar.');
         }
       }
       return;
@@ -4811,6 +4966,24 @@ function handleIncomingMessage(topic, rawText) {
     if (msg.type === 'STATE_UPDATE') {
       if (msg.hostPinHash) {
         currentRoomPinHash = msg.hostPinHash;
+      }
+      if (pendingHostCandidatePin) {
+        const candidateHash = hashPin(pendingHostCandidatePin);
+        if (msg.hostPinHash && candidateHash === msg.hostPinHash) {
+          userRole = 'host';
+          hostPin = pendingHostCandidatePin;
+          pendingHostCandidatePin = null;
+          updateOnlineUI('connected');
+          saveActiveLiveSession();
+          showToast('✅ PIN Host terverifikasi! Anda masuk sebagai Host / Wasit.', 'success');
+        } else if (msg.hostPinHash && candidateHash !== msg.hostPinHash) {
+          pendingHostCandidatePin = null;
+          userRole = 'spectator';
+          updateOnlineUI('connected');
+          saveActiveLiveSession();
+          showToast('❌ PIN Host salah! Anda masuk sebagai Penonton (Hanya Lihat).', 'error');
+          alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + currentRoomId + '.\n\nAnda masuk dalam Mode Penonton (Hanya Lihat).');
+        }
       }
       if (userRole === 'spectator' || isCollabMode) {
         applyReceivedState(msg.payload);
@@ -5062,6 +5235,7 @@ function handleLobbyDiscoveryMessage(msg) {
       sport: msg.sport || 'badminton',
       hostId: msg.hostId,
       hasPin: !!msg.hasPin,
+      pinHash: msg.pinHash || '',
       startedAt: msg.startedAt || Date.now(),
       lastSeen: Date.now()
     };
@@ -5087,6 +5261,7 @@ function broadcastRoomLobbyAnnounce(type = 'ROOM_HEARTBEAT') {
     sport: currentSport,
     hostId: myClientId,
     hasPin: !!hostPin,
+    pinHash: currentRoomPinHash || hashPin(hostPin),
     startedAt: roomStartTime || Date.now(),
     timestamp: Date.now()
   };
@@ -5348,6 +5523,7 @@ function openHistoryFromEndedNotice() {
 
 function leaveOnlineRoom(keepRoomData = false) {
   stopHeartbeatTimer();
+  clearActiveLiveSession();
   if (mqttClient && isOnlineActive && currentRoomId) {
     const leftRoom = currentRoomId;
     if (userRole === 'host') {
@@ -5373,13 +5549,18 @@ function leaveOnlineRoom(keepRoomData = false) {
   const leftRoomId = currentRoomId;
   currentRoomId = null;
   currentRoomPinHash = '';
+  pendingHostCandidatePin = null;
   userRole = 'host';
+  isHostCreator = false;
 
   if (!keepRoomData) {
     try {
       const backupRaw = localStorage.getItem(STORAGE_OFFLINE_BACKUP);
       if (backupRaw) {
         applyReceivedState(JSON.parse(backupRaw));
+      }
+      if (leftRoomId) {
+        localStorage.removeItem('onesport_room_cache_' + leftRoomId);
       }
     } catch(e){}
   }
@@ -5817,19 +5998,42 @@ function copyShareUrl() {
   }
 }
 
-function showToast(msg) {
+function showToast(msg, type = 'info') {
   const toast = document.getElementById('liveToastNotification');
   const msgEl = document.getElementById('toastMessage');
+  const iconEl = document.getElementById('toastIcon');
   if (!toast) return;
   if (msgEl) msgEl.textContent = msg;
+
+  if (type === 'error' || msg.includes('salah') || msg.includes('❌') || msg.includes('ditolak')) {
+    toast.style.background = 'rgba(220, 38, 38, 0.95)';
+    toast.style.border = '1.5px solid #FCA5A5';
+    toast.style.boxShadow = '0 10px 25px rgba(220, 38, 38, 0.35)';
+    if (iconEl) iconEl.style.background = '#FEE2E2';
+  } else if (type === 'success' || msg.includes('berhasil') || msg.includes('✅') || msg.includes('Terverifikasi') || msg.includes('dipulihkan')) {
+    toast.style.background = 'rgba(5, 150, 105, 0.95)';
+    toast.style.border = '1.5px solid #6EE7B7';
+    toast.style.boxShadow = '0 10px 25px rgba(5, 150, 105, 0.35)';
+    if (iconEl) iconEl.style.background = '#D1FAE5';
+  } else {
+    toast.style.background = 'rgba(15, 30, 54, 0.96)';
+    toast.style.border = '1px solid rgba(255,255,255,0.15)';
+    toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+    if (iconEl) iconEl.style.background = '#FF5B14';
+  }
+
   toast.classList.add('show');
   clearTimeout(window._toastTimeout);
+  const duration = (type === 'error' || msg.includes('salah') || msg.includes('❌')) ? 3800 : 2800;
   window._toastTimeout = setTimeout(() => {
     toast.classList.remove('show');
-  }, 2800);
+  }, duration);
 }
 
 function checkUrlParamsAndAutoJoin() {
+  if (isOnlineActive && currentRoomId) {
+    return; // Sesi live sudah dipulihkan dari perangkat
+  }
   try {
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
