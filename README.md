@@ -1,22 +1,22 @@
-# 🏸 ONESPORT · Multi-Sport Match & Tournament Engine Online ⚽
+# ONESPORT · Multi-Sport Match & Tournament Engine Online
 
 Aplikasi web manajemen pertandingan mabar, rotasi pemain, live score, dan klasemen otomatis untuk **Badminton** dan **Mini Soccer** yang siap dijalankan secara **Online** dengan **Realtime Cloud Sync** dan **PWA (Progressive Web App)**.
 
 ---
 
-## ✨ Fitur Online & Unggulan Terbaru
+## Fitur Online & Unggulan Terbaru
 
-1. 🌐 **Mode Online & Realtime Sync (WebSockets Zero-Config)**:
+1. **Mode Online & Realtime Sync (WebSockets Zero-Config)**:
    - **Host / Admin**: Buat kode room unik (contoh: `BADM-782`), atur PIN wasit, dan kelola pertandingan.
    - **Penonton / Pemain (Live Score)**: Buka tautan atau masukkan kode room dari HP masing-masing di lapangan. Skor dan status lapangan terupdate secara live dalam hitungan milidetik tanpa reload!
    - **Mode Kolaborasi Wasit**: Wasit di Lapangan 1 & Lapangan 2 bisa menginput skor dari HP masing-masing secara bersamaan.
    - **Scan QR Code**: Cukup tampilkan QR Code di HP/Tablet, pemain lain tinggal scan kamera HP untuk langsung masuk ke sesi live.
-2. 📱 **PWA (Progressive Web App)**:
+2. **PWA (Progressive Web App)**:
    - Bisa di-install langsung di HP Android & iPhone seperti aplikasi native (*Add to Home Screen*).
    - Dilengkapi Service Worker (`sw.js`) untuk caching offline & loading secepat kilat.
-3. 💾 **Penyimpanan Otomatis (LocalStorage)**:
+3. **Penyimpanan Otomatis (LocalStorage)**:
    - Data pemain, jadwal rotasi, dan riwayat skor tidak akan hilang meskipun halaman di-refresh atau browser ditutup.
-4. 📤 **Cadangkan & Pulihkan (Backup & Restore)**:
+4. **Cadangkan & Pulihkan (Backup & Restore)**:
    - Ekspor dan impor seluruh data sesi turnamen ke file `.json`.
    - Ekspor rekap klasemen & statistik ke format `.csv`.
 
