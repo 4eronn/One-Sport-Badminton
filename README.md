@@ -10,7 +10,7 @@
 [![Build Android APK](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml)
 [![Latest release](https://img.shields.io/github/v/release/4eronn/One-Sport-Badminton?label=release)](https://github.com/4eronn/One-Sport-Badminton/releases/latest)
 
-[Live demo](https://4eronn.github.io/One-Sport-Badminton/) · [Download APK](https://github.com/4eronn/One-Sport-Badminton/releases/latest) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
+[Live demo]([https://4eronn.github.io/One-Sport-Badminton/](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT)) · [Download APK](https://github.com/4eronn/One-Sport-Badminton/releases/latest) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
 
 </div>
 
@@ -71,7 +71,7 @@ The leaderboard can also be sorted by total score, score difference or win rate.
 
 ### Use it in the browser
 
-Open the [live demo](https://4eronn.github.io/One-Sport-Badminton/). No account or setup is required.
+Open the [live demo]([https://4eronn.github.io/One-Sport-Badminton/](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT)). No account or setup is required.
 
 ### Install as a PWA
 
