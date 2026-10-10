@@ -10,7 +10,7 @@
 [![Build Android APK](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml)
 [![Latest release](https://img.shields.io/github/v/release/4eronn/One-Sport-Badminton?label=release)](https://github.com/4eronn/One-Sport-Badminton/releases/latest)
 
-[Live demo]([https://4eronn.github.io/One-Sport-Badminton/](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT)) · [Download APK](https://github.com/4eronn/One-Sport-Badminton/releases/latest) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
+[Live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT) · [Download APK](https://github.com/4eronn/One-Sport-Badminton/releases/latest) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
 
 </div>
 
@@ -71,7 +71,7 @@ The leaderboard can also be sorted by total score, score difference or win rate.
 
 ### Use it in the browser
 
-Open the [live demo]([https://4eronn.github.io/One-Sport-Badminton/](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT)). No account or setup is required.
+Open the [live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT). No account or setup is required.
 
 ### Install as a PWA
 
@@ -139,7 +139,9 @@ Live sync uses MQTT over secure WebSockets. See [Known limitations](#known-limit
 
 ## Deployment
 
-**Website.** Every push to `main` runs `deploy.yml` and publishes the repository root to GitHub Pages. To host it elsewhere, upload the files to any static host such as Netlify or Vercel; no build command is needed.
+**Website.** The live demo is hosted on [Vercel](https://vercel.com). The project is a plain static site, so any static host works (Vercel, Netlify, Cloudflare Pages); no build command is needed and the output directory is the repository root.
+
+The repository also includes an optional GitHub Pages workflow (`deploy.yml`) that publishes the root on every push to `main`. To use it, set *Settings → Pages → Source* to **GitHub Actions**; it will not publish anything until that is enabled.
 
 **Android APK.** Every push to `main`, and every tag matching `v*`, runs `build-apk.yml`. The workflow copies the web files into `android/app/src/main/assets`, builds a release APK with JDK 17 and Gradle, and attaches it to a GitHub Release. The app version comes from `versionName` in `android/app/build.gradle`.
 
