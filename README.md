@@ -1,74 +1,170 @@
-# ONESPORT · Multi-Sport Match & Tournament Engine Online
+<div align="center">
 
-Aplikasi web manajemen pertandingan mabar, rotasi pemain, live score, dan klasemen otomatis untuk **Badminton** dan **Mini Soccer** yang siap dijalankan secara **Online** dengan **Realtime Cloud Sync** dan **PWA (Progressive Web App)**.
+<img src="logo.png" alt="ONESPORT logo" width="120" />
 
----
+# ONESPORT
 
-## Fitur Online & Unggulan Terbaru
+**Match rotation, live scoring and automatic standings for casual badminton and mini soccer sessions.**
 
-1. **Mode Online & Realtime Sync (WebSockets Zero-Config)**:
-   - **Host / Admin**: Buat kode room unik (contoh: `BADM-782`), atur PIN wasit, dan kelola pertandingan.
-   - **Penonton / Pemain (Live Score)**: Buka tautan atau masukkan kode room dari HP masing-masing di lapangan. Skor dan status lapangan terupdate secara live dalam hitungan milidetik tanpa reload!
-   - **Mode Kolaborasi Wasit**: Wasit di Lapangan 1 & Lapangan 2 bisa menginput skor dari HP masing-masing secara bersamaan.
-   - **Scan QR Code**: Cukup tampilkan QR Code di HP/Tablet, pemain lain tinggal scan kamera HP untuk langsung masuk ke sesi live.
-2. **PWA (Progressive Web App)**:
-   - Bisa di-install langsung di HP Android & iPhone seperti aplikasi native (*Add to Home Screen*).
-   - Dilengkapi Service Worker (`sw.js`) untuk caching offline & loading secepat kilat.
-3. **Penyimpanan Otomatis (LocalStorage)**:
-   - Data pemain, jadwal rotasi, dan riwayat skor tidak akan hilang meskipun halaman di-refresh atau browser ditutup.
-4. **Cadangkan & Pulihkan (Backup & Restore)**:
-   - Ekspor dan impor seluruh data sesi turnamen ke file `.json`.
-   - Ekspor rekap klasemen & statistik ke format `.csv`.
+[![Deploy to GitHub Pages](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/deploy.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/deploy.yml)
+[![Build Android APK](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml)
+[![Latest release](https://img.shields.io/github/v/release/4eronn/One-Sport-Badminton?label=release)](https://github.com/4eronn/One-Sport-Badminton/releases/latest)
+
+[Live demo](https://4eronn.github.io/One-Sport-Badminton/) · [Download APK](https://github.com/4eronn/One-Sport-Badminton/releases/latest) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
+
+</div>
 
 ---
 
-## 🚀 Panduan Publikasi ke GitHub Pages (Online Gratis)
+## Overview
 
-Untuk membuat website ini online dan dapat diakses publik oleh siapa saja lewat internet menggunakan **GitHub Pages**:
+ONESPORT is a lightweight web app for organizing informal group play sessions, the kind where a dozen or more people show up, share a few courts, and want everyone to get a fair number of games.
 
-### Langkah 1: Buat Repositori di GitHub
-1. Buka [github.com/new](https://github.com/new) di browser Anda.
-2. Masukkan nama repositori, misalnya: `onesport` atau `onesport-mabar`.
-3. Pilih **Public**.
-4. Klik tombol **Create repository** (jangan centang README/license karena file sudah ada di folder ini).
+Add the players, set the number of courts, and the app builds the rotation, tracks scores as matches finish, and ranks everyone on a leaderboard. A session can also be broadcast live, so players and referees can follow along or enter scores from their own phones.
 
-### Langkah 2: Hubungkan & Push Kode dari Komputer Anda
-Buka Terminal / PowerShell di folder ini, lalu jalankan perintah berikut (ganti `<username>` dan `<repo-name>` dengan milik akun GitHub Anda):
+It runs entirely in the browser with no backend and no build step. It can be used as a website, installed as a PWA, or sideloaded as an Android app.
+
+> The interface is currently in Indonesian.
+
+## Features
+
+### Badminton
+
+- **Fair rotation.** Players who just sat out are scheduled first, followed by those with the fewest games played. Each player is guaranteed a configurable minimum number of matches (default: 3).
+- **Skill levels.** Players are tagged as Pemula, Amatir, Intermediate or Advance, and teams are balanced accordingly.
+- **Gender-aware pairing.** Women are grouped into women-only matches when enough players are available. Advance-level women can also be placed in open matches.
+- **Flexible courts.** Add courts on the fly and change the number of planned rounds in settings.
+- **Manual overrides.** Swap players in an upcoming match, edit a player's level mid-session, or use *Smart Match* to regenerate the upcoming rounds.
+- **Resting list.** See at a glance who is sitting out in the current round.
+
+### Mini soccer
+
+- Team generator with player positions (GK, DF, MF, FW) and a configurable team count.
+- Re-shuffle teams with one tap.
+- Match results feed into the same leaderboard and history screens as badminton.
+
+### Standings
+
+Players are ranked by wins, with a tie-break sequence that is applied in order and stops as soon as a tie is resolved:
+
+1. Head-to-head result (when exactly two players are tied)
+2. Total points scored
+3. Number of titles across sessions
+
+The leaderboard can also be sorted by total score, score difference or win rate. When a session ends, the final podium can be shared directly to WhatsApp.
+
+### Live sessions
+
+- A host creates a room with a unique code (for example `BADM-782`) and a referee PIN.
+- **Spectators** open the link or scan the QR code to follow courts and scores in real time.
+- **Referees** can submit scores from their own device, so multiple courts can be scored at once.
+- Open rooms are listed in a lobby, and finished broadcasts are saved to a local history.
+
+### Data and platform
+
+- Session data is saved to `localStorage` automatically and survives a refresh or a closed tab.
+- Export and import full sessions as JSON; export the player roster as CSV.
+- Installable as a PWA on Android and iOS, with offline caching through a service worker.
+- Checks GitHub Releases for a newer version and prompts to update.
+
+## Getting started
+
+### Use it in the browser
+
+Open the [live demo](https://4eronn.github.io/One-Sport-Badminton/). No account or setup is required.
+
+### Install as a PWA
+
+- **Android (Chrome):** open the site, tap the ⋮ menu, then choose *Install app* or *Add to Home screen*.
+- **iOS (Safari):** open the site, tap *Share*, then choose *Add to Home Screen*.
+
+### Install the Android app
+
+Download the latest `ONESPORT-v*.apk` from the [Releases](https://github.com/4eronn/One-Sport-Badminton/releases/latest) page and open it on your device. You will need to allow installation from unknown sources the first time.
+
+### Run locally
+
+There are no dependencies to install. Serve the project root with any static file server; the service worker requires `http://localhost` or HTTPS, so opening `index.html` directly from disk will not enable PWA features.
 
 ```bash
-git branch -M main
-git remote add origin https://github.com/<username>/<repo-name>.git
-git push -u origin main
+git clone https://github.com/4eronn/One-Sport-Badminton.git
+cd One-Sport-Badminton
+
+# any static server works
+python3 -m http.server 8000
 ```
 
-*(Jika diminta login, masukkan akun GitHub Anda / Personal Access Token).*
+Then visit <http://localhost:8000>.
 
-### Langkah 3: Aktifkan GitHub Pages
-1. Di halaman repositori GitHub Anda, buka menu **Settings** (di tab bagian atas).
-2. Di sidebar kiri, klik menu **Pages** (di bawah *Code and automation*).
-3. Di bagian **Build and deployment**:
-   - **Source**: Pilih `Deploy from a branch`
-   - **Branch**: Pilih `main` dan folder `/ (root)`
-   - Klik **Save**.
-4. Tunggu sekitar 1 - 2 menit, GitHub akan menampilkan pesan:
-   > **Your site is live at `https://<username>.github.io/<repo-name>/`**
+## Running a live session
 
-🎉 **Selesai!** Website ONESPORT Anda sekarang sudah resmi online dan bisa dibuka oleh siapa saja dari seluruh dunia!
+1. Open the live panel (the **Live** tab or the banner on the court screen).
+2. Choose **Host**, enter a room code and a PIN, and start the broadcast.
+3. Share the room code or show the QR code.
+4. Others join as a **spectator** (view only) or as a **referee** (view and score, using the PIN).
 
----
+Live sync uses MQTT over secure WebSockets. See [Known limitations](#known-limitations) before relying on it for anything sensitive.
 
-## 📲 Cara Install Aplikasi di Smartphone (PWA)
+## Project structure
 
-- **Android (Google Chrome)**:
-  Buka link website online Anda → Tekan tombol titik tiga (⋮) di pojok kanan atas → Pilih **"Install App"** atau **"Tambahkan ke Layar Utama"**.
-- **iPhone / iPad (Safari)**:
-  Buka link website online Anda di Safari → Tekan tombol **Share** (ikon kotak panah ke atas di bagian bawah) → Pilih **"Add to Home Screen"** (*Tambahkan ke Layar Utama*).
+```
+.
+├── index.html              # The application (markup, styles and logic in one file)
+├── minisoccer.html         # Standalone mini soccer view
+├── badminton.html          # Redirects to index.html
+├── badminton-bracket.html  # Redirects to index.html
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service worker (offline caching)
+├── logo*.png               # App icons and branding
+├── android/                # Android WebView wrapper (Gradle project)
+│   └── app/src/main/
+│       ├── java/com/onesport/app/MainActivity.java
+│       └── assets/         # Copy of the web files, synced by CI at build time
+└── .github/workflows/
+    ├── deploy.yml          # Publishes the site to GitHub Pages
+    └── build-apk.yml       # Builds the APK and publishes a release
+```
 
----
+## Tech stack
 
-## 🛠️ Alternatif Hosting Instan Lainnya (100% Gratis)
+| Area | Technology |
+| --- | --- |
+| Frontend | HTML, CSS and vanilla JavaScript (no framework, no bundler) |
+| Realtime | [MQTT.js](https://github.com/mqttjs/MQTT.js) 5.5.0 over WebSockets |
+| QR codes | [qrcodejs](https://github.com/davidshimjs/qrcodejs) |
+| Offline / install | Service Worker and Web App Manifest |
+| Fonts | Outfit and Plus Jakarta Sans (Google Fonts) |
+| Android | Native WebView wrapper, `minSdk 24`, `targetSdk 34`, Java 17 |
+| CI/CD | GitHub Actions, GitHub Pages and GitHub Releases |
 
-- **Netlify Drop (Paling Instan tanpa Git)**:
-  Buka [app.netlify.com/drop](https://app.netlify.com/drop), lalu tarik (*drag & drop*) folder ini ke browser. Dalam 30 detik website Anda langsung online dengan domain publik HTTPS gratis!
-- **Vercel**:
-  Buka [vercel.com](https://vercel.com) → Import repositori GitHub Anda → Deploy langsung 1-klik.
+## Deployment
+
+**Website.** Every push to `main` runs `deploy.yml` and publishes the repository root to GitHub Pages. To host it elsewhere, upload the files to any static host such as Netlify or Vercel; no build command is needed.
+
+**Android APK.** Every push to `main`, and every tag matching `v*`, runs `build-apk.yml`. The workflow copies the web files into `android/app/src/main/assets`, builds a release APK with JDK 17 and Gradle, and attaches it to a GitHub Release. The app version comes from `versionName` in `android/app/build.gradle`.
+
+To build locally you need JDK 17 and the Android SDK:
+
+```bash
+cp index.html minisoccer.html badminton.html manifest.json sw.js logo*.png \
+   android/app/src/main/assets/
+cd android
+./gradlew assembleRelease
+```
+
+## Known limitations
+
+- **No backend.** All state lives in the browser. Clearing site data removes a session unless it was exported first.
+- **Public MQTT brokers.** Live sync relies on free public brokers (EMQX, HiveMQ and the Mosquitto test server), so availability is outside this project's control. Anyone who knows or guesses a room code can subscribe to it.
+- **The host PIN is a convenience, not security.** It is hashed on the client with a simple non-cryptographic function and is meant to prevent accidental score edits, not to stop a determined user.
+- **Android release signing.** Release APKs are currently signed with the debug keystore. They install fine, but they are not suitable for Play Store distribution as-is.
+
+## Contributing
+
+Issues and pull requests are welcome. For larger changes, please open an issue first so the approach can be discussed.
+
+Because the app is a single static page, changes are easy to test: edit the files, serve the folder locally, and reload. If you change anything that the Android build bundles, remember that the CI workflow re-syncs `android/app/src/main/assets` on build.
+
+## Author
+
+Maintained by [@4eronn](https://github.com/4eronn).
