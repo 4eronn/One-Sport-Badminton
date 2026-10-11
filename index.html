@@ -26,45 +26,52 @@
 
 <style>
   :root {
-    /* ONESPORT White & Navy & Orange Palette */
-    --bg-page: #F8FAFC;
+    /* ONESPORT.ID Official Theme Palette */
+    --bg-page: #F5F9FD;
     --bg-card: #FFFFFF;
-    --bg-alt: #F1F5F9;
+    --bg-alt: #EBF3FA;
     --bg-input: #FFFFFF;
     
-    --brand-navy-dark: #0F1E36;
-    --brand-navy: #152B52;
-    --brand-navy-mid: #1E3A6C;
-    --brand-navy-soft: #2B4C85;
-    --brand-navy-light: #EBF2FA;
+    --brand-navy-dark: #071A33;
+    --brand-navy: #0E294D;
+    --brand-navy-mid: #163864;
+    --brand-navy-soft: #25518A;
+    --brand-navy-light: #EAF2FB;
     
-    --brand-orange: #FF5B14;
-    --brand-orange-hover: #E64A06;
-    --brand-orange-glow: rgba(255, 91, 20, 0.28);
-    --brand-orange-light: #FFF1EB;
-    --brand-orange-subtle: #FFE4D6;
+    --brand-blue: #0B74DE;
+    --brand-blue-hover: #075BB2;
+    --brand-blue-soft: #EAF4FF;
+    --brand-blue-glow: rgba(11, 116, 222, 0.28);
     
-    --gradient-hero: linear-gradient(135deg, #EDF4FB 0%, #FFFFFF 55%, #FFF2EA 100%);
-    --gradient-navy: linear-gradient(135deg, #0F1E36 0%, #1E3A6C 100%);
-    --gradient-orange: linear-gradient(135deg, #FF5B14 0%, #FF7839 100%);
+    /* Mapped to Onesport Royal Blue for Primary CTA & Accents */
+    --brand-orange: #0B74DE;
+    --brand-orange-hover: #075BB2;
+    --brand-orange-glow: rgba(11, 116, 222, 0.28);
+    --brand-orange-light: #EAF4FF;
+    --brand-orange-subtle: #D8ECFF;
+    
+    --gradient-hero: linear-gradient(135deg, #EAF4FF 0%, #FFFFFF 55%, #F0F7FF 100%);
+    --gradient-navy: linear-gradient(135deg, #071A33 0%, #0E294D 100%);
+    --gradient-orange: linear-gradient(135deg, #0B74DE 0%, #298DF7 100%);
+    --gradient-blue: linear-gradient(135deg, #0B74DE 0%, #298DF7 100%);
     --gradient-gold: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
     --gradient-pitch: linear-gradient(145deg, #FFFFFF 0%, #F0FDF4 100%);
     
-    --text-primary: #0F1E36;
-    --text-secondary: #475569;
-    --text-muted: #64748B;
-    --border-color: #E2E8F0;
-    --border-focus: #FF5B14;
+    --text-primary: #071A33;
+    --text-secondary: #334E68;
+    --text-muted: #627D98;
+    --border-color: #E2EBF4;
+    --border-focus: #0B74DE;
     
     --jago-gold: #F59E0B;
     --paid-green: #10B981;
     --terra: #EF4444;
     
     /* Team Colors for Mini Soccer */
-    --team-a-color: #0F1E36;
-    --team-a-bg: #EBF2FA;
-    --team-b-color: #FF5B14;
-    --team-b-bg: #FFF1EB;
+    --team-a-color: #071A33;
+    --team-a-bg: #EAF2FB;
+    --team-b-color: #0B74DE;
+    --team-b-bg: #EAF4FF;
     --team-c-color: #059669;
     --team-c-bg: #ECFDF5;
     --team-d-color: #7C3AED;
@@ -75,9 +82,9 @@
     --role-pemula-bg: #F1F5F9;
     --role-pemula-border: #CBD5E1;
 
-    --role-amatir: #2563EB;
-    --role-amatir-bg: #EFF6FF;
-    --role-amatir-border: #BFDBFE;
+    --role-amatir: #0B74DE;
+    --role-amatir-bg: #EAF4FF;
+    --role-amatir-border: #BAE6FD;
 
     --role-inter: #EA580C;
     --role-inter-bg: #FFF7ED;
@@ -95,8 +102,8 @@
     --gender-female-bg: #FCE7F3;
     --gender-female-border: #FBCFE8;
 
-    --shadow-subtle: 0 2px 10px rgba(15, 30, 54, 0.04);
-    --shadow-card: 0 8px 24px -4px rgba(15, 30, 54, 0.08), 0 2px 6px -1px rgba(15, 30, 54, 0.04);
+    --shadow-subtle: 0 2px 10px rgba(7, 26, 51, 0.04);
+    --shadow-card: 0 8px 24px -4px rgba(7, 26, 51, 0.08), 0 2px 6px -1px rgba(7, 26, 51, 0.04);
     
     --radius-full: 9999px;
     --radius-xl: 20px;
@@ -114,8 +121,8 @@
   
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #0B132B;
-    background-image: radial-gradient(circle at 50% 15%, #172B4D 0%, #0B132B 80%);
+    background: #071A33;
+    background-image: radial-gradient(circle at 50% 15%, #0E294D 0%, #071A33 80%);
     background-attachment: fixed;
     color: var(--text-primary);
     min-height: 100vh;
@@ -151,17 +158,22 @@
     }
   }
 
-  /* ── SPLASH / LOADING SCREEN (White Background with Logo) ── */
+  /* ── SPLASH / LOADING SCREEN (onesport.id Hero Asset & Glassmorphism) ── */
   #splashScreen {
     position: fixed;
     inset: 0;
-    background: #FFFFFF;
-    z-index: 9999;
+    background-color: #071A33;
+    background-image: linear-gradient(180deg, rgba(7, 26, 51, 0.8) 0%, rgba(7, 26, 51, 0.72) 45%, rgba(7, 26, 51, 0.95) 100%), url('onesport-home-hero.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    z-index: 99999;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+    overflow: hidden;
   }
   #splashScreen.hide {
     opacity: 0;
@@ -172,21 +184,68 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
-    animation: splashPulse 1.8s ease-in-out infinite;
+    text-align: center;
+    padding: 30px 24px;
+    background: rgba(7, 26, 51, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(11, 116, 222, 0.25);
+    max-width: 90%;
+    width: 320px;
+    animation: splashPulse 2.4s ease-in-out infinite;
+  }
+  .splash-kicker {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: #38BDF8;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(56, 189, 248, 0.25);
   }
   .splash-logo {
-    width: 190px;
+    width: 170px;
     height: auto;
     object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    margin-bottom: 6px;
+  }
+  .splash-brand-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 1.45rem;
+    letter-spacing: 0.5px;
+    color: #FFFFFF;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .splash-brand-title span {
+    color: #0B74DE;
+  }
+  .splash-brand-dot {
+    color: #38BDF8 !important;
+  }
+  .splash-tagline {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94A3B8;
+    letter-spacing: 0.2px;
+    margin-top: 6px;
   }
   .splash-loader-bar {
-    width: 140px;
-    height: 4px;
-    background: #F1F5F9;
+    width: 160px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.14);
     border-radius: var(--radius-full);
     overflow: hidden;
     position: relative;
+    margin-top: 18px;
+    margin-bottom: 10px;
   }
   .splash-loader-progress {
     position: absolute;
@@ -194,19 +253,20 @@
     left: 0;
     height: 100%;
     width: 40%;
-    background: var(--gradient-orange);
+    background: linear-gradient(90deg, #0B74DE 0%, #38BDF8 100%);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
     border-radius: var(--radius-full);
-    animation: loaderSlide 1.2s infinite ease-in-out;
+    animation: loaderSlide 1.3s infinite ease-in-out;
   }
   .splash-subtext {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
+    color: #CBD5E1;
+    letter-spacing: 0.4px;
   }
   @keyframes splashPulse {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.03); }
+    50% { transform: scale(1.02); }
   }
   @keyframes loaderSlide {
     0% { left: -40%; width: 30%; }
@@ -214,10 +274,31 @@
     100% { left: 100%; width: 30%; }
   }
 
+  /* ── ONESPORT.ID OFFICIAL TOP ANNOUNCEMENT BAR ── */
+  .topbar-onesport {
+    background: #040E1C;
+    color: #93C5FD;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    padding: 6px 12px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .topbar-onesport strong {
+    color: #FFFFFF;
+    letter-spacing: 0.6px;
+  }
+
   /* ── TOP MULTISPORT SWITCHER BAR ── */
   .top-sport-bar {
-    background: var(--brand-navy-dark);
-    padding: 8px 12px;
+    background: #071A33;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -227,9 +308,9 @@
   .top-sport-brand {
     font-family: 'Outfit', sans-serif;
     font-weight: 900;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     letter-spacing: 0.8px;
-    color: #94A3B8;
+    color: #FFFFFF;
   }
   .sport-toggle-pills {
     display: flex;
@@ -252,9 +333,9 @@
   }
   .sport-switch-btn:hover { color: #FFFFFF; background: rgba(255, 255, 255, 0.16); }
   .sport-switch-btn.active {
-    background: var(--brand-orange);
+    background: var(--brand-blue);
     color: #FFFFFF;
-    box-shadow: 0 2px 8px var(--brand-orange-glow);
+    box-shadow: 0 2px 10px rgba(11, 116, 222, 0.35);
   }
   .sport-icon-accent {
     font-size: 0.82rem;
@@ -263,8 +344,9 @@
 
   /* ── NAVBAR ── */
   .app-header {
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1.5px solid var(--border-color);
     position: sticky;
     top: 0;
@@ -288,7 +370,7 @@
     height: 32px;
     width: auto;
     object-fit: contain;
-    filter: drop-shadow(0 1px 3px rgba(15, 30, 54, 0.08));
+    filter: drop-shadow(0 1px 3px rgba(7, 26, 51, 0.08));
   }
   .header-title-text {
     display: flex;
@@ -296,12 +378,18 @@
   }
   .header-title-text .app-name {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 900;
     color: var(--brand-navy-dark);
     line-height: 1;
+    letter-spacing: -0.2px;
   }
-  .header-title-text .app-name span { color: var(--brand-orange); }
+  .header-title-text .app-name span { color: var(--brand-blue); }
+  .app-dot-id {
+    color: #0284C7 !important;
+    font-size: 0.9em;
+    font-weight: 900;
+  }
   .header-title-text .app-sub {
     font-size: 0.6rem;
     font-weight: 800;
@@ -711,6 +799,94 @@
     border-color: #10B981;
     color: #FFFFFF;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
+  /* ── CUSTOM COURT / LAPANGAN PILIHAN STYLES ── */
+  .btn-court-quick-action {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    background: #F1F5F9;
+    border: 1px solid var(--border-color);
+    color: var(--brand-navy-dark);
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.15s ease;
+  }
+  .btn-court-quick-action:hover {
+    background: #E2E8F0;
+    border-color: #94A3B8;
+  }
+  .btn-court-quick-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .custom-court-slot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 9px;
+    border-radius: var(--radius-sm);
+    font-size: 0.76rem;
+    font-weight: 700;
+    border: 1px solid var(--border-color);
+    background: #F8FAFC;
+    min-height: 36px;
+    margin-bottom: 4px;
+    box-sizing: border-box;
+  }
+  .custom-court-slot.empty {
+    border: 1.5px dashed #CBD5E1;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.72rem;
+    justify-content: center;
+  }
+  .custom-court-slot.filled {
+    background: #FFFFFF;
+    border-color: #94A3B8;
+    color: var(--brand-navy-dark);
+  }
+  .custom-tab-pill {
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    border: 1px solid var(--border-color);
+    background: #FFFFFF;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .custom-tab-pill.active {
+    background: var(--brand-navy-dark);
+    color: #FFFFFF;
+    border-color: var(--brand-navy-dark);
+  }
+  .custom-player-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border-color);
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .custom-player-item:hover {
+    background: #F8FAFC;
+    border-color: #94A3B8;
+  }
+  .custom-player-item.selected {
+    background: #EFF6FF;
+    border-color: #3B82F6;
+    box-shadow: 0 1px 4px rgba(59, 130, 246, 0.15);
   }
 
   /* ── LEADERBOARD & PODIUM ── */
@@ -1207,16 +1383,20 @@
     align-items: center;
     gap: 5px;
     white-space: nowrap;
-    flex-shrink: 0;
+    max-width: 175px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(15, 30, 54, 0.05);
+    box-shadow: 0 1px 3px rgba(7, 26, 51, 0.05);
   }
   .btn-online-pill:hover {
-    border-color: var(--brand-orange);
+    border-color: var(--brand-blue);
     transform: translateY(-1px);
   }
   .btn-online-pill.is-online {
-    background: #ECFDF5;
+    background: #EBF7EE;
     border-color: #10B981;
     color: #065F46;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
@@ -1226,12 +1406,21 @@
     border-color: #F59E0B;
     color: #92400E;
   }
+  #headerOnlineText {
+    display: inline-block;
+    max-width: 105px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
   .online-status-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: #94A3B8;
     display: inline-block;
+    flex-shrink: 0;
     transition: background 0.3s;
   }
   .btn-online-pill.is-online .online-status-dot {
@@ -1259,17 +1448,31 @@
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    box-shadow: 0 1px 4px rgba(15, 30, 54, 0.04);
+    box-shadow: 0 1px 4px rgba(7, 26, 51, 0.04);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .match-live-indicator-card:hover {
-    border-color: var(--brand-orange);
-    background: #FFFBF9;
+    border-color: var(--brand-blue);
+    background: #F9FBFE;
   }
   .match-live-indicator-card.is-live {
-    background: #ECFDF5;
+    background: #EBF7EE;
     border-color: #10B981;
     box-shadow: 0 2px 10px rgba(16, 185, 129, 0.15);
+  }
+  #matchCardLiveTitle {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+  #matchCardLiveSub {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
   }
   .btn-live-card-action {
     background: var(--brand-navy-light);
@@ -1282,6 +1485,7 @@
     cursor: pointer;
     pointer-events: none;
     transition: all 0.2s;
+    flex-shrink: 0;
   }
   .match-live-indicator-card.is-live .btn-live-card-action {
     background: #10B981;
@@ -1290,17 +1494,48 @@
   }
   .spectator-live-banner {
     display: none;
-    background: linear-gradient(90deg, #0F1E36 0%, #1E3A6C 100%);
+    background: linear-gradient(90deg, #071A33 0%, #0E294D 100%);
     color: #FFFFFF;
-    padding: 8px 16px;
+    padding: 8px 14px;
     font-size: 0.74rem;
     font-weight: 700;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   }
   .spectator-live-banner.show {
     display: flex;
+  }
+  .spectator-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+  .spectator-banner-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    display: inline-block;
+  }
+  #spectatorBannerRoomCode {
+    color: #38BDF8;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: bottom;
+  }
+  .spectator-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
   }
   #liveToastNotification {
     position: fixed;
@@ -1446,10 +1681,13 @@
 </head>
 <body>
 
-<!-- ── SPLASH / LOADING SCREEN (White Background with Logo) ── -->
+<!-- ── SPLASH / LOADING SCREEN (onesport.id Hero Asset & Glassmorphism) ── -->
 <div id="splashScreen">
   <div class="splash-content">
+    <div class="splash-kicker">⚡ ONESPORT.ID · KOMUNITAS OLAHRAGA</div>
     <img src="logo.png" alt="ONESPORT" class="splash-logo" onerror="this.src='https://one-sport-badminton.vercel.app/logo.png'">
+    <div class="splash-brand-title">one<span>sport</span><span class="splash-brand-dot">.id</span></div>
+    <div class="splash-tagline">Teman Main Lebih Dekat · #WaktunyaMainLagi</div>
     <div class="splash-loader-bar">
       <div class="splash-loader-progress"></div>
     </div>
@@ -1460,9 +1698,14 @@
 <!-- ── MOBILE APP CONTAINER / SHELL ── -->
 <div class="mobile-app-shell">
 
+<!-- ── ONESPORT.ID OFFICIAL TOP ANNOUNCEMENT BAR ── -->
+<div class="topbar-onesport">
+  <span>⚡ <strong>ONESPORT.ID</strong> — Teman Main Lebih Dekat · #WaktunyaMainLagi</span>
+</div>
+
 <!-- ── TOP SPORT SWITCHER (Badminton & Mini Soccer) ── -->
 <div class="top-sport-bar">
-  <div class="top-sport-brand">ONESPORT</div>
+  <div class="top-sport-brand">ONESPORT<span style="color:#38BDF8;">.ID</span></div>
   <div class="sport-toggle-pills">
     <button class="sport-switch-btn active" id="sportBtnBadminton" onclick="switchSport('badminton')">
       Badminton
@@ -1479,7 +1722,7 @@
     <div class="header-brand" onclick="switchTab('tab-match')">
       <img src="logo-shield.png" alt="ONESPORT" class="header-logo-img" onerror="this.src='logo-icon.png'">
       <div class="header-title-text">
-        <div class="app-name">ONE<span>SPORT</span></div>
+        <div class="app-name">one<span>sport</span><span class="app-dot-id">.id</span></div>
         <div class="app-sub" id="sportHeaderSubtitle">Badminton</div>
       </div>
     </div>
@@ -1501,11 +1744,11 @@
 
 <!-- ── SPECTATOR LIVE BANNER ── -->
 <div class="spectator-live-banner" id="spectatorLiveBanner">
-  <div style="display: flex; align-items: center; gap: 6px;">
-    <span class="online-status-dot" style="background:#10B981;"></span>
-    <span>LIVE PENONTON: Room <strong id="spectatorBannerRoomCode">-</strong> (Hanya Lihat)</span>
+  <div class="spectator-banner-left">
+    <span class="online-status-dot" style="background:#10B981; flex-shrink:0;"></span>
+    <span class="spectator-banner-label">LIVE: <strong id="spectatorBannerRoomCode" title="-">-</strong> <span style="font-size:0.68rem; opacity:0.85;">(Nonton)</span></span>
   </div>
-  <div style="display:flex; align-items:center; gap:6px;">
+  <div class="spectator-banner-actions">
     <button class="btn-court-action" style="font-size:0.7rem; padding:3px 9px; background:rgba(255,255,255,0.22); color:#FFF; border:none; border-radius:999px; font-weight:800;" onclick="promptUpgradeToHost()">🔑 Buka PIN Host</button>
     <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; background:rgba(220,38,38,0.7); color:#FFF; border:none; border-radius:999px;" onclick="leaveOnlineRoom()">Keluar</button>
   </div>
@@ -1619,14 +1862,14 @@
     
     <!-- Online / Live Broadcast Banner Card -->
     <div class="match-live-indicator-card" id="matchLiveCard" onclick="openOnlineModal()" title="Buka Pengaturan Siaran Langsung Online">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span class="online-status-dot" id="matchCardOnlineDot"></span>
-        <div>
-          <div style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark);" id="matchCardLiveTitle">Mode Online & Siaran Live</div>
-          <div style="font-size:0.68rem; color:var(--text-muted);" id="matchCardLiveSub">Tap di sini untuk mulai siaran atau gabung room</div>
+      <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1; overflow:hidden;">
+        <span class="online-status-dot" id="matchCardOnlineDot" style="flex-shrink:0;"></span>
+        <div style="min-width:0; flex:1; overflow:hidden;">
+          <div style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="matchCardLiveTitle">Mode Online & Siaran Live</div>
+          <div style="font-size:0.68rem; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="matchCardLiveSub">Tap di sini untuk mulai siaran atau gabung room</div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
+      <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
         <span id="matchCardLiveBadge" class="header-live-count-badge" style="display:none;">0 Live</span>
         <button class="btn-live-card-action" id="matchCardActionBtn" type="button">Buka</button>
       </div>
@@ -1678,6 +1921,10 @@
       <button class="btn-os-orange" style="background:#10B981; box-shadow:0 4px 12px rgba(16,185,129,0.25);" onclick="addNewCourt()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="btnAddMatchLabel">Tambah Lapangan</span>
+      </button>
+      <button class="btn-os-purple" id="btnCustomCourtTrigger" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color:#FFFFFF; font-weight:800; font-size:0.85rem; padding:11px 14px; border:none; border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(109,40,217,0.3); grid-column:span 2; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openCustomCourtModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        <span>🎯 Buat Lapangan Pilihan (Pilih Pemain)</span>
       </button>
     </div>
 
@@ -1760,7 +2007,7 @@
   <section id="tab-selesai" class="app-tab-pane">
     <div style="text-align: center; margin-bottom: 8px;">
       <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Hasil Akhir</div>
-      <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.7rem; font-weight: 900; color:var(--brand-navy-dark);" id="finalTitleHeader">Mabar Sesi</h2>
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.7rem; font-weight: 900; color:var(--brand-navy-dark); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 12px;" id="finalTitleHeader">Mabar Sesi</h2>
     </div>
 
     <!-- Official Rules Banner -->
@@ -1879,6 +2126,97 @@
       Pilih pemain pengganti untuk: <strong id="swapSourcePlayerName" style="color:var(--brand-navy-dark);"></strong>
     </p>
     <div id="swapCandidatesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto;"></div>
+  </div>
+</div>
+
+<!-- ── MODAL: BUAT / EDIT LAPANGAN PILIHAN ── -->
+<div class="modal-overlay" id="customCourtModalOverlay" style="z-index: 2100;">
+  <div class="modal-box" style="max-width: 480px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="customCourtModalTitle">🎯 Buat Lapangan Pilihan</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;" id="customCourtModalSubtitle">
+          Pilih 4 pemain untuk bermain di lapangan ini
+        </div>
+      </div>
+      <button class="btn-del-player" onclick="closeCustomCourtModal()">✕</button>
+    </div>
+
+    <!-- Court Name Input -->
+    <div style="margin-bottom: 12px;">
+      <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">
+        Nama Lapangan
+      </label>
+      <input type="text" id="inputCustomCourtName" class="input-styled-os" placeholder="Contoh: Lapangan 3 atau Lapangan Khusus">
+    </div>
+
+    <!-- Selected Players & Team Preview Box -->
+    <div class="os-card" style="background: #F8FAFC; border: 1.5px solid var(--border-color); padding: 12px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="font-size: 0.78rem; font-weight: 900; color: var(--brand-navy-dark); display: flex; align-items: center; gap: 6px;">
+          <span>Susunan Tim di Lapangan</span>
+          <span id="customCourtSelectedCountBadge" style="background: #E2E8F0; color: #475569; font-size: 0.7rem; padding: 2px 7px; border-radius: 999px; font-weight: 800;">
+            0/4 Dipilih
+          </span>
+        </div>
+        <button id="btnCustomCourtShuffleTeams" class="btn-court-quick-action" style="background: #EEF2F6; border: 1.5px solid #CBD5E1; color: var(--brand-navy-dark);" onclick="shuffleCustomCourtPreviewTeams()" disabled>
+          🔀 Acak Tim
+        </button>
+      </div>
+
+      <!-- Real-time Rule Banner -->
+      <div id="customCourtRuleNotice" style="display: none; font-size: 0.72rem; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; font-weight: 700;"></div>
+
+      <!-- Versus Slots Preview -->
+      <div class="match-versus-grid" style="background: #FFFFFF; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <div class="team-column" id="customCourtTeamAPreview">
+          <div class="team-label-top" style="color: var(--brand-navy-dark); font-weight: 800;">Tim A</div>
+          <div class="custom-court-slot empty" id="customSlotA0">Pilih Pemain 1</div>
+          <div class="custom-court-slot empty" id="customSlotA1">Pilih Pemain 2</div>
+        </div>
+        <div class="vs-badge">vs</div>
+        <div class="team-column" id="customCourtTeamBPreview">
+          <div class="team-label-top" style="color: var(--brand-navy-dark); font-weight: 800;">Tim B</div>
+          <div class="custom-court-slot empty" id="customSlotB0">Pilih Pemain 3</div>
+          <div class="custom-court-slot empty" id="customSlotB1">Pilih Pemain 4</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player Picker Section -->
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); text-transform: uppercase; letter-spacing: 0.5px;">
+          Daftar Pemain
+        </span>
+        <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">Tap untuk memilih / batalkan</span>
+      </div>
+
+      <!-- Search & Filter Row -->
+      <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+        <input type="text" id="inputCustomCourtSearch" class="input-styled-os" placeholder="🔍 Cari nama pemain..." style="padding: 6px 10px; font-size: 0.78rem;" oninput="renderCustomCourtPlayersList()">
+      </div>
+
+      <div class="custom-court-filter-tabs" style="display: flex; gap: 4px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px;">
+        <button class="custom-tab-pill active" id="cTabAll" onclick="setCustomCourtFilter('all')">Semua</button>
+        <button class="custom-tab-pill" id="cTabResting" onclick="setCustomCourtFilter('resting')">Istirahat Saja</button>
+        <button class="custom-tab-pill" id="cTabMale" onclick="setCustomCourtFilter('male')">Putra</button>
+        <button class="custom-tab-pill" id="cTabFemale" onclick="setCustomCourtFilter('female')">Putri</button>
+      </div>
+
+      <!-- Player Items List -->
+      <div id="customCourtPlayersList" style="max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 2px;"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+      <button class="btn-court-action" style="background: #F1F5F9; color: var(--brand-navy-dark); border: 1px solid var(--border-color);" onclick="closeCustomCourtModal()">
+        Batal
+      </button>
+      <button id="btnSaveCustomCourt" class="btn-os-orange" style="background: var(--gradient-orange); width: 100%;" onclick="saveCustomCourt()" disabled>
+        ✅ Simpan Lapangan
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2134,6 +2472,10 @@
                   <span>Acak</span>
                 </button>
               </div>
+            </div>
+            <div>
+              <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">Judul Siaran Langsung (Opsional)</label>
+              <input type="text" id="inputRoomTitle" class="input-styled-os" placeholder="Contoh: Mabar Badminton PB Djarum" style="margin-top:4px;">
             </div>
             <div>
               <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">PIN Host (4-6 Angka)</label>
@@ -2847,6 +3189,135 @@ function renderPlayersList() {
 //  BADMINTON ENGINE
 // ============================================================================
 
+// ── BADMINTON TEAM & ROLE RULES ENGINE ──
+function isIntermadiateRole(player) {
+  if (!player || !player.role) return false;
+  const r = String(player.role).toLowerCase();
+  return r.includes('inter');
+}
+
+function isAdvanceRole(player) {
+  if (!player || !player.role) return false;
+  const r = String(player.role).toLowerCase();
+  return r.includes('adv');
+}
+
+function hasInterAndAdvanceTogether(team) {
+  if (!Array.isArray(team)) return false;
+  const validPlayers = team.filter(Boolean);
+  const hasInter = validPlayers.some(isIntermadiateRole);
+  const hasAdv = validPlayers.some(isAdvanceRole);
+  return hasInter && hasAdv;
+}
+
+/**
+ * Membagi 4 pemain menjadi 2 tim ganda (Tim A dan Tim B):
+ * 1. Tim SELALU DIACAK (randomized).
+ * 2. Role Intermadiate dan Advance TIDAK BOLEH berada dalam 1 tim yang sama.
+ * 3. Jika ada 2 pemain Advance, diprioritaskan berada di tim yang berlawanan.
+ * 4. Meminimalkan frekuensi berpasangan yang sama (pairHistory) jika tersedia.
+ */
+function splitFourPlayersIntoTeams(fourPlayers, pairHistory = {}) {
+  if (!Array.isArray(fourPlayers) || fourPlayers.length < 4) {
+    return {
+      teamA: fourPlayers ? fourPlayers.slice(0, 2) : [],
+      teamB: fourPlayers ? fourPlayers.slice(2, 4) : []
+    };
+  }
+
+  const p = [...fourPlayers];
+
+  // 3 kemungkinan kombinasi ganda dari 4 pemain
+  const pairings = [
+    { t1: [p[0], p[1]], t2: [p[2], p[3]] },
+    { t1: [p[0], p[2]], t2: [p[1], p[3]] },
+    { t1: [p[0], p[3]], t2: [p[1], p[2]] }
+  ];
+
+  // Aturan Wajib: Role Intermadiate dan Advance TIDAK BOLEH 1 tim
+  let validPairings = pairings.filter(pair => 
+    !hasInterAndAdvanceTogether(pair.t1) && !hasInterAndAdvanceTogether(pair.t2)
+  );
+
+  // Jika kondisi darurat (misal 3 Adv + 1 Inter secara paksa), fallback ke semua kemungkinan
+  if (validPairings.length === 0) {
+    validPairings = pairings;
+  }
+
+  // Jika terdapat 2 pemain Advance, prioritaskan memisahkan keduanya di tim berlawanan
+  const advCount = p.filter(isAdvanceRole).length;
+  if (advCount === 2) {
+    const separatedAdv = validPairings.filter(pair => 
+      pair.t1.filter(isAdvanceRole).length === 1 && pair.t2.filter(isAdvanceRole).length === 1
+    );
+    if (separatedAdv.length > 0) {
+      validPairings = separatedAdv;
+    }
+  }
+
+  // Jika terdapat 2 pemain Intermadiate dan tidak ada Advance, prioritaskan dipisah agar berimbang
+  const interCount = p.filter(isIntermadiateRole).length;
+  if (interCount === 2 && advCount === 0) {
+    const separatedInter = validPairings.filter(pair => 
+      pair.t1.filter(isIntermadiateRole).length === 1 && pair.t2.filter(isIntermadiateRole).length === 1
+    );
+    if (separatedInter.length > 0) {
+      validPairings = separatedInter;
+    }
+  }
+
+  // Hitung riwayat berpasangan untuk meminimalkan pasangan yang berulang
+  const scoredPairings = validPairings.map(pair => {
+    let score = 0;
+    if (pair.t1[0] && pair.t1[1]) {
+      const k1 = [pair.t1[0].id, pair.t1[1].id].sort((a,b)=>a-b).join('-');
+      score += (pairHistory[k1] || 0);
+    }
+    if (pair.t2[0] && pair.t2[1]) {
+      const k2 = [pair.t2[0].id, pair.t2[1].id].sort((a,b)=>a-b).join('-');
+      score += (pairHistory[k2] || 0);
+    }
+    return { pair, score };
+  });
+
+  const minScore = Math.min(...scoredPairings.map(sp => sp.score));
+  const bestPairings = scoredPairings.filter(sp => sp.score === minScore).map(sp => sp.pair);
+
+  // Acak di antara pilihan terbaik ("selalu diacak")
+  const chosen = bestPairings[Math.floor(Math.random() * bestPairings.length)];
+
+  // Acak tim mana yang menjadi Tim A dan Tim B (50% probabilitas)
+  let teamA = (Math.random() < 0.5) ? [...chosen.t1] : [...chosen.t2];
+  let teamB = (teamA[0].id === chosen.t1[0].id) ? [...chosen.t2] : [...chosen.t1];
+
+  // Acak posisi pemain di dalam tim
+  if (Math.random() < 0.5) teamA.reverse();
+  if (Math.random() < 0.5) teamB.reverse();
+
+  return { teamA, teamB };
+}
+
+function pickCompatibleFourPlayers(availablePlayers) {
+  if (!availablePlayers || availablePlayers.length <= 4) return availablePlayers ? availablePlayers.slice(0, 4) : [];
+
+  const first4 = availablePlayers.slice(0, 4);
+  const advCount = first4.filter(isAdvanceRole).length;
+  const interCount = first4.filter(isIntermadiateRole).length;
+
+  // Jika kombinasi 1 Adv + 3 Inter (atau 3 Adv + 1 Inter), coba swap salah satu dengan pemain Pemula/Amatir dari pool sisa
+  if ((advCount === 1 && interCount === 3) || (advCount === 3 && interCount === 1)) {
+    const candidateIdx = availablePlayers.slice(4).findIndex(p => !isIntermadiateRole(p) && !isAdvanceRole(p));
+    if (candidateIdx !== -1) {
+      const swapTargetIndex = advCount === 1 ? first4.findIndex(isIntermadiateRole) : first4.findIndex(isAdvanceRole);
+      const chosen = [...first4];
+      chosen[swapTargetIndex] = availablePlayers[4 + candidateIdx];
+      return chosen;
+    }
+  }
+
+  return first4;
+}
+
 function generateInitialBadminton() {
   if (bPlayers.length < 4) {
     bSchedule = [];
@@ -2902,7 +3373,7 @@ function generateInitialBadminton() {
 }
 
 function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap, restCountMap, currentRoundNumber = 1, lastPlayedRoundMap = {}) {
-  const femaleOnly = roster.filter(p => p.gender === 'P' && p.role !== 'Advance');
+  const femaleOnly = roster.filter(p => p.gender === 'P');
   let femaleMatchesCount = Math.floor(femaleOnly.length / 4);
   if (femaleMatchesCount > courtsCount) femaleMatchesCount = courtsCount;
 
@@ -2931,16 +3402,16 @@ function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap
   for (let f = 0; f < femaleMatchesCount; f++) {
     const avail = femaleOnly.filter(p => !usedPlayerIds.has(p.id)).sort(prioritySort);
     if (avail.length < 4) break;
-    const s4 = avail.slice(0, 4);
+    const s4 = pickCompatibleFourPlayers(avail);
     s4.forEach(p => usedPlayerIds.add(p.id));
-    const split = { t1: [s4[0], s4[3]], t2: [s4[1], s4[2]] };
+    const split = splitFourPlayersIntoTeams(s4, pairHistory);
     matches.push({
       courtNumber: matches.length + 1,
       courtName: `Lapangan ${matches.length + 1}`,
       category: 'PUTRI',
       categoryLabel: 'Putri vs Putri',
-      teamA: split.t1,
-      teamB: split.t2,
+      teamA: split.teamA,
+      teamB: split.teamB,
       scoreA: null,
       scoreB: null,
       winner: null,
@@ -2952,17 +3423,17 @@ function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap
   for (let m = 0; m < remaining; m++) {
     const avail = roster.filter(p => !usedPlayerIds.has(p.id)).sort(prioritySort);
     if (avail.length < 4) break;
-    const s4 = avail.slice(0, 4);
+    const s4 = pickCompatibleFourPlayers(avail);
     s4.forEach(p => usedPlayerIds.add(p.id));
-    const split = { t1: [s4[0], s4[3]], t2: [s4[1], s4[2]] };
+    const split = splitFourPlayersIntoTeams(s4, pairHistory);
     const hasFemale = s4.some(p => p.gender === 'P');
     matches.push({
       courtNumber: matches.length + 1,
       courtName: `Lapangan ${matches.length + 1}`,
       category: hasFemale ? 'CAMPURAN' : 'PUTRA',
-      categoryLabel: hasFemale ? 'Terbuka / Advance' : 'Ganda Putra',
-      teamA: split.t1,
-      teamB: split.t2,
+      categoryLabel: hasFemale ? 'Terbuka / Campuran' : 'Ganda Putra',
+      teamA: split.teamA,
+      teamB: split.teamB,
       scoreA: null,
       scoreB: null,
       winner: null,
@@ -3184,17 +3655,18 @@ function addNewCourt() {
       if (currentRound && currentRound.resting && currentRound.resting.length >= 4) {
         const newCourtIdx = currentRound.courts.length + 1;
         const available = [...currentRound.resting];
-        const s4 = available.slice(0, 4);
-        currentRound.resting = available.slice(4);
-        const split = { t1: [s4[0], s4[3]], t2: [s4[1], s4[2]] };
+        const s4 = pickCompatibleFourPlayers(available);
+        const s4Ids = new Set(s4.map(p => p.id));
+        currentRound.resting = available.filter(p => !s4Ids.has(p.id));
+        const split = splitFourPlayersIntoTeams(s4);
         const hasFemale = s4.some(p => p.gender === 'P');
         currentRound.courts.push({
           courtNumber: newCourtIdx,
           courtName: `Lapangan ${newCourtIdx}`,
           category: hasFemale ? 'CAMPURAN' : 'PUTRA',
-          categoryLabel: hasFemale ? 'Terbuka / Advance' : 'Ganda Putra',
-          teamA: split.t1,
-          teamB: split.t2,
+          categoryLabel: hasFemale ? 'Terbuka / Campuran' : 'Ganda Putra',
+          teamA: split.teamA,
+          teamB: split.teamB,
           scoreA: null,
           scoreB: null,
           winner: null,
@@ -3224,6 +3696,413 @@ function addNewCourt() {
     persistAndBroadcast();
     showToast('Match Mini Soccer berhasil ditambahkan');
   }
+}
+
+// ── ACAK TIM & KELOLA LAPANGAN TUNGGAL ──
+function shuffleCourtTeams(cIdx) {
+  if (!checkEditPermission()) return;
+  const round = bSchedule[bCurrentRoundIndex];
+  if (!round || !round.courts || !round.courts[cIdx]) return;
+  const court = round.courts[cIdx];
+  if (court.status === 'finished') {
+    showToast('Pertandingan sudah selesai, tim tidak dapat diacak ulang.', 'error');
+    return;
+  }
+  const players = [...court.teamA, ...court.teamB].filter(Boolean);
+  if (players.length < 4) {
+    showToast('Pemain di lapangan ini kurang dari 4 orang.', 'error');
+    return;
+  }
+  const split = splitFourPlayersIntoTeams(players);
+  court.teamA = split.teamA;
+  court.teamB = split.teamB;
+  refreshCourtCategory(court);
+  renderCourtsView();
+  persistAndBroadcast();
+  showToast(`🔀 Tim di ${court.courtName || ('Lapangan ' + (cIdx + 1))} berhasil diacak! (Intermadiate & Advance dipisah)`, 'success');
+}
+
+function removeCourt(cIdx) {
+  if (!checkEditPermission()) return;
+  const round = bSchedule[bCurrentRoundIndex];
+  if (!round || !round.courts || !round.courts[cIdx]) return;
+  const court = round.courts[cIdx];
+  const name = court.courtName || `Lapangan ${cIdx + 1}`;
+  if (!confirm(`Hapus ${name}? Pemain di lapangan ini akan dikembalikan ke bangku istirahat.`)) return;
+
+  const players = [...court.teamA, ...court.teamB].filter(Boolean);
+  if (!round.resting) round.resting = [];
+  players.forEach(p => {
+    if (!round.resting.some(rp => rp.id === p.id)) {
+      round.resting.push(p);
+    }
+  });
+
+  round.courts.splice(cIdx, 1);
+  round.courts.forEach((c, idx) => {
+    c.courtNumber = idx + 1;
+    if (/^Lapangan \d+$/i.test(c.courtName)) {
+      c.courtName = `Lapangan ${idx + 1}`;
+    }
+  });
+
+  if (bNumCourts > round.courts.length) {
+    bNumCourts = Math.max(1, round.courts.length);
+    updateSessionLabels();
+  }
+
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`${name} berhasil dihapus. Pemain kembali ke istirahat.`);
+}
+
+// ── CUSTOM COURT / LAPANGAN PILIHAN ENGINE ──
+let customCourtState = {
+  targetCourtIdx: null,
+  selectedPlayerIds: [],
+  teamA: [],
+  teamB: [],
+  filter: 'all',
+  searchQuery: ''
+};
+
+function openCustomCourtModal(targetCourtIdx = null) {
+  if (!checkEditPermission()) return;
+  if (currentSport !== 'badminton') {
+    showToast('Fitur Lapangan Pilihan saat ini khusus untuk Badminton.', 'error');
+    return;
+  }
+  if (bPlayers.length < 4) {
+    alert('Minimal 4 pemain harus terdaftar untuk membuat lapangan pertandingan ganda.');
+    switchTab('tab-pemain');
+    return;
+  }
+
+  const round = bSchedule[bCurrentRoundIndex];
+  const modal = document.getElementById('customCourtModalOverlay');
+  const titleEl = document.getElementById('customCourtModalTitle');
+  const subEl = document.getElementById('customCourtModalSubtitle');
+  const nameInput = document.getElementById('inputCustomCourtName');
+
+  customCourtState.targetCourtIdx = targetCourtIdx;
+  customCourtState.filter = 'all';
+  customCourtState.searchQuery = '';
+  const searchInput = document.getElementById('inputCustomCourtSearch');
+  if (searchInput) searchInput.value = '';
+
+  if (targetCourtIdx !== null && round && round.courts && round.courts[targetCourtIdx]) {
+    const court = round.courts[targetCourtIdx];
+    customCourtState.selectedPlayerIds = [...court.teamA, ...court.teamB].filter(Boolean).map(p => p.id);
+    customCourtState.teamA = [...court.teamA];
+    customCourtState.teamB = [...court.teamB];
+    if (titleEl) titleEl.textContent = `🎯 Atur Pemain ${court.courtName || ('Lapangan ' + (targetCourtIdx + 1))}`;
+    if (subEl) subEl.textContent = 'Pilih 4 pemain untuk bertanding di lapangan ini';
+    if (nameInput) nameInput.value = court.courtName || `Lapangan ${targetCourtIdx + 1}`;
+  } else {
+    customCourtState.selectedPlayerIds = [];
+    customCourtState.teamA = [];
+    customCourtState.teamB = [];
+    const nextNum = (round && round.courts ? round.courts.length : 0) + 1;
+    if (titleEl) titleEl.textContent = '🎯 Buat Lapangan Pilihan';
+    if (subEl) subEl.textContent = 'Pilih 4 pemain khusus untuk bermain di lapangan ini';
+    if (nameInput) nameInput.value = `Lapangan ${nextNum}`;
+
+    if (round && round.resting && round.resting.length >= 4) {
+      customCourtState.filter = 'resting';
+    }
+  }
+
+  setCustomCourtFilter(customCourtState.filter, false);
+  updateCustomCourtUI();
+  if (modal) modal.classList.add('open');
+}
+
+function closeCustomCourtModal() {
+  const modal = document.getElementById('customCourtModalOverlay');
+  if (modal) modal.classList.remove('open');
+  customCourtState = {
+    targetCourtIdx: null,
+    selectedPlayerIds: [],
+    teamA: [],
+    teamB: [],
+    filter: 'all',
+    searchQuery: ''
+  };
+}
+
+function setCustomCourtFilter(tabKey, doRender = true) {
+  customCourtState.filter = tabKey;
+  ['all', 'resting', 'male', 'female'].forEach(k => {
+    const btn = document.getElementById(`cTab${k.charAt(0).toUpperCase() + k.slice(1)}`);
+    if (btn) {
+      if (k === tabKey) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+  if (doRender) renderCustomCourtPlayersList();
+}
+
+function toggleCustomCourtPlayer(playerId) {
+  const idx = customCourtState.selectedPlayerIds.indexOf(playerId);
+  if (idx !== -1) {
+    customCourtState.selectedPlayerIds.splice(idx, 1);
+    customCourtState.teamA = customCourtState.teamA.filter(p => p && p.id !== playerId);
+    customCourtState.teamB = customCourtState.teamB.filter(p => p && p.id !== playerId);
+  } else {
+    if (customCourtState.selectedPlayerIds.length >= 4) {
+      showToast('Maksimal 4 pemain untuk ganda bulutangkis. Hapus salah satu pemain yang sudah dipilih terlebih dahulu.', 'error');
+      return;
+    }
+    customCourtState.selectedPlayerIds.push(playerId);
+    if (customCourtState.selectedPlayerIds.length === 4) {
+      const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+      const split = splitFourPlayersIntoTeams(four);
+      customCourtState.teamA = split.teamA;
+      customCourtState.teamB = split.teamB;
+    }
+  }
+  updateCustomCourtUI();
+}
+
+function shuffleCustomCourtPreviewTeams() {
+  if (customCourtState.selectedPlayerIds.length !== 4) return;
+  const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+  const split = splitFourPlayersIntoTeams(four);
+  customCourtState.teamA = split.teamA;
+  customCourtState.teamB = split.teamB;
+  updateCustomCourtUI();
+  showToast('🔀 Tim diacak otomatis! Role Intermadiate & Advance dipisah.', 'success');
+}
+
+function updateCustomCourtUI() {
+  const count = customCourtState.selectedPlayerIds.length;
+  const countBadge = document.getElementById('customCourtSelectedCountBadge');
+  const btnShuffle = document.getElementById('btnCustomCourtShuffleTeams');
+  const btnSave = document.getElementById('btnSaveCustomCourt');
+  const ruleNotice = document.getElementById('customCourtRuleNotice');
+
+  if (countBadge) {
+    countBadge.textContent = `${count}/4 Dipilih`;
+    if (count === 4) {
+      countBadge.style.background = '#DCFCE7';
+      countBadge.style.color = '#15803D';
+    } else {
+      countBadge.style.background = '#E2E8F0';
+      countBadge.style.color = '#475569';
+    }
+  }
+
+  if (btnShuffle) btnShuffle.disabled = (count !== 4);
+  if (btnSave) btnSave.disabled = (count !== 4);
+
+  // Validasi aturan: Intermadiate & Advance tidak boleh 1 tim
+  if (count === 4 && ruleNotice) {
+    const hasViolation = hasInterAndAdvanceTogether(customCourtState.teamA) || hasInterAndAdvanceTogether(customCourtState.teamB);
+    ruleNotice.style.display = 'block';
+    if (hasViolation) {
+      ruleNotice.style.background = '#FEF2F2';
+      ruleNotice.style.color = '#B91C1C';
+      ruleNotice.style.border = '1px solid #FECACA';
+      ruleNotice.innerHTML = '⚠️ <strong>Perhatian:</strong> Role Intermadiate & Advance tidak boleh 1 tim! Klik tombol <strong>Acak Tim</strong> untuk memisahkan.';
+    } else {
+      ruleNotice.style.background = '#ECFDF5';
+      ruleNotice.style.color = '#047857';
+      ruleNotice.style.border = '1px solid #A7F3D0';
+      ruleNotice.innerHTML = '✅ <strong>Aturan Terpenuhi:</strong> Role Intermadiate & Advance berada di tim berbeda.';
+    }
+  } else if (ruleNotice) {
+    ruleNotice.style.display = 'none';
+  }
+
+  // Render slot preview
+  const renderSlot = (slotElId, player, defaultText) => {
+    const el = document.getElementById(slotElId);
+    if (!el) return;
+    if (player) {
+      el.className = 'custom-court-slot filled';
+      el.innerHTML = `
+        <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+          <span class="gender-badge ${player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.65rem; padding:1px 5px;">${player.gender === 'L' ? 'L' : 'P'}</span>
+          <span style="font-weight:800; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${player.name}</span>
+        </div>
+        <span class="role-pill ${(player.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${player.role}</span>
+      `;
+    } else {
+      el.className = 'custom-court-slot empty';
+      el.innerHTML = `<span>${defaultText}</span>`;
+    }
+  };
+
+  const tA = customCourtState.teamA || [];
+  const tB = customCourtState.teamB || [];
+  renderSlot('customSlotA0', tA[0], 'Pilih Pemain 1');
+  renderSlot('customSlotA1', tA[1], 'Pilih Pemain 2');
+  renderSlot('customSlotB0', tB[0], 'Pilih Pemain 3');
+  renderSlot('customSlotB1', tB[1], 'Pilih Pemain 4');
+
+  renderCustomCourtPlayersList();
+}
+
+function renderCustomCourtPlayersList() {
+  const container = document.getElementById('customCourtPlayersList');
+  if (!container) return;
+
+  const searchInput = document.getElementById('inputCustomCourtSearch');
+  const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+  const round = bSchedule[bCurrentRoundIndex];
+  const restingIds = new Set((round && round.resting ? round.resting : []).map(p => p.id));
+
+  const playerLocMap = {};
+  if (round && round.courts) {
+    round.courts.forEach((c, idx) => {
+      [...c.teamA, ...c.teamB].forEach(p => {
+        if (p) playerLocMap[p.id] = c.courtName || `Lapangan ${idx + 1}`;
+      });
+    });
+  }
+
+  const filtered = bPlayers.filter(p => {
+    if (q && !p.name.toLowerCase().includes(q)) return false;
+    if (customCourtState.filter === 'resting') {
+      const isSelected = customCourtState.selectedPlayerIds.includes(p.id);
+      return restingIds.has(p.id) || isSelected;
+    }
+    if (customCourtState.filter === 'male' && p.gender !== 'L') return false;
+    if (customCourtState.filter === 'female' && p.gender !== 'P') return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:18px; color:var(--text-muted); font-size:0.8rem;">Tidak ada pemain ditemukan.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => {
+    const isSelected = customCourtState.selectedPlayerIds.includes(p.id);
+    let statusBadge = '';
+    if (restingIds.has(p.id)) {
+      statusBadge = `<span style="background:#DCFCE7; color:#15803D; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">Istirahat</span>`;
+    } else if (playerLocMap[p.id]) {
+      statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">${playerLocMap[p.id]}</span>`;
+    }
+
+    return `
+      <div class="custom-player-item ${isSelected ? 'selected' : ''}" onclick="toggleCustomCourtPlayer(${p.id})">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px; accent-color:var(--brand-orange);" onclick="event.stopPropagation(); toggleCustomCourtPlayer(${p.id})">
+          <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${p.gender === 'L' ? 'Putra' : 'Putri'}</span>
+          <div>
+            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${p.name}</div>
+            <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+              <span class="role-pill ${(p.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${p.role}</span>
+              ${statusBadge}
+            </div>
+          </div>
+        </div>
+        <div style="font-size:0.75rem; font-weight:800; color:${isSelected ? 'var(--brand-orange)' : 'var(--text-muted)'};">
+          ${isSelected ? '✓ Terpilih' : '+ Pilih'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function saveCustomCourt() {
+  if (!checkEditPermission()) return;
+  if (customCourtState.selectedPlayerIds.length !== 4) {
+    alert('Pilih tepat 4 pemain untuk lapangan ganda.');
+    return;
+  }
+
+  // Jika terdapat pelanggaran aturan Intermadiate & Advance pada susunan tim, acak otomatis
+  if (hasInterAndAdvanceTogether(customCourtState.teamA) || hasInterAndAdvanceTogether(customCourtState.teamB)) {
+    const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+    const split = splitFourPlayersIntoTeams(four);
+    customCourtState.teamA = split.teamA;
+    customCourtState.teamB = split.teamB;
+  }
+
+  const nameInput = document.getElementById('inputCustomCourtName');
+  const courtName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'Lapangan';
+
+  if (bSchedule.length === 0) {
+    bSchedule = [{
+      roundNumber: 1,
+      status: 'ongoing',
+      courts: [],
+      resting: [...bPlayers]
+    }];
+    bCurrentRoundIndex = 0;
+  }
+
+  const round = bSchedule[bCurrentRoundIndex];
+  if (!round) return;
+  if (!round.resting) round.resting = [];
+  if (!round.courts) round.courts = [];
+
+  const selectedIds = new Set(customCourtState.selectedPlayerIds);
+  const fourPlayers = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+
+  if (customCourtState.targetCourtIdx !== null && round.courts[customCourtState.targetCourtIdx]) {
+    // Mode EDIT lapangan yang sudah ada
+    const court = round.courts[customCourtState.targetCourtIdx];
+    const oldPlayers = [...court.teamA, ...court.teamB].filter(Boolean);
+
+    // Kembalikan pemain lama yang tidak terpilih ke istirahat
+    oldPlayers.forEach(p => {
+      if (!selectedIds.has(p.id) && !round.resting.some(rp => rp.id === p.id)) {
+        round.resting.push(p);
+      }
+    });
+
+    // Hapus pemain terpilih dari istirahat
+    round.resting = round.resting.filter(p => !selectedIds.has(p.id));
+
+    court.courtName = courtName;
+    court.teamA = customCourtState.teamA;
+    court.teamB = customCourtState.teamB;
+    refreshCourtCategory(court);
+    showToast(`✅ Lapangan ${court.courtName} berhasil diperbarui!`, 'success');
+  } else {
+    // Mode TAMBAH LAPANGAN PILIHAN BARU
+    const newCourtIdx = round.courts.length + 1;
+    const newCourt = {
+      courtNumber: newCourtIdx,
+      courtName: courtName.includes('Lapangan') ? courtName : `Lapangan ${newCourtIdx} (${courtName})`,
+      category: 'PUTRA',
+      categoryLabel: 'Ganda Putra',
+      teamA: customCourtState.teamA,
+      teamB: customCourtState.teamB,
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: 'pending'
+    };
+
+    // Hapus 4 pemain dari resting
+    round.resting = round.resting.filter(p => !selectedIds.has(p.id));
+
+    // Jika ada pemain yang sebelumnya di lapangan lain pada round ini, bersihkan dari lapangan lain
+    round.courts.forEach(otherC => {
+      ['teamA', 'teamB'].forEach(tKey => {
+        otherC[tKey] = otherC[tKey].filter(p => p && !selectedIds.has(p.id));
+      });
+    });
+
+    refreshCourtCategory(newCourt);
+    round.courts.push(newCourt);
+
+    bNumCourts = Math.max(bNumCourts, round.courts.length);
+    updateSessionLabels();
+    showToast(`✅ ${newCourt.courtName} berhasil dibuat dengan 4 pemain pilihan!`, 'success');
+  }
+
+  closeCustomCourtModal();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
 }
 
 // ============================================================================
@@ -3304,7 +4183,20 @@ function renderCourtsView() {
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:8px;">
           <div class="card-top-title">
             <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${currentRound.roundNumber})</span>
-            <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+              <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+              ${!isFinished ? `
+                <button class="btn-court-quick-action" onclick="shuffleCourtTeams(${cIdx})" title="Acak Ulang Tim Lapangan Ini (Intermadiate & Advance Dipisah)">
+                  🔀 Acak
+                </button>
+                <button class="btn-court-quick-action" onclick="openCustomCourtModal(${cIdx})" title="Atur / Pilih Pemain Khusus Lapangan Ini">
+                  👥 Pilih
+                </button>
+              ` : ''}
+              ${!isFinished && currentRound.courts.length > 1 ? `
+                <button class="btn-del-player" style="width:22px; height:22px; font-size:0.7rem;" onclick="removeCourt(${cIdx})" title="Hapus Lapangan Ini">✕</button>
+              ` : ''}
+            </div>
           </div>
 
           <div class="match-versus-grid">
@@ -3328,6 +4220,11 @@ function renderCourtsView() {
           <div class="court-control-bar">
             ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startCourtMatch(${cIdx})">Mulai Pertandingan</button>` : ''}
             ${isOngoing ? `<button class="btn-court-action finish" onclick="finishCourtMatchPrompt(${cIdx})">Selesaikan Match</button>` : ''}
+            ${!isFinished ? `
+              <button class="btn-court-action" style="background:#F1F5F9; color:var(--brand-navy-dark); border:1px solid var(--border-color); font-size:0.75rem;" onclick="shuffleCourtTeams(${cIdx})" title="Acak Tim di Lapangan Ini">
+                🔀 Acak Tim
+              </button>
+            ` : ''}
             <div class="winner-picker-box">
               <span style="font-size:0.74rem; font-weight:800;">Pemenang:</span>
               <button class="btn-pick-winner ${court.winner === 'A' ? 'active' : ''}" onclick="setCourtWinner(${cIdx}, 'A')">Tim A</button>
@@ -4842,6 +5739,14 @@ function startHostRoom() {
     code = 'MABAR-' + Math.floor(100 + Math.random() * 900);
     document.getElementById('inputRoomCode').value = code;
   }
+  const customTitle = (document.getElementById('inputRoomTitle')?.value || '').trim();
+  if (customTitle) {
+    sessionTitle = customTitle;
+    const titleInput = document.getElementById('settingSessionTitle');
+    if (titleInput) titleInput.value = customTitle;
+    const finalHeader = document.getElementById('finalTitleHeader');
+    if (finalHeader) finalHeader.textContent = customTitle;
+  }
   const pin = document.getElementById('inputHostPin').value.trim() || '1234';
   connectOnlineRoom(code, 'host', pin, false /* isReconnecting */, true /* isCreator */);
   closeOnlineModal();
@@ -5268,6 +6173,23 @@ function applyReceivedState(data) {
   renderFinalPodium();
 }
 
+function truncateBroadcastTitle(str, maxLen = 16) {
+  if (!str) return '';
+  str = String(str).trim();
+  if (str.length <= maxLen) return str;
+  return str.substring(0, maxLen - 2) + '...';
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function updateOnlineUI(status) {
   const headerPill = document.getElementById('btnHeaderOnlinePill');
   const headerText = document.getElementById('headerOnlineText');
@@ -5294,21 +6216,32 @@ function updateOnlineUI(status) {
   const matchCardActionBtn = document.getElementById('matchCardActionBtn');
 
   if (status === 'connected') {
+    const rawTitle = sessionTitle || currentRoomId;
+    const shortTitle = truncateBroadcastTitle(rawTitle, 13);
+    const roleLabel = userRole === 'host' ? 'Host' : 'Nonton';
+
     if (headerPill) {
       headerPill.className = 'btn-online-pill is-online';
-      headerText.textContent = `LIVE: ${currentRoomId} (${userRole === 'host' ? 'Host' : 'Nonton'})`;
+      headerPill.title = `LIVE: ${rawTitle} (${userRole === 'host' ? 'Host / Wasit' : 'Penonton'})`;
+      headerText.textContent = `LIVE: ${shortTitle} (${roleLabel})`;
     }
     if (navLiveDot) {
       navLiveDot.style.display = 'inline-block';
       navLiveDot.style.background = '#10B981';
     }
     if (navLiveText) {
-      navLiveText.textContent = 'Live (' + currentRoomId + ')';
+      navLiveText.textContent = 'Live (' + truncateBroadcastTitle(currentRoomId, 6) + ')';
+      navLiveText.title = `Live: ${currentRoomId}`;
     }
     if (matchCard) matchCard.classList.add('is-live');
     if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#10B981';
-    if (matchCardLiveTitle) matchCardLiveTitle.textContent = `LIVE: ${currentRoomId} (${userRole === 'host' ? 'Host / Wasit' : 'Penonton'})`;
-    if (matchCardLiveSub) matchCardLiveSub.textContent = userRole === 'host' ? `Siaran aktif realtime • PIN Host: ${hostPin}` : 'Sedang menonton siaran live real-time';
+    if (matchCardLiveTitle) {
+      matchCardLiveTitle.textContent = `LIVE: ${truncateBroadcastTitle(rawTitle, 22)} (${userRole === 'host' ? 'Host / Wasit' : 'Penonton'})`;
+      matchCardLiveTitle.title = `LIVE: ${rawTitle}`;
+    }
+    if (matchCardLiveSub) {
+      matchCardLiveSub.textContent = userRole === 'host' ? `Siaran aktif realtime • PIN Host: ${hostPin}` : 'Sedang menonton siaran live real-time';
+    }
     if (matchCardActionBtn) {
       matchCardActionBtn.textContent = 'Kelola';
     }
@@ -5320,7 +6253,10 @@ function updateOnlineUI(status) {
     if (roomDetails) roomDetails.style.display = 'block';
     if (setupForm) setupForm.style.display = 'none';
     if (activeControls) activeControls.style.display = 'block';
-    if (displayRoomCode) displayRoomCode.textContent = currentRoomId;
+    if (displayRoomCode) {
+      displayRoomCode.textContent = truncateBroadcastTitle(currentRoomId, 22);
+      displayRoomCode.title = currentRoomId;
+    }
     if (displayRoleText) displayRoleText.textContent = `Peran: ${userRole === 'host' ? 'Host Utama / Wasit' : 'Penonton Live'}`;
 
     if (userRole === 'host') {
@@ -5334,11 +6270,15 @@ function updateOnlineUI(status) {
       if (hostActionBtns) hostActionBtns.style.display = 'none';
       if (specActionBtns) specActionBtns.style.display = 'flex';
       if (spectatorBanner) spectatorBanner.classList.add('show');
-      if (spectatorRoomLabel) spectatorRoomLabel.textContent = currentRoomId;
+      if (spectatorRoomLabel) {
+        spectatorRoomLabel.textContent = truncateBroadcastTitle(currentRoomId, 16);
+        spectatorRoomLabel.title = currentRoomId;
+      }
     }
   } else if (status === 'connecting') {
     if (headerPill) {
       headerPill.className = 'btn-online-pill is-connecting';
+      headerPill.title = 'Sedang menghubungkan ke server realtime...';
       headerText.textContent = 'Menghubungkan...';
     }
     if (navLiveDot) {
@@ -5358,6 +6298,7 @@ function updateOnlineUI(status) {
   } else {
     if (headerPill) {
       headerPill.className = 'btn-online-pill';
+      headerPill.title = 'Buka Mode Online & Live Sync';
       headerText.textContent = 'Siaran Live';
     }
     if (navLiveDot) navLiveDot.style.display = 'none';
@@ -5605,20 +6546,23 @@ function updateLiveRoomsDirectoryUI() {
     const isCurrent = isOnlineActive && currentRoomId === rid;
     const sportIcon = r.sport === 'minisoccer' ? '⚽' : '🏸';
     const sportName = r.sport === 'minisoccer' ? 'Mini Soccer' : 'Badminton';
+    const rawTitle = r.title || ('Pertandingan ' + r.roomId);
+    const safeTitle = truncateBroadcastTitle(rawTitle, 28);
+    const safeRoomId = truncateBroadcastTitle(r.roomId, 14);
 
     return `
-      <div class="live-room-item-card" style="${isCurrent ? 'border-color:var(--brand-orange); background:#FFFBF9;' : ''}">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span class="live-pulse-badge">LIVE</span>
-            <strong style="font-family:'Outfit',sans-serif; font-size:0.95rem; color:var(--brand-navy-dark);">${r.roomId}</strong>
+      <div class="live-room-item-card" style="${isCurrent ? 'border-color:var(--brand-blue); background:#F5F9FD;' : ''}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+            <span class="live-pulse-badge" style="flex-shrink:0;">LIVE</span>
+            <strong style="font-family:'Outfit',sans-serif; font-size:0.95rem; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.roomId)}">${escapeHtml(safeRoomId)}</strong>
           </div>
-          <span style="font-size:0.68rem; font-weight:800; background:#F1F5F9; color:var(--brand-navy-mid); padding:2px 8px; border-radius:999px;">
+          <span style="font-size:0.68rem; font-weight:800; background:#EAF4FF; color:var(--brand-blue); padding:2px 8px; border-radius:999px; flex-shrink:0;">
             ${sportIcon} ${sportName}
           </span>
         </div>
-        <div style="font-size:0.78rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-          ${r.title || ('Pertandingan ' + r.roomId)}
+        <div style="font-size:0.78rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;" title="${escapeHtml(rawTitle)}">
+          ${escapeHtml(safeTitle)}
         </div>
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:6px;">
           <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" onclick="joinRoomAsSpectator('${r.roomId}')">
@@ -5862,20 +6806,20 @@ function renderLiveHistoryList() {
 
     return `
       <div class="history-item-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:900; color:var(--brand-navy-dark);">${item.roomId}</span>
-            <span style="font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:999px; background:${item.role === 'Host' ? '#FFF1EB' : '#ECFDF5'}; color:${item.role === 'Host' ? '#C2410C' : '#047857'};">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+            <span style="font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:900; color:var(--brand-navy-dark); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.roomId)}">${escapeHtml(truncateBroadcastTitle(item.roomId, 14))}</span>
+            <span style="font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:999px; background:${item.role === 'Host' ? '#EAF4FF' : '#ECFDF5'}; color:${item.role === 'Host' ? '#075BB2' : '#047857'}; flex-shrink:0;">
               ${item.role === 'Host' ? '👑 Host' : '👁️ Penonton'}
             </span>
           </div>
-          <span style="font-size:0.68rem; font-weight:700; color:var(--text-muted);">
+          <span style="font-size:0.68rem; font-weight:700; color:var(--text-muted); flex-shrink:0;">
             ${item.dateFormatted} · ${item.timeFormatted || ''}
           </span>
         </div>
 
-        <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark); margin-bottom:4px;">
-          ${item.sessionTitle || '-'} (${isBadm ? 'Badminton 🏸' : 'Mini Soccer ⚽'})
+        <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.sessionTitle || '-')}">
+          ${escapeHtml(truncateBroadcastTitle(item.sessionTitle || '-', 28))} (${isBadm ? 'Badminton 🏸' : 'Mini Soccer ⚽'})
         </div>
 
         <div style="font-size:0.72rem; color:var(--text-secondary); background:#F8FAFC; padding:6px 8px; border-radius:var(--radius-sm); margin-bottom:8px;">
@@ -6000,7 +6944,11 @@ function openHistoryDetailModal(id) {
   const contentEl = document.getElementById('histDetailContent');
   if (!modal || !contentEl) return;
 
-  if (titleEl) titleEl.textContent = `Rekap Live: ${item.roomId} (${item.sessionTitle || ''})`;
+  if (titleEl) {
+    const rawT = item.sessionTitle ? `Rekap: ${item.sessionTitle}` : `Rekap Room ${item.roomId}`;
+    titleEl.textContent = truncateBroadcastTitle(rawT, 28);
+    titleEl.title = rawT;
+  }
 
   let html = `
     <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:12px; font-size:0.78rem;">
