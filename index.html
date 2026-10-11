@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#152B52">
 <meta name="apple-mobile-web-app-title" content="ONESPORT">
-<meta name="description" content="ONESPORT Multi-Sport Match & Tournament Engine Online. Rotasi pemain badminton, mini soccer, live score, dan klasemen otomatis realtime.">
-<title>ONESPORT · Multi-Sport Match & Team Engine (Online Live)</title>
+<meta name="description" content="ONESPORT Multi-Sport Match & Tournament Online. Rotasi pemain badminton, mini soccer, live score, dan klasemen otomatis realtime.">
+<title>ONESPORT · Multi-Sport Match & Tournament (Online Live)</title>
 
 <!-- PWA Web App Manifest & Mobile Icons -->
 <link rel="manifest" href="manifest.json">
@@ -505,10 +505,29 @@
   .player-cell-pill:hover {
     border-color: var(--brand-orange);
     background: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(255, 91, 20, 0.15);
   }
   .player-cell-pill.is-winner {
     border: 1.5px solid #10B981;
     background: #ECFDF5;
+  }
+  .resting-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .resting-chip:hover {
+    border-color: var(--brand-orange);
+    background: var(--brand-orange-light);
+    transform: translateY(-1px);
   }
   .player-cell-top {
     display: flex;
@@ -1461,7 +1480,7 @@
       <img src="logo-shield.png" alt="ONESPORT" class="header-logo-img" onerror="this.src='logo-icon.png'">
       <div class="header-title-text">
         <div class="app-name">ONE<span>SPORT</span></div>
-        <div class="app-sub" id="sportHeaderSubtitle">Badminton Engine</div>
+        <div class="app-sub" id="sportHeaderSubtitle">Badminton</div>
       </div>
     </div>
     <div class="header-actions">
@@ -1629,7 +1648,7 @@
     <div id="badmintonNextMatchSection">
       <div class="os-card dashed">
         <div class="next-match-header-row" style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; font-weight:700; color:var(--text-secondary); margin-bottom:10px;">
-          <span>Main berikutnya (terkunci — tap pemain untuk ganti)</span>
+          <span>Jadwal Main Berikutnya · Tap Pemain untuk Ganti</span>
           <span style="font-size:0.72rem; font-weight:800; color:var(--brand-orange);" id="nextRoundCourtsCountLabel">2 Lapangan</span>
         </div>
         <div id="nextMatchGridContainer"></div>
@@ -1665,7 +1684,7 @@
     <!-- Resting / Bench Players Drawer -->
     <div class="os-card" style="background:#F1F5F9; margin-top:14px; padding:12px 14px;">
       <div style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;" id="benchDrawerTitle">
-        Istirahat Ronde Ini
+        Istirahat Ronde Ini (Tap untuk Masuk ke Lapangan)
       </div>
       <div style="display:flex; gap:6px; flex-wrap:wrap;" id="restingPlayersWrap"></div>
     </div>
@@ -1695,9 +1714,9 @@
           </button>
         </div>
         <select class="filter-select-styled" id="lbSortSelect" onchange="renderLeaderboard()">
-          <option value="wins">BY WINS (Regulasi)</option>
-          <option value="points">BY TOTAL SKOR</option>
-          <option value="diff">BY SELISIH SKOR</option>
+          <option value="wins">BY WINS (Regulasi Juara)</option>
+          <option value="diff">BY SKOR SELISIH (+/-)</option>
+          <option value="points">BY TOTAL POIN</option>
           <option value="wr">BY WIN RATE</option>
         </select>
       </div>
@@ -1708,8 +1727,8 @@
             <tr>
               <th class="col-left">Pemain</th>
               <th class="col-center">M-K</th>
-              <th class="col-center">SKOR</th>
-              <th class="col-center">DIFF</th>
+              <th class="col-center">POIN</th>
+              <th class="col-center">SKOR (DIFF)</th>
               <th class="col-right">STATUS</th>
             </tr>
           </thead>
@@ -1748,7 +1767,7 @@
     <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 0.76rem;">
       <div style="display: flex; align-items: center; gap: 6px; color: #92400E; font-weight: 700;">
         <span style="font-size: 1rem;">⚖️</span>
-        <span>Aturan: <strong>Menang ➔ H2H (2 Tim) ➔ Total Skor</strong></span>
+        <span>Aturan: <strong>Menang ➔ Skor Selisih Poin (+/-) ➔ Total Poin</strong></span>
       </div>
       <button class="btn-rules-pill" style="font-size: 0.7rem; padding: 2px 8px;" onclick="openRulesModal()">Lihat Regulasi</button>
     </div>
@@ -1766,8 +1785,8 @@
             <th class="col-center">M</th>
             <th class="col-center">K</th>
             <th class="col-center">WR</th>
-            <th class="col-center">Skor</th>
-            <th class="col-center">Diff</th>
+            <th class="col-center">Poin</th>
+            <th class="col-center">Skor (Diff)</th>
             <th class="col-left">Penentuan & Catatan</th>
           </tr>
         </thead>
@@ -1950,31 +1969,31 @@
           <span>Penentuan Jika Jumlah Menang Sama</span>
         </div>
         <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">
-          Dicek berurutan secara hierarkis. Jika satu aturan sudah memisahkan peringkat, aturan berikutnya tidak dipakai:
+          Peringkat dicek berurutan secara hierarkis jika ada pemain/tim dengan jumlah kemenangan yang sama:
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
-            <strong style="color: var(--brand-navy-mid);">A. Head-to-Head (H2H):</strong>
+            <strong style="color: var(--brand-navy-mid);">A. Skor Selisih Poin (Point Difference):</strong>
             <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-              Hasil pertandingan langsung antar tim/pemain yang seri. <em>Khusus berlaku jika yang seri tepat 2 tim.</em>
+              Dihitung dari <strong>jumlah poin menang/didapat di setiap ronde dikurangi jumlah poin lawan di setiap rondenya</strong> (&Sigma; Poin Didapat - &Sigma; Poin Lawan). Pemain dengan skor selisih poin lebih tinggi berada di atas.
             </div>
           </div>
           <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
-            <strong style="color: var(--brand-navy-mid);">B. Total Skor yang Didapat:</strong>
+            <strong style="color: var(--brand-navy-mid);">B. Total Poin yang Didapat:</strong>
             <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-              Jumlah seluruh poin yang dicetak tim di semua pertandingan. Tim dengan total skor lebih besar berada di atas.
+              Jika selisih skor masih sama persis, dibandingkan dari <strong>total seluruh poin yang berhasil dicetak</strong> di semua ronde (produktivitas poin tertinggi).
             </div>
           </div>
           <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
-            <strong style="color: var(--brand-navy-mid);">C. Jumlah Gelar Juara:</strong>
+            <strong style="color: var(--brand-navy-mid);">C. Head-to-Head (H2H):</strong>
             <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-              Jika ada lebih dari satu seri atau event, tim yang lebih sering juara berada di atas.
+              Jika tepat 2 tim/pemain memiliki menang, selisih skor, dan total poin sama persis, pemenang pertandingan langsung antar keduanya berada di atas.
             </div>
           </div>
           <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 10px;">
-            <strong style="color: var(--brand-navy-mid);">D. Undian atau Pertandingan Tambahan:</strong>
+            <strong style="color: var(--brand-navy-mid);">D. Gelar Juara &amp; Undian:</strong>
             <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-              Dijalankan jika seluruh aturan di atas masih bernilai sama persis.
+              Jika seluruh kriteria di atas masih bernilai sama, dilihat dari riwayat gelar juara sebelumnya atau dilakukan undian oleh panitia.
             </div>
           </div>
         </div>
@@ -2554,7 +2573,7 @@ function switchSport(sport) {
     btnS.classList.remove('active');
     subB.style.display = 'flex';
     subS.style.display = 'none';
-    subtitle.textContent = 'Badminton Engine';
+    subtitle.textContent = 'Badminton';
 
     document.getElementById('navMatchLabel').textContent = 'Lapangan';
     document.getElementById('rosterTitleText').textContent = 'Daftar Pemain Badminton';
@@ -2578,7 +2597,7 @@ function switchSport(sport) {
     btnS.classList.add('active');
     subB.style.display = 'none';
     subS.style.display = 'flex';
-    subtitle.textContent = 'Mini Soccer Engine';
+    subtitle.textContent = 'Mini Soccer';
 
     document.getElementById('navMatchLabel').textContent = 'Pertandingan';
     document.getElementById('rosterTitleText').textContent = 'Daftar Pemain Mini Soccer';
@@ -3272,9 +3291,9 @@ function renderCourtsView() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; margin-bottom:4px; padding:0 4px;">
         <div style="font-size:0.82rem; font-weight:900; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px;">
           <span style="background:var(--brand-orange); color:#fff; font-size:0.68rem; padding:2px 7px; border-radius:999px; font-weight:800;">Ronde ${currentRound.roundNumber}</span>
-          <span>Lapangan Aktif (${courtsCount} Lapangan Bertanding)</span>
+          <span>Lapangan Aktif (${courtsCount} Lapangan)</span>
         </div>
-        <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">${courtsCount * 4} Pemain Main</span>
+        <span style="font-size:0.72rem; color:var(--brand-orange); font-weight:800; display:inline-flex; align-items:center; gap:2px;">⇄ Tap pemain untuk ganti</span>
       </div>
     `;
 
@@ -3321,10 +3340,11 @@ function renderCourtsView() {
 
     if (currentRound.resting && currentRound.resting.length > 0) {
       restingWrap.innerHTML = currentRound.resting.map(p => `
-        <span class="resting-chip">
+        <span class="resting-chip" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk ganti pemain di lapangan dengan ${p.name}">
           <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}">${p.gender}</span>
           <span>${p.name}</span>
           <span class="role-pill ${(p.role || 'Pemula').toLowerCase()}">${p.role}</span>
+          <span style="font-size:0.65rem; color:var(--brand-orange); font-weight:800; margin-left:2px;">⇄ Masuk</span>
         </span>
       `).join('');
     } else {
@@ -3393,15 +3413,18 @@ function renderCourtsView() {
 }
 
 function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, isWinner = false) {
-  if (!p) return `<div class="player-cell-pill"><span style="color:var(--text-muted); font-size:0.75rem;">+ Pilih</span></div>`;
+  if (!p) return `<div class="player-cell-pill" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, 0)" title="Pilih pemain untuk slot ini"><span style="color:var(--brand-orange); font-size:0.75rem; font-weight:700;">+ Pilih Pemain</span></div>`;
   const isMale = p.gender === 'L';
   return `
-    <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" onclick="${!isLocked ? `openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})` : ''}">
+    <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${p.name}">
       <div class="player-cell-top">
         <span class="player-cell-name">${p.name}</span>
         <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
       </div>
-      <div><span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${p.role}</span></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+        <span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${p.role}</span>
+        <span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>
+      </div>
     </div>
   `;
 }
@@ -3572,25 +3595,29 @@ function saveScoresAndAdvance() {
 // ============================================================================
 
 /**
- * Aturan Penentuan Peringkat Hierarkis & Rekursif:
- * 1. Peringkat utama: Jumlah Kemenangan terbanyak.
- * 2. Jika menang sama:
- *    - Jika seri tepat 2 tim/pemain: Head-to-Head pertandingan langsung.
- *    - Jika seri >= 3 tim/pemain: H2H dilewati, langsung ke Total Skor yang Didapat.
- *    - Jika Total Skor memisahkan sebagian tim, sisa tim yang masih seri dihitung ulang dari Aturan #1 (rekursif).
- *    - Jika masih sama: Rekam Jejak Juara (titles), lalu Undian panitia.
+ * Aturan Penentuan Peringkat Hierarkis:
+ * 1. Peringkat utama: Jumlah Kemenangan terbanyak (Wins) / Poin klasemen (Soccer).
+ * 2. Jika menang sama: Ditentukan dari SKOR JUARA, yaitu jumlah poin menang/didapat
+ *    di setiap ronde dikurangi jumlah poin lawan di setiap rondenya (Point Difference / Diff).
+ * 3. Jika skor selisih poin masih sama: Total Poin yang didapat di seluruh ronde.
+ * 4. Jika masih sama: Head-to-Head (H2H jika tepat 2 tim/pemain pernah bertanding langsung).
+ * 5. Jika masih sama: Rekam Jejak Juara (titles), lalu Undian panitia.
  */
 function resolveStandingsByRules(items, getH2H) {
+  // Reset tieBreakNote agar tidak bercampur dari pemanggilan sebelumnya
+  items.forEach(it => { it.tieBreakNote = ''; });
+
   const groups = {};
   items.forEach(it => {
-    const w = it.wins || 0;
-    if (!groups[w]) groups[w] = [];
-    groups[w].push(it);
+    // Prioritas utama: pts (untuk mini soccer jika ada) atau wins (untuk badminton & match umum)
+    const primaryKey = (it.pts !== undefined && it.p !== undefined) ? (it.pts || 0) : (it.wins || 0);
+    if (!groups[primaryKey]) groups[primaryKey] = [];
+    groups[primaryKey].push(it);
   });
-  const winKeys = Object.keys(groups).map(Number).sort((a, b) => b - a);
+  const sortedKeys = Object.keys(groups).map(Number).sort((a, b) => b - a);
   let result = [];
-  winKeys.forEach(w => {
-    result = result.concat(resolveTiedSubset(groups[w], getH2H));
+  sortedKeys.forEach(k => {
+    result = result.concat(resolveTiedSubset(groups[k], getH2H));
   });
   return result;
 }
@@ -3598,39 +3625,40 @@ function resolveStandingsByRules(items, getH2H) {
 function resolveTiedSubset(subset, getH2H) {
   if (subset.length <= 1) return subset;
 
-  // 1. Kasus Tepat 2 Tim/Pemain Seri: Gunakan Head-to-Head
-  if (subset.length === 2) {
-    const h2h = getH2H(subset[0], subset[1]);
-    if (h2h > 0) {
-      subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
-      return [subset[0], subset[1]];
-    } else if (h2h < 0) {
-      subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
-      return [subset[1], subset[0]];
-    }
+  // 1. Kriteria Utama saat Menang Sama: Skor Selisih Poin (Poin Ronde Didapat - Poin Ronde Lawan)
+  const diffGroups = {};
+  subset.forEach(it => {
+    const d = (it.diff !== undefined) ? it.diff : ((it.scored || 0) - (it.conceded || 0));
+    if (!diffGroups[d]) diffGroups[d] = [];
+    diffGroups[d].push(it);
+  });
+  const diffKeys = Object.keys(diffGroups).map(Number).sort((a, b) => b - a);
 
-    // Jika H2H imbang atau belum pernah bertanding langsung: Total Skor Didapat
-    if (subset[0].totalScore !== subset[1].totalScore) {
-      subset.sort((a, b) => b.totalScore - a.totalScore);
-      subset[0].tieBreakNote = `Total Skor (${subset[0].totalScore} vs ${subset[1].totalScore})`;
-      return subset;
-    }
-
-    // Kriteria 3: Jumlah Juara Sebelumnya
-    const t0 = subset[0].titles || 0;
-    const t1 = subset[1].titles || 0;
-    if (t0 !== t1) {
-      subset.sort((a, b) => (b.titles || 0) - (a.titles || 0));
-      subset[0].tieBreakNote = `Gelar Juara (${subset[0].titles} gelar)`;
-      return subset;
-    }
-
-    // Kriteria 4: Undian
-    subset[0].tieBreakNote = 'Undian / Nilai Sama';
-    return subset;
+  // Jika skor selisih memisahkan peringkat:
+  if (diffKeys.length > 1) {
+    let result = [];
+    diffKeys.forEach(d => {
+      const sub = diffGroups[d];
+      if (sub.length === 1) {
+        const sign = sub[0].diff >= 0 ? '+' : '';
+        sub[0].tieBreakNote = `Skor Selisih (${sign}${sub[0].diff})`;
+        result.push(sub[0]);
+      } else {
+        // Jika masih ada 2 atau lebih pemain yang memiliki skor selisih yang sama persis:
+        result = result.concat(resolveByTotalScore(sub, getH2H));
+      }
+    });
+    return result;
   }
 
-  // 2. Kasus >= 3 Tim Seri: H2H dilewati, langsung ke Total Skor yang Didapat
+  // Jika seluruh tim di subset memiliki skor selisih poin yang sama persis:
+  return resolveByTotalScore(subset, getH2H);
+}
+
+function resolveByTotalScore(subset, getH2H) {
+  if (subset.length <= 1) return subset;
+
+  // 2. Kriteria Selanjutnya: Total Poin yang Didapat di Semua Ronde
   const scoreGroups = {};
   subset.forEach(it => {
     const s = it.totalScore || 0;
@@ -3639,23 +3667,39 @@ function resolveTiedSubset(subset, getH2H) {
   });
   const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
 
-  // Jika Total Skor memisahkan peringkat:
   if (scoreKeys.length > 1) {
     let result = [];
     scoreKeys.forEach(s => {
       const sub = scoreGroups[s];
       if (sub.length === 1) {
-        sub[0].tieBreakNote = `Total Skor (${sub[0].totalScore} Poin)`;
+        sub[0].tieBreakNote = `Total Poin (${sub[0].totalScore} Poin)`;
         result.push(sub[0]);
       } else {
-        // Rekursif: Tim yang masih seri dihitung ulang dari aturan nomor 1 (H2H jika tinggal 2 tim)
-        result = result.concat(resolveTiedSubset(sub, getH2H));
+        result = result.concat(resolveByH2HAndTitles(sub, getH2H));
       }
     });
     return result;
   }
 
-  // Jika Total Skor sama semua pada >= 3 tim: Cek Riwayat Juara
+  return resolveByH2HAndTitles(subset, getH2H);
+}
+
+function resolveByH2HAndTitles(subset, getH2H) {
+  if (subset.length <= 1) return subset;
+
+  // 3. Head-to-Head (jika tepat 2 tim/pemain)
+  if (subset.length === 2 && typeof getH2H === 'function') {
+    const h2h = getH2H(subset[0], subset[1]);
+    if (h2h > 0) {
+      subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
+      return [subset[0], subset[1]];
+    } else if (h2h < 0) {
+      subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
+      return [subset[1], subset[0]];
+    }
+  }
+
+  // 4. Riwayat Rekam Jejak Juara (titles)
   const titleGroups = {};
   subset.forEach(it => {
     const t = it.titles || 0;
@@ -3671,13 +3715,14 @@ function resolveTiedSubset(subset, getH2H) {
         sub[0].tieBreakNote = `Gelar Juara (${sub[0].titles} kali)`;
         result.push(sub[0]);
       } else {
-        result = result.concat(resolveTiedSubset(sub, getH2H));
+        result = result.concat(sub);
       }
     });
     return result;
   }
 
-  // Undian / Playoff
+  // 5. Undian / Nilai Sama
+  subset[0].tieBreakNote = subset[0].tieBreakNote || 'Undian / Nilai Sama';
   return subset;
 }
 
@@ -3776,13 +3821,13 @@ function getBadmintonStatsAndRankings(sortMode = 'wins') {
   };
 
   if (sortMode === 'points') {
-    return list.sort((a, b) => b.totalScore - a.totalScore || b.wins - a.wins || b.diff - a.diff);
+    return list.sort((a, b) => b.totalScore - a.totalScore || b.diff - a.diff || b.wins - a.wins);
   } else if (sortMode === 'diff') {
     return list.sort((a, b) => b.diff - a.diff || b.wins - a.wins || b.totalScore - a.totalScore);
   } else if (sortMode === 'wr') {
-    return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.totalScore - a.totalScore);
+    return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.diff - a.diff || b.totalScore - a.totalScore);
   } else {
-    // Sesuai Regulasi Penentuan Juara
+    // Sesuai Regulasi Penentuan Juara: Menang -> Skor Selisih Poin (Poin Ronde - Poin Lawan) -> Total Poin
     return resolveStandingsByRules(list, getH2H);
   }
 }
@@ -3864,11 +3909,11 @@ function getSoccerStatsAndRankings(sortMode = 'wins') {
   };
 
   if (sortMode === 'points') {
-    return list.sort((a, b) => b.totalScore - a.totalScore || b.wins - a.wins || b.diff - a.diff);
+    return list.sort((a, b) => b.totalScore - a.totalScore || b.diff - a.diff || b.wins - a.wins);
   } else if (sortMode === 'diff') {
     return list.sort((a, b) => b.diff - a.diff || b.wins - a.wins || b.totalScore - a.totalScore);
   } else if (sortMode === 'wr') {
-    return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.totalScore - a.totalScore);
+    return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.diff - a.diff || b.totalScore - a.totalScore);
   } else {
     return resolveStandingsByRules(list, getH2H);
   }
@@ -3886,8 +3931,8 @@ function renderLeaderboard() {
       <tr>
         <th class="col-left">Pemain</th>
         <th class="col-center">M-K</th>
-        <th class="col-center">SKOR</th>
-        <th class="col-center">DIFF</th>
+        <th class="col-center">POIN</th>
+        <th class="col-center">SKOR (DIFF)</th>
         <th class="col-right">STATUS</th>
       </tr>
     `;
@@ -3919,8 +3964,8 @@ function renderLeaderboard() {
           </div>
         </td>
         <td class="col-center"><strong>${s.wins}-${s.losses}</strong></td>
-        <td class="col-center" style="color:var(--brand-orange); font-weight:900;">${s.totalScore}</td>
-        <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:800;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
+        <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
+        <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-right" style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-mid);">
           ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (s.tieBreakNote || '-')))}
         </td>
@@ -4021,7 +4066,7 @@ function renderFinalPodium() {
         <div class="podium-player-meta">
           <span class="podium-medal-label silver">Juara 2</span>
           <div class="podium-name">${p2 ? p2.name : '-'}</div>
-          ${p2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p2.wins} Menang · ${p2.totalScore} Skor</div>` : ''}
+          ${p2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p2.wins} Menang · Skor ${p2.diff >= 0 ? '+' + p2.diff : p2.diff} (${p2.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-2">2</div>
       </div>
@@ -4029,7 +4074,7 @@ function renderFinalPodium() {
         <div class="podium-player-meta">
           <span class="podium-medal-label gold">Juara 1</span>
           <div class="podium-name">${p1 ? p1.name : '-'}</div>
-          ${p1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${p1.wins} Menang · ${p1.totalScore} Skor</div>` : ''}
+          ${p1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${p1.wins} Menang · Skor ${p1.diff >= 0 ? '+' + p1.diff : p1.diff} (${p1.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-1">1</div>
       </div>
@@ -4037,7 +4082,7 @@ function renderFinalPodium() {
         <div class="podium-player-meta">
           <span class="podium-medal-label bronze">Juara 3</span>
           <div class="podium-name">${p3 ? p3.name : '-'}</div>
-          ${p3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p3.wins} Menang · ${p3.totalScore} Skor</div>` : ''}
+          ${p3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p3.wins} Menang · Skor ${p3.diff >= 0 ? '+' + p3.diff : p3.diff} (${p3.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-3">3</div>
       </div>
@@ -4064,8 +4109,8 @@ function renderFinalPodium() {
         <td class="col-center"><strong>${s.wins}</strong></td>
         <td class="col-center">${s.losses}</td>
         <td class="col-center">${s.winRate}%</td>
-        <td class="col-center" style="color:var(--brand-orange); font-weight:900;">${s.totalScore}</td>
-        <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:800;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
+        <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
+        <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-left">
           ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
         </td>
@@ -4081,7 +4126,7 @@ function renderFinalPodium() {
         <div class="podium-player-meta">
           <span class="podium-medal-label silver">Juara 2</span>
           <div class="podium-name">${t2 ? t2.name : '-'}</div>
-          ${t2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t2.w} Menang · ${t2.totalScore} Gol</div>` : ''}
+          ${t2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t2.w} Menang · Selisih ${t2.gd >= 0 ? '+' + t2.gd : t2.gd} (${t2.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-2">2</div>
       </div>
@@ -4089,7 +4134,7 @@ function renderFinalPodium() {
         <div class="podium-player-meta">
           <span class="podium-medal-label gold">Juara 1</span>
           <div class="podium-name">${t1 ? t1.name : '-'}</div>
-          ${t1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${t1.w} Menang · ${t1.totalScore} Gol</div>` : ''}
+          ${t1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${t1.w} Menang · Selisih ${t1.gd >= 0 ? '+' + t1.gd : t1.gd} (${t1.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-1">1</div>
       </div>
@@ -4097,7 +4142,7 @@ function renderFinalPodium() {
         <div class="podium-player-meta">
           <span class="podium-medal-label bronze">Juara 3</span>
           <div class="podium-name">${t3 ? t3.name : '-'}</div>
-          ${t3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t3.w} Menang · ${t3.totalScore} Gol</div>` : ''}
+          ${t3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t3.w} Menang · Selisih ${t3.gd >= 0 ? '+' + t3.gd : t3.gd} (${t3.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-3">3</div>
       </div>
@@ -4124,8 +4169,8 @@ function renderFinalPodium() {
         <td class="col-center"><strong>${s.w}</strong></td>
         <td class="col-center">${s.l}</td>
         <td class="col-center">${s.winRate}%</td>
-        <td class="col-center" style="color:var(--brand-orange); font-weight:900;">${s.totalScore}</td>
-        <td class="col-center" style="color:${s.gd >= 0 ? '#059669' : '#DC2626'}; font-weight:800;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
+        <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
+        <td class="col-center" style="color:${s.gd >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
         <td class="col-left">
           ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
         </td>
@@ -4144,19 +4189,22 @@ function shareFinalResults() {
   const p1 = list[0], p2 = list[1], p3 = list[2];
   let text = `🏸 *HASIL AKHIR & PENENTUAN JUARA* 🏆\n`;
   text += `📌 ${sessionTitle.toUpperCase()} (${isBadm ? 'BADMINTON' : 'MINI SOCCER'})\n`;
-  text += `⚖️ *Sesuai Regulasi Resmi Klasemen & Tie-Breaker*\n\n`;
+  text += `⚖️ *Regulasi: Menang Terbanyak ➔ Skor Selisih Poin (+/-) ➔ Total Poin*\n\n`;
 
-  if (p1) text += `🥇 *JUARA 1:* ${p1.name} (${p1.wins} Menang | Total Skor: ${p1.totalScore})\n`;
-  if (p2) text += `🥈 *JUARA 2:* ${p2.name} (${p2.wins} Menang | Total Skor: ${p2.totalScore}${p2.tieBreakNote ? ' — ' + p2.tieBreakNote : ''})\n`;
-  if (p3) text += `🥉 *JUARA 3:* ${p3.name} (${p3.wins} Menang | Total Skor: ${p3.totalScore}${p3.tieBreakNote ? ' — ' + p3.tieBreakNote : ''})\n`;
+  if (p1) text += `🥇 *JUARA 1:* ${p1.name} (${p1.wins !== undefined ? p1.wins : p1.w} Menang | Skor: ${p1.diff >= 0 ? '+' + p1.diff : p1.diff} | Poin: ${p1.totalScore})\n`;
+  if (p2) text += `🥈 *JUARA 2:* ${p2.name} (${p2.wins !== undefined ? p2.wins : p2.w} Menang | Skor: ${p2.diff >= 0 ? '+' + p2.diff : p2.diff} | Poin: ${p2.totalScore}${p2.tieBreakNote ? ' — ' + p2.tieBreakNote : ''})\n`;
+  if (p3) text += `🥉 *JUARA 3:* ${p3.name} (${p3.wins !== undefined ? p3.wins : p3.w} Menang | Skor: ${p3.diff >= 0 ? '+' + p3.diff : p3.diff} | Poin: ${p3.totalScore}${p3.tieBreakNote ? ' — ' + p3.tieBreakNote : ''})\n`;
 
   text += `\n📊 *KLASEMEN LENGKAP:*\n`;
   list.forEach((s, idx) => {
     const medal = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : `${idx + 1}. `));
-    text += `${medal}${s.name} | ${s.wins}M-${s.losses}K | Skor: ${s.totalScore} | Diff: ${s.diff >= 0 ? '+' + s.diff : s.diff}${s.tieBreakNote ? ' (' + s.tieBreakNote + ')' : ''}\n`;
+    const w = s.wins !== undefined ? s.wins : s.w;
+    const l = s.losses !== undefined ? s.losses : s.l;
+    const diffVal = s.diff !== undefined ? s.diff : s.gd;
+    text += `${medal}${s.name} | ${w}M-${l}K | Skor (Diff): ${diffVal >= 0 ? '+' + diffVal : diffVal} | Poin: ${s.totalScore}${s.tieBreakNote ? ' (' + s.tieBreakNote + ')' : ''}\n`;
   });
 
-  text += `\n_Aturan: Menang Terbanyak ➔ H2H (2 Tim) ➔ Total Skor Didapat_\n`;
+  text += `\n_Aturan: Menang Terbanyak ➔ Skor Selisih Poin (Poin Ronde - Poin Lawan) ➔ Total Poin_\n`;
   text += `Generated with ONESPORT Platform`;
 
   if (navigator.share) {
@@ -4425,65 +4473,230 @@ function checkEditPermission() {
 }
 
 // ── SWAP PLAYER SYSTEM ──
+function refreshCourtCategory(court) {
+  if (!court || !court.teamA || !court.teamB) return;
+  const allPlayers = [...court.teamA, ...court.teamB].filter(Boolean);
+  if (allPlayers.length === 0) return;
+  const femaleCount = allPlayers.filter(p => p.gender === 'P').length;
+  const maleCount = allPlayers.filter(p => p.gender === 'L').length;
+  if (femaleCount === allPlayers.length) {
+    court.category = 'PUTRI';
+    court.categoryLabel = 'Putri vs Putri';
+  } else if (maleCount === allPlayers.length) {
+    court.category = 'PUTRA';
+    court.categoryLabel = 'Ganda Putra';
+  } else {
+    court.category = 'CAMPURAN';
+    court.categoryLabel = 'Terbuka / Campuran';
+  }
+}
+
 function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
   if (!checkEditPermission()) return;
-  swapContext = { rIdx, cIdx, teamKey, pIdx, pId };
-  const player = bPlayers.find(p => p.id === pId);
-  if (!player) return;
+  const round = bSchedule[rIdx];
+  if (!round || !round.courts || !round.courts[cIdx]) {
+    showToast('Jadwal pertandingan tidak ditemukan');
+    return;
+  }
+
+  const teamProp = (teamKey === 'teamA' || teamKey === 'teamB') ? teamKey : (teamKey === 'A' ? 'teamA' : 'teamB');
+  swapContext = { rIdx, cIdx, teamKey: teamProp, pIdx, pId, mode: 'fromCourt' };
+
+  const currentCourt = round.courts[cIdx];
+  const sourcePlayer = currentCourt[teamProp] ? currentCourt[teamProp][pIdx] : null;
 
   const nameEl = document.getElementById('swapSourcePlayerName');
-  if (nameEl) nameEl.textContent = `${player.name} (${player.gender === 'L' ? 'Putra' : 'Putri'} - ${player.role})`;
-  
-  const currentRound = bSchedule[rIdx];
+  if (nameEl) {
+    if (sourcePlayer) {
+      nameEl.textContent = `${sourcePlayer.name} (${sourcePlayer.gender === 'L' ? 'Putra' : 'Putri'} • ${sourcePlayer.role})`;
+    } else {
+      nameEl.textContent = `Slot Kosong (${currentCourt.courtName || ('Lapangan ' + (cIdx + 1))} • ${teamProp === 'teamA' ? 'Tim A' : 'Tim B'})`;
+    }
+  }
+
   const listEl = document.getElementById('swapCandidatesList');
-  if (!listEl || !currentRound) return;
+  if (!listEl) return;
 
   let candidates = [];
-  if (currentRound.resting && currentRound.resting.length > 0) {
-    currentRound.resting.forEach(p => {
-      candidates.push({ player: p, location: 'Cadangan / Istirahat', targetType: 'resting' });
+
+  // 1. Pemain Istirahat / Cadangan pada ronde ini
+  if (round.resting && round.resting.length > 0) {
+    round.resting.forEach(p => {
+      if (p && (!sourcePlayer || p.id !== sourcePlayer.id)) {
+        candidates.push({
+          player: p,
+          location: 'Bangku Cadangan / Istirahat',
+          targetType: 'resting'
+        });
+      }
     });
   }
 
-  currentRound.courts.forEach((c, otherCIdx) => {
-    ['teamA', 'teamB'].forEach(otherTeamKey => {
-      c[otherTeamKey].forEach((otherP, otherPIdx) => {
-        if (otherP && otherP.id !== pId) {
-          candidates.push({
-            player: otherP,
-            location: `${c.courtName || ('Lap ' + (otherCIdx + 1))} - Tim ${otherTeamKey === 'teamA' ? 'A' : 'B'}`,
-            targetType: 'court',
-            otherCIdx,
-            otherTeamKey,
-            otherPIdx
-          });
-        }
-      });
+  // 2. Pemain dari Lapangan Lain (Ronde ini) atau lapangan sama beda slot
+  round.courts.forEach((c, otherCIdx) => {
+    ['teamA', 'teamB'].forEach(otherTeamProp => {
+      if (c[otherTeamProp]) {
+        c[otherTeamProp].forEach((otherP, otherPIdx) => {
+          if (otherP && (!sourcePlayer || otherP.id !== sourcePlayer.id)) {
+            const isSameCourt = (otherCIdx === cIdx);
+            const isSameSlot = isSameCourt && (otherTeamProp === teamProp) && (otherPIdx === pIdx);
+            if (!isSameSlot) {
+              const courtTitle = c.courtName || `Lapangan ${otherCIdx + 1}`;
+              const teamTitle = otherTeamProp === 'teamA' ? 'Tim A' : 'Tim B';
+              candidates.push({
+                player: otherP,
+                location: isSameCourt ? `Lapangan yang Sama (${teamTitle})` : `${courtTitle} • ${teamTitle}`,
+                targetType: 'court',
+                otherCIdx,
+                otherTeamKey: otherTeamProp,
+                otherPIdx
+              });
+            }
+          }
+        });
+      }
     });
   });
 
+  // 3. Pemain terdaftar lainnya di bPlayers yang belum masuk ke ronde ini
+  const scheduledPlayerIds = new Set();
+  round.courts.forEach(c => {
+    (c.teamA || []).forEach(p => p && scheduledPlayerIds.add(p.id));
+    (c.teamB || []).forEach(p => p && scheduledPlayerIds.add(p.id));
+  });
+  (round.resting || []).forEach(p => p && scheduledPlayerIds.add(p.id));
+
+  bPlayers.forEach(p => {
+    if (p && !scheduledPlayerIds.has(p.id)) {
+      candidates.push({
+        player: p,
+        location: 'Pemain Terdaftar (Belum Terjadwal)',
+        targetType: 'pool'
+      });
+    }
+  });
+
   if (candidates.length === 0) {
-    listEl.innerHTML = `<div style="text-align:center; padding:12px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar.</div>`;
+    listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar.</div>`;
   } else {
     listEl.innerHTML = candidates.map((cand, idx) => `
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer;" onclick="executeSwap(${idx})">
-        <div>
-          <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
-          <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • ${cand.player.gender} • ${cand.player.role}</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwap(${idx})">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
+          <div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${cand.player.role}</span></div>
+          </div>
         </div>
-        <button class="btn-court-action" style="font-size:0.72rem; padding:4px 10px;">Tukar</button>
+        <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Pilih</button>
       </div>
     `).join('');
   }
 
   window._swapCandidates = candidates;
-  document.getElementById('swapModalOverlay').classList.add('open');
+  const modal = document.getElementById('swapModalOverlay');
+  if (modal) modal.classList.add('open');
+}
+
+function openSwapFromResting(rIdx, restingPlayerId) {
+  if (!checkEditPermission()) return;
+  const round = bSchedule[rIdx];
+  if (!round || !round.courts) return;
+
+  const restingPlayer = (round.resting || []).find(p => p.id === restingPlayerId) || bPlayers.find(p => p.id === restingPlayerId);
+  if (!restingPlayer) return;
+
+  swapContext = { rIdx, restingPlayerId, mode: 'fromResting' };
+
+  const nameEl = document.getElementById('swapSourcePlayerName');
+  if (nameEl) {
+    nameEl.textContent = `Masukkan ${restingPlayer.name} (${restingPlayer.gender === 'L' ? 'Putra' : 'Putri'} • ${restingPlayer.role})`;
+  }
+
+  const listEl = document.getElementById('swapCandidatesList');
+  if (!listEl) return;
+
+  let candidates = [];
+  round.courts.forEach((c, cIdx) => {
+    ['teamA', 'teamB'].forEach(teamProp => {
+      if (c[teamProp]) {
+        c[teamProp].forEach((courtP, pIdx) => {
+          if (courtP) {
+            candidates.push({
+              player: courtP,
+              location: `${c.courtName || ('Lapangan ' + (cIdx + 1))} • ${teamProp === 'teamA' ? 'Tim A' : 'Tim B'}`,
+              cIdx,
+              teamKey: teamProp,
+              pIdx,
+              targetType: 'courtSlot'
+            });
+          }
+        });
+      }
+    });
+  });
+
+  if (candidates.length === 0) {
+    listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain yang sedang di lapangan untuk diganti.</div>`;
+  } else {
+    listEl.innerHTML = `
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Pilih pemain di lapangan yang ingin digantikan oleh ${restingPlayer.name}:</div>
+    ` + candidates.map((cand, idx) => `
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s; margin-bottom:6px;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwapFromResting(${idx})">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
+          <div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${cand.player.role}</span></div>
+          </div>
+        </div>
+        <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Gantikan</button>
+      </div>
+    `).join('');
+  }
+
+  window._restingSwapCandidates = { restingPlayer, candidates };
+  const modal = document.getElementById('swapModalOverlay');
+  if (modal) modal.classList.add('open');
+}
+
+function executeSwapFromResting(candidateIdx) {
+  if (!window._restingSwapCandidates || !window._restingSwapCandidates.candidates[candidateIdx]) return;
+  const { restingPlayer, candidates } = window._restingSwapCandidates;
+  const target = candidates[candidateIdx];
+  const { rIdx } = swapContext || { rIdx: bCurrentRoundIndex };
+  const round = bSchedule[rIdx];
+  if (!round || !round.courts || !round.courts[target.cIdx]) return;
+
+  const targetCourt = round.courts[target.cIdx];
+  const playerInCourt = targetCourt[target.teamKey][target.pIdx];
+
+  // Masukkan resting player ke slot lapangan
+  targetCourt[target.teamKey][target.pIdx] = restingPlayer;
+
+  // Pemain yang tadinya di lapangan dipindah ke bangku istirahat
+  if (round.resting) {
+    const restIdx = round.resting.findIndex(p => p.id === restingPlayer.id);
+    if (restIdx !== -1) {
+      round.resting[restIdx] = playerInCourt;
+    } else {
+      round.resting.push(playerInCourt);
+    }
+  }
+
+  refreshCourtCategory(targetCourt);
+  closeSwapModal();
+  renderCourtsView();
+  persistAndBroadcast();
+  showToast(`${restingPlayer.name} berhasil masuk menggantikan ${playerInCourt ? playerInCourt.name : 'pemain'}!`);
 }
 
 function closeSwapModal() {
   const modal = document.getElementById('swapModalOverlay');
   if (modal) modal.classList.remove('open');
   swapContext = null;
+  window._swapCandidates = null;
+  window._restingSwapCandidates = null;
 }
 
 function executeSwap(candidateIdx) {
@@ -4491,23 +4704,38 @@ function executeSwap(candidateIdx) {
   const cand = window._swapCandidates[candidateIdx];
   const { rIdx, cIdx, teamKey, pIdx } = swapContext;
   const round = bSchedule[rIdx];
-  if (!round) return;
+  if (!round || !round.courts || !round.courts[cIdx]) return;
 
   const currentCourt = round.courts[cIdx];
-  const sourcePlayer = currentCourt[teamKey][pIdx];
+  const teamProp = (teamKey === 'teamA' || teamKey === 'teamB') ? teamKey : (teamKey === 'A' ? 'teamA' : 'teamB');
+  const sourcePlayer = currentCourt[teamProp][pIdx];
 
   if (cand.targetType === 'resting') {
     const restIdx = round.resting.findIndex(p => p.id === cand.player.id);
     if (restIdx !== -1) {
-      currentCourt[teamKey][pIdx] = cand.player;
-      round.resting[restIdx] = sourcePlayer;
+      currentCourt[teamProp][pIdx] = cand.player;
+      if (sourcePlayer) {
+        round.resting[restIdx] = sourcePlayer;
+      } else {
+        round.resting.splice(restIdx, 1);
+      }
     }
   } else if (cand.targetType === 'court') {
     const otherCourt = round.courts[cand.otherCIdx];
-    otherCourt[cand.otherTeamKey][cand.otherPIdx] = sourcePlayer;
-    currentCourt[teamKey][pIdx] = cand.player;
+    if (otherCourt && otherCourt[cand.otherTeamKey]) {
+      otherCourt[cand.otherTeamKey][cand.otherPIdx] = sourcePlayer;
+      currentCourt[teamProp][pIdx] = cand.player;
+      refreshCourtCategory(otherCourt);
+    }
+  } else if (cand.targetType === 'pool') {
+    currentCourt[teamProp][pIdx] = cand.player;
+    if (sourcePlayer) {
+      if (!round.resting) round.resting = [];
+      round.resting.push(sourcePlayer);
+    }
   }
 
+  refreshCourtCategory(currentCourt);
   closeSwapModal();
   renderCourtsView();
   persistAndBroadcast();
@@ -5898,9 +6126,18 @@ function getPodiumSummaryData() {
   const list = isBadm ? getBadmintonStatsAndRankings('wins') : getSoccerStatsAndRankings('wins');
   if (!list || list.length === 0) return [];
   const res = [];
-  if (list[0]) res.push({ rank: 1, label: '🥇 Juara 1', name: list[0].name, score: `${list[0].wins !== undefined ? list[0].wins : list[0].w}M · ${list[0].totalScore} Poin` });
-  if (list[1]) res.push({ rank: 2, label: '🥈 Juara 2', name: list[1].name, score: `${list[1].wins !== undefined ? list[1].wins : list[1].w}M · ${list[1].totalScore} Poin` });
-  if (list[2]) res.push({ rank: 3, label: '🥉 Juara 3', name: list[2].name, score: `${list[2].wins !== undefined ? list[2].wins : list[2].w}M · ${list[2].totalScore} Poin` });
+  list.slice(0, 3).forEach((item, idx) => {
+    const medal = idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : '🥉 Juara 3');
+    const w = item.wins !== undefined ? item.wins : item.w;
+    const diffVal = item.diff !== undefined ? item.diff : item.gd;
+    const sign = diffVal >= 0 ? '+' : '';
+    res.push({
+      rank: idx + 1,
+      label: medal,
+      name: item.name,
+      score: `${w}M · Skor ${sign}${diffVal} (${item.totalScore} Poin)`
+    });
+  });
   return res;
 }
 
