@@ -170,7 +170,6 @@
       if (c.status === 'sedang_main' || c.status === 'ongoing') {
         courtPlayers.forEach(p => onCourtPlayerIds.add(p.id));
       } else if (c.status === 'menunggu_acc') {
-        // Sedang diajukan ke lapangan, belum ACC
         courtPlayers.forEach(p => pendingAccPlayerIds.add(p.id));
       }
     });
@@ -182,6 +181,7 @@
         p.status = PLAYER_STATUS.DI_LAPANGAN;
       } else if (pendingAccPlayerIds.has(p.id)) {
         // Sedang diajukan ke lapangan, belum ACC
+        // Tetap dipertahankan statusnya
       } else if (p.cooldown_remaining > 0) {
         p.status = PLAYER_STATUS.ISTIRAHAT;
       } else {
