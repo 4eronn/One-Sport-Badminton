@@ -118,6 +118,67 @@ it('Cooldown pemain berkurang saat match lain selesai dan kembali ke antrian saa
   assert.strictEqual(players[2].status, PLAYER_STATUS.ISTIRAHAT);
 });
 
+it('BUG-1: Deadlock cooldown dicegah: skenario 5, 6, 7 pemain/1 lapangan berjalan 6 match berturut-turut tanpa macet', () => {
+  [5, 6, 7].forEach(numPlayers => {
+    const players = Array.from({ length: numPlayers }, (_, i) => ({
+      id: i + 1,
+      name: `P${i + 1}`,
+      status: PLAYER_STATUS.MENUNGGU,
+      gender: 'L',
+      role: 'Pemula',
+      jumlah_main: 0
+    }));
+    const partnerHistory = {};
+    const opponentHistory = {};
+
+    for (let match = 1; match <= 6; match++) {
+      const prop = createCourtProposal({
+        courtNumber: 1,
+        players,
+        partnerHistory,
+        opponentHistory,
+        minPlays: 3
+      });
+      assert.strictEqual(prop.court.status, COURT_STATUS.MENUNGGU_ACC, `Match ${match} untuk ${numPlayers} pemain gagal dibuat`);
+      const acc = approveCourtProposal(prop.court, players);
+      assert.strictEqual(acc.success, true);
+      const fin = recordMatchFinished({
+        court: prop.court,
+        scoreA: 21,
+        scoreB: 19,
+        winner: 'A',
+        players,
+        partnerHistory,
+        opponentHistory,
+        defaultCooldown: 1
+      });
+      assert.strictEqual(fin.success, true);
+    }
+
+    // Setiap pemain main minimal 3x dalam 6 match
+    players.forEach(p => {
+      assert.ok(p.jumlah_main >= 3, `Pemain ${p.name} pada ${numPlayers} pemain hanya main ${p.jumlah_main} kali (< 3)`);
+    });
+  });
+
+  // Skenario 8 pemain/1 lapangan tidak melepaskan cooldown secara prematur
+  const players8 = Array.from({ length: 8 }, (_, i) => ({
+    id: i + 1,
+    name: `P${i + 1}`,
+    status: PLAYER_STATUS.MENUNGGU,
+    gender: 'L',
+    role: 'Pemula',
+    jumlah_main: 0
+  }));
+  const pHist8 = {};
+  const prop8_1 = createCourtProposal({ courtNumber: 1, players: players8, partnerHistory: pHist8, minPlays: 3 });
+  approveCourtProposal(prop8_1.court, players8);
+  recordMatchFinished({ court: prop8_1.court, scoreA: 21, scoreB: 18, winner: 'A', players: players8, partnerHistory: pHist8, defaultCooldown: 1 });
+  const prop8_2 = createCourtProposal({ courtNumber: 1, players: players8, partnerHistory: pHist8, minPlays: 3 });
+  assert.strictEqual(prop8_2.court.status, COURT_STATUS.MENUNGGU_ACC);
+  assert.strictEqual(!!prop8_2.court.cooldownReleased, false);
+});
+
 // ── TEST 2: Fitur Request Rekan Tim (Maksimal 1x) (Fitur 2) ──
 console.log('\n--- 2. Request Rekan Tim (Fitur 2) ---');
 

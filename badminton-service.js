@@ -545,7 +545,36 @@
     partnerRequests = [],
     minPlays = 3
   }) {
-    const queue = prioritizeQueue(getEligibleQueue(players), minPlays);
+    let queue = prioritizeQueue(getEligibleQueue(players), minPlays);
+    let cooldownReleased = false;
+
+    // BUG-1: Cegah deadlock cooldown jika antrian < 4 namun (menunggu + istirahat) >= 4
+    if (queue.length < 4) {
+      const restingPlayers = players.filter(p => p && p.status === PLAYER_STATUS.ISTIRAHAT && !p.is_deleted);
+      if (queue.length + restingPlayers.length >= 4) {
+        restingPlayers.sort((a, b) => {
+          const cdA = typeof a.cooldown_remaining === 'number' ? a.cooldown_remaining : 0;
+          const cdB = typeof b.cooldown_remaining === 'number' ? b.cooldown_remaining : 0;
+          if (cdA !== cdB) return cdA - cdB;
+          const playA = a.jumlah_main || 0;
+          const playB = b.jumlah_main || 0;
+          if (playA !== playB) return playA - playB;
+          return (a.id || 0) - (b.id || 0);
+        });
+
+        const needed = 4 - queue.length;
+        const released = restingPlayers.slice(0, needed);
+        released.forEach(p => {
+          p.status = PLAYER_STATUS.MENUNGGU;
+          p.cooldown_remaining = 0;
+          p.cooldownReleased = true;
+        });
+        cooldownReleased = true;
+
+        queue = prioritizeQueue(getEligibleQueue(players), minPlays);
+      }
+    }
+
     if (queue.length < 4) {
       return {
         court: {
@@ -559,6 +588,7 @@
           scoreA: null,
           scoreB: null,
           winner: null,
+          cooldownReleased: false,
           shuttlecocks: { baru: 0, bekas_layak: 0, bekas_dihasilkan: 0 }
         },
         message: 'Jumlah pemain berstatus menunggu kurang dari 4 orang.'
@@ -602,6 +632,7 @@
       scoreB: null,
       winner: null,
       isRepeatedPartner: split.isRepeatedPartner,
+      cooldownReleased: !!cooldownReleased,
       partnerDetails: {
         teamAPairHistory: historyA,
         teamBPairHistory: historyB,
