@@ -5711,8 +5711,8 @@ function openEditFinishedMatchModal(rIdx, cIdx, isArchive = false) {
     </div>
   `;
 
-  document.getElementById('inputEditScoreA').value = court.scoreA || 21;
-  document.getElementById('inputEditScoreB').value = court.scoreB || 18;
+  document.getElementById('inputEditScoreA').value = court.scoreA ?? 21;
+  document.getElementById('inputEditScoreB').value = court.scoreB ?? 18;
   document.getElementById('editWinA').checked = court.winner === 'A' || !court.winner;
   document.getElementById('editWinB').checked = court.winner === 'B';
 
@@ -5883,9 +5883,9 @@ function openFinishScoreModal() {
           </label>
         </div>
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;">
-          <input type="number" id="inputScoreA_${idx}" class="input-styled-os" value="${court.scoreA || 21}" style="text-align:center; font-weight:900; font-size:1.2rem;">
+          <input type="number" id="inputScoreA_${idx}" class="input-styled-os" value="${court.scoreA ?? 21}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           <strong style="color:var(--text-muted);">VS</strong>
-          <input type="number" id="inputScoreB_${idx}" class="input-styled-os" value="${court.scoreB || 18}" style="text-align:center; font-weight:900; font-size:1.2rem;">
+          <input type="number" id="inputScoreB_${idx}" class="input-styled-os" value="${court.scoreB ?? 18}" style="text-align:center; font-weight:900; font-size:1.2rem;">
         </div>
       </div>
     `).join('');

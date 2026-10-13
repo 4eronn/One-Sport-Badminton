@@ -23,6 +23,7 @@ const {
   rejectCourtProposal,
   validateBadmintonScore,
   recordMatchFinished,
+  editFinishedMatchScore,
   calculateStandings,
   addPlayerIncremental,
   removePlayerIncremental,
@@ -358,6 +359,31 @@ it('Menyimpan skor match langsung menghitung klasemen secara inkremental', () =>
   assert.strictEqual(standings[0].diff, 6);
   assert.strictEqual(standings[3].wins, 0);
   assert.strictEqual(standings[3].diff, -6);
+});
+
+it('BUG-2: Skor 21-0 dibuka lalu diedit/disimpan tanpa perubahan tetap 21-0', () => {
+  const court = {
+    status: COURT_STATUS.SELESAI,
+    scoreA: 21,
+    scoreB: 0,
+    winner: 'A',
+    teamA: [{ id: 1 }, { id: 2 }],
+    teamB: [{ id: 3 }, { id: 4 }]
+  };
+  const initialValueA = court.scoreA ?? 21;
+  const initialValueB = court.scoreB ?? 18;
+  assert.strictEqual(initialValueA, 21);
+  assert.strictEqual(initialValueB, 0, 'Skor 0 tidak boleh di-fallback menjadi 18');
+
+  const res = editFinishedMatchScore({
+    court,
+    newScoreA: initialValueA,
+    newScoreB: initialValueB,
+    newWinner: 'A'
+  });
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(court.scoreA, 21);
+  assert.strictEqual(court.scoreB, 0);
 });
 
 // ── TEST 5: Jadwal Masuk Lapangan Harus Di-ACC Host (Fitur 5) ──
