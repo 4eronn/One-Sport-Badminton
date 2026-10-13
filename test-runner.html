@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONESPORT Badminton Service Unit Tests</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #0E294D;
+    color: #F8FAFC;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #163864;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin-top: 0;
+    color: #38BDF8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #0A1C36;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.95rem;
+  }
+  .badge-pass { color: #34D399; }
+  .badge-fail { color: #F87171; }
+  .test-group {
+    margin-bottom: 20px;
+    border: 1px solid #234E82;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .group-title {
+    background: #1B457B;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #FCD34D;
+  }
+  .test-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-top: 1px solid #1E4477;
+    font-size: 0.82rem;
+  }
+  .test-item:nth-child(even) {
+    background: #143259;
+  }
+  .test-status {
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+  .test-status.pass {
+    background: #065F46;
+    color: #A7F3D0;
+  }
+  .test-status.fail {
+    background: #991B1B;
+    color: #FECACA;
+  }
+  .btn-run {
+    background: #F97316;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+</style>
+<script src="badminton-service.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1>🏸 ONESPORT Badminton Service Test Runner</h1>
+  <div class="summary">
+    <div>Total: <span id="totalTests">0</span></div>
+    <div>Passed: <span id="passedTests" class="badge-pass">0</span></div>
+    <div>Failed: <span id="failedTests" class="badge-fail">0</span></div>
+    <div style="margin-left: auto;">
+      <button class="btn-run" onclick="runAllTests()">Jalankan Ulang Test</button>
+    </div>
+  </div>
+  <div id="testOutput"></div>
+</div>
+
+<script>
+const S = window.BadmintonService;
+
+function runAllTests() {
+  const output = document.getElementById('testOutput');
+  output.innerHTML = '';
+  let total = 0;
+  let passed = 0;
+  let failed = 0;
+
+  function group(title, tests) {
+    const grp = document.createElement('div');
+    grp.className = 'test-group';
+    grp.innerHTML = `<div class="group-title">${title}</div>`;
+
+    tests.forEach(t => {
+      total++;
+      let ok = false;
+      let err = null;
+      try {
+        t.fn();
+        ok = true;
+        passed++;
+      } catch (e) {
+        ok = false;
+        failed++;
+        err = e;
+        console.error(t.name, e);
+      }
+
+      const item = document.createElement('div');
+      item.className = 'test-item';
+      item.innerHTML = `
+        <div>
+          <span>${t.name}</span>
+          ${err ? `<div style="color:#FCA5A5; font-size:0.72rem; margin-top:2px;">${err.message}</div>` : ''}
+        </div>
+        <span class="test-status ${ok ? 'pass' : 'fail'}">${ok ? 'PASSED' : 'FAILED'}</span>
+      `;
+      grp.appendChild(item);
+    });
+
+    output.appendChild(grp);
+  }
+
+  // 1. Antrian & Status (Fitur 1)
+  group('1. Antrian & Status Pemain (Fitur 1)', [
+    {
+      name: 'Hanya pemain status menunggu yang masuk antrian',
+      fn: () => {
+        const p = [
+          { id: 1, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 2, status: S.PLAYER_STATUS.DI_LAPANGAN },
+          { id: 3, status: S.PLAYER_STATUS.ISTIRAHAT },
+          { id: 4, status: S.PLAYER_STATUS.TIDAK_AKTIF }
+        ];
+        const q = S.getEligibleQueue(p);
+        if (q.length !== 1 || q[0].id !== 1) throw new Error('Queue filter salah');
+      }
+    },
+    {
+      name: 'Pemain selesai main otomatis berstatus istirahat dengan cooldown',
+      fn: () => {
+        const p = [{ id: 1, status: S.PLAYER_STATUS.DI_LAPANGAN }];
+        S.processCooldownsOnMatchEnd(p, [p[0]], 1);
+        if (p[0].status !== S.PLAYER_STATUS.ISTIRAHAT || p[0].cooldown_remaining !== 1) {
+          throw new Error('Cooldown gagal di-set');
+        }
+      }
+    }
+  ]);
+
+  // 2. Request Rekan Tim (Fitur 2)
+  group('2. Request Rekan Tim Maksimal 1x (Fitur 2)', [
+    {
+      name: 'Pemain bisa request jika keduanya menunggu & kuota tersedia',
+      fn: () => {
+        const p = [
+          { id: 1, name: 'A', status: S.PLAYER_STATUS.MENUNGGU, request_used: false },
+          { id: 2, name: 'B', status: S.PLAYER_STATUS.MENUNGGU, request_used: false }
+        ];
+        const reqs = [];
+        const res = S.submitPartnerRequest({ requesterId: 1, targetId: 2, players: p, partnerRequests: reqs });
+        if (!res.success || !p[0].request_used || reqs.length !== 1) throw new Error('Request gagal diajukan');
+      }
+    },
+    {
+      name: 'Dilarang request jika kuota 1x habis',
+      fn: () => {
+        const p = [
+          { id: 1, name: 'A', status: S.PLAYER_STATUS.MENUNGGU, request_used: true },
+          { id: 2, name: 'B', status: S.PLAYER_STATUS.MENUNGGU, request_used: false }
+        ];
+        const res = S.submitPartnerRequest({ requesterId: 1, targetId: 2, players: p, partnerRequests: [] });
+        if (res.success) throw new Error('Harusnya ditolak karena kuota habis');
+      }
+    }
+  ]);
+
+  // 3. Tambah & Kurang Pemain (Fitur 3)
+  group('3. Tambah & Kurang Pemain Tanpa Reset (Fitur 3)', [
+    {
+      name: 'Tambah pemain baru berstatus menunggu dan jumlah_main 0',
+      fn: () => {
+        const p = [{ id: 1, jumlah_main: 2, status: S.PLAYER_STATUS.MENUNGGU }];
+        const np = S.addPlayerIncremental(p, { name: 'Budi' });
+        if (p.length !== 2 || np.status !== S.PLAYER_STATUS.MENUNGGU || np.jumlah_main !== 0 || p[0].jumlah_main !== 2) {
+          throw new Error('Tambah pemain mengganggu data lama');
+        }
+      }
+    },
+    {
+      name: 'Soft delete pemain menunggu ke status tidak_aktif',
+      fn: () => {
+        const p = [{ id: 1, status: S.PLAYER_STATUS.MENUNGGU }];
+        const res = S.removePlayerIncremental(1, p, []);
+        if (!res.success || p[0].status !== S.PLAYER_STATUS.TIDAK_AKTIF) throw new Error('Soft delete gagal');
+      }
+    }
+  ]);
+
+  // 4. Input Skor & Klasemen Real-Time (Fitur 4)
+  group('4. Input Skor & Klasemen Real-Time (Fitur 4)', [
+    {
+      name: 'Validasi skor menolak angka seri dan negatif',
+      fn: () => {
+        if (S.validateBadmintonScore(21, 21).valid) throw new Error('Skor seri harus ditolak');
+        if (S.validateBadmintonScore(-1, 21).valid) throw new Error('Skor negatif harus ditolak');
+        if (!S.validateBadmintonScore(21, 19).valid) throw new Error('Skor 21-19 harus valid');
+      }
+    },
+    {
+      name: 'Klasemen terhitung tepat seketika per match',
+      fn: () => {
+        const p1 = { id: 1, name: 'A', status: S.PLAYER_STATUS.DI_LAPANGAN };
+        const p2 = { id: 2, name: 'B', status: S.PLAYER_STATUS.DI_LAPANGAN };
+        const p3 = { id: 3, name: 'C', status: S.PLAYER_STATUS.DI_LAPANGAN };
+        const p4 = { id: 4, name: 'D', status: S.PLAYER_STATUS.DI_LAPANGAN };
+        const c = { courtNumber: 1, status: S.COURT_STATUS.SEDANG_MAIN, teamA: [p1, p2], teamB: [p3, p4] };
+        S.recordMatchFinished({ court: c, scoreA: 21, scoreB: 18, winner: 'A', players: [p1,p2,p3,p4] });
+        const st = S.calculateStandings([p1,p2,p3,p4], [{ courts: [c] }]);
+        if (st[0].id !== 1 || st[0].wins !== 1 || st[0].diff !== 3) throw new Error('Klasemen salah dihitung');
+      }
+    }
+  ]);
+
+  // 5. Host ACC (Fitur 5)
+  group('5. Persetujuan Masuk Lapangan oleh Host (Fitur 5)', [
+    {
+      name: 'Usulan lapangan berstatus menunggu_acc dan belum masuk lapangan',
+      fn: () => {
+        const p = [
+          { id: 1, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 2, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 3, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 4, status: S.PLAYER_STATUS.MENUNGGU }
+        ];
+        const res = S.createCourtProposal({ courtNumber: 1, players: p });
+        if (res.court.status !== S.COURT_STATUS.MENUNGGU_ACC || p[0].status !== S.PLAYER_STATUS.MENUNGGU) {
+          throw new Error('Status proposal salah');
+        }
+      }
+    },
+    {
+      name: 'ACC host mengubah status pemain ke di_lapangan',
+      fn: () => {
+        const p = [
+          { id: 1, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 2, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 3, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 4, status: S.PLAYER_STATUS.MENUNGGU }
+        ];
+        const c = { status: S.COURT_STATUS.MENUNGGU_ACC, teamA: [p[0], p[1]], teamB: [p[2], p[3]] };
+        S.approveCourtProposal(c, p, []);
+        if (c.status !== S.COURT_STATUS.SEDANG_MAIN || p[0].status !== S.PLAYER_STATUS.DI_LAPANGAN) {
+          throw new Error('ACC gagal');
+        }
+      }
+    }
+  ]);
+
+  // 6. Monitoring Kok (Fitur 6)
+  group('6. Monitoring Kok Lapangan & Sisa Stok (Fitur 6)', [
+    {
+      name: 'Rekap kok menghitung total dan sisa stok',
+      fn: () => {
+        const inv = S.createDefaultShuttlecockInventory(20, 10);
+        const sched = [{ courts: [{ shuttlecocks: { baru: 2, bekas_layak: 1, bekas_dihasilkan: 1 } }] }];
+        const sum = S.getShuttlecockSummary(sched, inv);
+        if (sum.terpakaiBaru !== 2 || sum.sisaBaru !== 18 || sum.sisaBekas !== 10) {
+          throw new Error('Perhitungan stok kok salah');
+        }
+      }
+    }
+  ]);
+
+  // 7. Kuota Minimal 3x Main (Fitur 7)
+  group('7. Prioritas Minimal 3x Main (Fitur 7)', [
+    {
+      name: 'Antrian mendahulukan pemain yang belum 3x main',
+      fn: () => {
+        const p = [
+          { id: 1, name: 'A', jumlah_main: 3, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 2, name: 'B', jumlah_main: 0, status: S.PLAYER_STATUS.MENUNGGU },
+          { id: 3, name: 'C', jumlah_main: 1, status: S.PLAYER_STATUS.MENUNGGU }
+        ];
+        const q = S.prioritizeQueue(p, 3);
+        if (q[0].name !== 'B' || q[1].name !== 'C' || q[2].name !== 'A') {
+          throw new Error('Prioritas antrian salah');
+        }
+      }
+    }
+  ]);
+
+  // 8. Rekan Tim Berbeda-beda (Fitur 8)
+  group('8. Rekan Tim Harus Berbeda-beda (Fitur 8)', [
+    {
+      name: 'Menghindari berpasangan kembali dengan rekan yang sudah pernah',
+      fn: () => {
+        const p = [
+          { id: 1, name: 'A' }, { id: 2, name: 'B' },
+          { id: 3, name: 'C' }, { id: 4, name: 'D' }
+        ];
+        const history = { [S.getPairKey(1, 2)]: 1 };
+        const split = S.splitFourIntoTeamsSmart(p, history, {}, []);
+        const kA = S.getPairKey(split.teamA[0].id, split.teamA[1].id);
+        const kB = S.getPairKey(split.teamB[0].id, split.teamB[1].id);
+        const ab = S.getPairKey(1, 2);
+        if (kA === ab || kB === ab || split.isRepeatedPartner) {
+          throw new Error('A dan B tidak boleh berpasangan jika masih ada alternatif');
+        }
+      }
+    }
+  ]);
+
+  document.getElementById('totalTests').textContent = total;
+  document.getElementById('passedTests').textContent = passed;
+  document.getElementById('failedTests').textContent = failed;
+}
+
+window.addEventListener('DOMContentLoaded', runAllTests);
+</script>
+</body>
+</html>
