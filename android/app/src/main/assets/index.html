@@ -23,6 +23,7 @@
 <!-- Realtime WebSockets & QR Code Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.5.0/mqtt.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="badminton-service.js"></script>
 
 <style>
   :root {
@@ -1537,6 +1538,38 @@
     gap: 6px;
     flex-shrink: 0;
   }
+  .btn-role-badge {
+    border: none;
+    font-weight: 800;
+    font-size: 0.72rem;
+    padding: 6px 11px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-role-badge.is-spectator {
+    background: linear-gradient(135deg, #FF6B00, #EA580C);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+  }
+  .btn-role-badge.is-spectator:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+  }
+  .btn-role-badge.is-host {
+    background: #0F1E36;
+    color: #38BDF8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 2px 6px rgba(15, 30, 54, 0.25);
+  }
+  .btn-role-badge.is-host:hover {
+    background: #1B355E;
+    transform: translateY(-1px);
+  }
   #liveToastNotification {
     position: fixed;
     top: 60px;
@@ -1727,6 +1760,10 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="btn-role-badge is-spectator" id="btnHeaderRoleSwitch" onclick="handleRoleSwitchClick()" title="Beralih Peran">
+        <span>👑</span>
+        <span id="headerRoleLabel">Masuk Host</span>
+      </button>
       <button class="btn-online-pill" id="btnHeaderOnlinePill" onclick="openOnlineModal()" title="Buka Mode Online & Live Sync">
         <span class="online-status-dot" id="headerOnlineDot"></span>
         <span id="headerOnlineText">Siaran Live</span>
@@ -1735,7 +1772,7 @@
       <button class="btn-header-icon" onclick="openRulesModal()" title="Peraturan Penentuan Juara">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
       </button>
-      <button class="btn-header-icon" onclick="openSettingsModal()" title="Pengaturan Sesi">
+      <button class="btn-header-icon" id="btnHeaderSettings" onclick="openSettingsModal()" title="Pengaturan Sesi">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </button>
     </div>
@@ -1746,11 +1783,10 @@
 <div class="spectator-live-banner" id="spectatorLiveBanner">
   <div class="spectator-banner-left">
     <span class="online-status-dot" style="background:#10B981; flex-shrink:0;"></span>
-    <span class="spectator-banner-label">LIVE: <strong id="spectatorBannerRoomCode" title="-">-</strong> <span style="font-size:0.68rem; opacity:0.85;">(Nonton)</span></span>
+    <span class="spectator-banner-label">🔴 LIVE: <strong id="spectatorBannerRoomCode" title="-">SIARAN LANGSUNG</strong> <span id="spectatorBannerBadge" style="font-size:0.68rem; opacity:0.9; background:rgba(255,255,255,0.2); padding:1px 6px; border-radius:4px;">(Penonton)</span></span>
   </div>
   <div class="spectator-banner-actions">
-    <button class="btn-court-action" style="font-size:0.7rem; padding:3px 9px; background:rgba(255,255,255,0.22); color:#FFF; border:none; border-radius:999px; font-weight:800;" onclick="promptUpgradeToHost()">🔑 Buka PIN Host</button>
-    <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; background:rgba(220,38,38,0.7); color:#FFF; border:none; border-radius:999px;" onclick="leaveOnlineRoom()">Keluar</button>
+    <button class="btn-court-action" style="font-size:0.72rem; padding:4px 11px; background:#FF5B14; color:#FFF; border:none; border-radius:999px; font-weight:800; display:inline-flex; align-items:center; gap:4px;" onclick="openSwitchToHostModal()">👑 Beralih ke Host</button>
   </div>
 </div>
 
@@ -2047,7 +2083,7 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
         <span>Bagikan Rekap</span>
       </button>
-      <button class="btn-os-orange" style="background:#10B981; box-shadow:0 4px 14px rgba(16,185,129,0.3);" onclick="startNewMabarSession()">
+      <button class="btn-os-orange" id="btnNewMabarSession" style="background:#10B981; box-shadow:0 4px 14px rgba(16,185,129,0.3);" onclick="startNewMabarSession()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
         <span>Mabar Baru</span>
       </button>
@@ -2813,6 +2849,25 @@
       </button>
     </div>
   </div>
+<!-- ── MODAL: BERALIH KE HOST ── -->
+<div class="modal-overlay" id="switchRoleModalOverlay" style="z-index: 99998;">
+  <div class="modal-box" style="max-width: 400px; text-align: center;">
+    <div style="font-size: 2.6rem; margin-bottom: 6px;">👑</div>
+    <div class="modal-title" style="margin-bottom: 4px;">Beralih ke Mode Host</div>
+    <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">
+      Masukkan PIN Host untuk membuka kontrol penuh: kelola pemain, susun & ACC jadwal lapangan, input skor & kok, serta pengaturan sesi.
+    </div>
+
+    <div style="margin-bottom: 14px; text-align: left;">
+      <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">PIN Host</label>
+      <input type="password" id="inputSwitchHostPin" class="input-styled-os" placeholder="Ketik PIN (Default: 1234)" style="text-align: center; font-size: 1.2rem; font-weight: 900; letter-spacing: 4px;" onkeypress="if(event.key==='Enter')submitSwitchToHost()">
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-court-action" style="flex: 1; padding: 10px;" onclick="closeSwitchRoleModal()">Batal</button>
+      <button class="btn-os-orange" style="flex: 2; padding: 10px; font-weight: 800;" onclick="submitSwitchToHost()">Buka Akses Host</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -2821,6 +2876,7 @@
 // ============================================================================
 
 let currentSport = 'badminton'; // 'badminton' | 'minisoccer'
+let userRole = localStorage.getItem('onesport_user_role') || 'spectator'; // 'host' | 'spectator' (Default Penonton)
 
 // ── BADMINTON STATE ──
 let bPlayers = [];
@@ -2871,10 +2927,11 @@ window.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('settingMinPlays')) document.getElementById('settingMinPlays').value = bMinPlays;
   if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
 
+  userRole = localStorage.getItem('onesport_user_role') || 'spectator';
   switchSport(currentSport);
-  if (!hasSaved || (bPlayers.length === 0 && sPlayers.length === 0)) {
-    switchTab('tab-pemain');
-  }
+  // Default masuk wajib langsung ke siaran langsung (tab Lapangan)
+  switchTab('tab-match');
+  applyRoleUI();
   initMqttDiscovery();
   renderLiveHistoryList();
   updateLiveHistoryBadges();
@@ -2970,6 +3027,11 @@ function switchSport(sport) {
 
 // ── TAB SWITCHING ──
 function switchTab(tabId) {
+  if (userRole !== 'host' && tabId === 'tab-pemain') {
+    tabId = 'tab-match';
+    showToast('🔒 Tab Pemain hanya dapat diakses oleh Host.', 'info');
+  }
+
   document.querySelectorAll('.app-tab-pane').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
 
@@ -4113,12 +4175,31 @@ function renderCourtsView() {
   const activeCourtsContainer = document.getElementById('activeCourtsList');
   const restingWrap = document.getElementById('restingPlayersWrap');
   const benchTitle = document.getElementById('benchDrawerTitle');
+  const isHost = (typeof userRole !== 'undefined' && userRole === 'host');
 
   if (currentSport === 'badminton') {
-    benchTitle.textContent = 'Istirahat Ronde Ini';
+    if (benchTitle) benchTitle.textContent = isHost ? 'Istirahat Ronde Ini' : 'Daftar Istirahat';
     const nextMatchContainer = document.getElementById('nextMatchGridContainer');
 
     if (bPlayers.length === 0 || bSchedule.length === 0 || !bSchedule[bCurrentRoundIndex]) {
+      if (!isHost) {
+        activeCourtsContainer.innerHTML = `
+          <div class="os-card" style="text-align:center; padding:36px 16px; color:var(--text-muted);">
+            <div style="font-size:2.4rem; margin-bottom:8px;">🔴</div>
+            <div style="font-weight:800; font-size:1.05rem; color:var(--brand-navy-dark); margin-bottom:6px;">Siaran Langsung Pertandingan</div>
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:18px; max-width:320px; margin-left:auto; margin-right:auto;">
+              Host belum memulai sesi pertandingan. Silakan tunggu atau beralih ke Host untuk mengelola pemain dan lapangan.
+            </div>
+            <button class="btn-os-orange" style="display:inline-flex; width:auto; padding:9px 20px; margin:0 auto; font-size:0.84rem; font-weight:800;" onclick="openSwitchToHostModal()">
+              👑 Beralih ke Host (Kelola Sesi)
+            </button>
+          </div>
+        `;
+        if (nextMatchContainer) nextMatchContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.78rem; padding:10px;">Menunggu jadwal dari Host.</div>`;
+        if (restingWrap) restingWrap.innerHTML = ``;
+        return;
+      }
+
       activeCourtsContainer.innerHTML = `
         <div class="os-card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
           <div style="font-size:2.2rem; margin-bottom:8px;">🏸</div>
@@ -4150,35 +4231,107 @@ function renderCourtsView() {
           </div>
           <div class="match-versus-grid">
             <div class="team-column">
-              ${renderPlayerPillButton(court.teamA[0], bCurrentRoundIndex + 1, cIdx, 'A', 0)}
-              ${renderPlayerPillButton(court.teamA[1], bCurrentRoundIndex + 1, cIdx, 'A', 1)}
+              ${renderPlayerPillButton(court.teamA[0], bCurrentRoundIndex + 1, cIdx, 'A', 0, !isHost)}
+              ${renderPlayerPillButton(court.teamA[1], bCurrentRoundIndex + 1, cIdx, 'A', 1, !isHost)}
             </div>
             <div class="vs-badge">vs</div>
             <div class="team-column">
-              ${renderPlayerPillButton(court.teamB[0], bCurrentRoundIndex + 1, cIdx, 'B', 0)}
-              ${renderPlayerPillButton(court.teamB[1], bCurrentRoundIndex + 1, cIdx, 'B', 1)}
+              ${renderPlayerPillButton(court.teamB[0], bCurrentRoundIndex + 1, cIdx, 'B', 0, !isHost)}
+              ${renderPlayerPillButton(court.teamB[1], bCurrentRoundIndex + 1, cIdx, 'B', 1, !isHost)}
             </div>
           </div>
         </div>
       `).join('');
     } else {
-      nextMatchContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:8px;">Tidak ada antrean ronde berikutnya</div>`;
+      nextMatchContainer.innerHTML = isHost
+        ? `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:8px;">Tidak ada antrean ronde berikutnya</div>`
+        : `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding:8px;">Jadwal berikutnya akan tampil saat pertandingan disiapkan.</div>`;
     }
 
     const courtsCount = currentRound.courts.length;
     const roundHeaderHtml = `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; margin-bottom:4px; padding:0 4px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; margin-bottom:6px; padding:0 4px;">
         <div style="font-size:0.82rem; font-weight:900; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px;">
-          <span style="background:var(--brand-orange); color:#fff; font-size:0.68rem; padding:2px 7px; border-radius:999px; font-weight:800;">Ronde ${currentRound.roundNumber}</span>
+          <span style="background:${isHost ? 'var(--brand-orange)' : '#EF4444'}; color:#fff; font-size:0.68rem; padding:2px 8px; border-radius:999px; font-weight:800;">
+            ${isHost ? `Ronde ${currentRound.roundNumber}` : '🔴 LIVE ARENA'}
+          </span>
           <span>Lapangan Aktif (${courtsCount} Lapangan)</span>
         </div>
-        <span style="font-size:0.72rem; color:var(--brand-orange); font-weight:800; display:inline-flex; align-items:center; gap:2px;">⇄ Tap pemain untuk ganti</span>
+        ${isHost ? `<span style="font-size:0.72rem; color:var(--brand-orange); font-weight:800; display:inline-flex; align-items:center; gap:2px;">⇄ Tap pemain untuk ganti</span>` : `
+        <button class="btn-role-badge is-spectator" onclick="openSwitchToHostModal()" style="font-size:0.72rem; padding:3px 10px;" title="Beralih ke Host">
+          👑 Masuk Host
+        </button>`}
       </div>
     `;
 
     activeCourtsContainer.innerHTML = roundHeaderHtml + currentRound.courts.map((court, cIdx) => {
       const isFinished = court.status === 'finished';
       const isOngoing = court.status === 'ongoing';
+
+      // Spectator view for finished match
+      if (!isHost && isFinished) {
+        return `
+          <div class="os-card is-finished" style="margin-top:8px;">
+            <div class="card-top-title">
+              <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${currentRound.roundNumber})</span>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+              </div>
+            </div>
+            <div class="match-versus-grid">
+              <div class="team-column">
+                <div class="team-label-top" style="color:${court.winner === 'A' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
+                  ${court.winner === 'A' ? 'Tim A (Menang 🏆)' : 'Tim A'}
+                </div>
+                ${renderPlayerPillButton(court.teamA[0], bCurrentRoundIndex, cIdx, 'A', 0, true, court.winner === 'A')}
+                ${renderPlayerPillButton(court.teamA[1], bCurrentRoundIndex, cIdx, 'A', 1, true, court.winner === 'A')}
+              </div>
+              <div class="vs-badge" style="font-size:1.15rem; color:var(--brand-orange); font-weight:900;">${court.scoreA || 0} - ${court.scoreB || 0}</div>
+              <div class="team-column">
+                <div class="team-label-top" style="color:${court.winner === 'B' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
+                  ${court.winner === 'B' ? 'Tim B (Menang 🏆)' : 'Tim B'}
+                </div>
+                ${renderPlayerPillButton(court.teamB[0], bCurrentRoundIndex, cIdx, 'B', 0, true, court.winner === 'B')}
+                ${renderPlayerPillButton(court.teamB[1], bCurrentRoundIndex, cIdx, 'B', 1, true, court.winner === 'B')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Spectator view for ongoing / pending match
+      if (!isHost) {
+        return `
+          <div class="os-card ${isOngoing ? 'is-ongoing' : ''}" style="margin-top:8px; ${isOngoing ? 'border-color:#3B82F6;' : ''}">
+            <div class="card-top-title">
+              <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${currentRound.roundNumber})</span>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <span class="court-status-chip ${isOngoing ? 'ongoing' : 'pending'}">${isOngoing ? '🟢 Sedang Main' : '⚪ Menunggu'}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+              </div>
+            </div>
+            <div class="match-versus-grid">
+              <div class="team-column">
+                <div class="team-label-top" style="color:var(--brand-navy-dark); font-weight:800;">Tim A</div>
+                ${renderPlayerPillButton(court.teamA[0], bCurrentRoundIndex, cIdx, 'A', 0, true)}
+                ${renderPlayerPillButton(court.teamA[1], bCurrentRoundIndex, cIdx, 'A', 1, true)}
+              </div>
+              <div class="vs-badge" style="${isOngoing ? 'background:#2563EB; color:#FFF; font-weight:900;' : ''}">${isOngoing ? 'LIVE' : 'vs'}</div>
+              <div class="team-column">
+                <div class="team-label-top" style="color:var(--brand-navy-dark); font-weight:800;">Tim B</div>
+                ${renderPlayerPillButton(court.teamB[0], bCurrentRoundIndex, cIdx, 'B', 0, true)}
+                ${renderPlayerPillButton(court.teamB[1], bCurrentRoundIndex, cIdx, 'B', 1, true)}
+              </div>
+            </div>
+            <div style="text-align:center; padding:8px 4px 4px; font-size:0.75rem; color:${isOngoing ? '#2563EB' : 'var(--text-muted)'}; font-weight:800;">
+              ${isOngoing ? '🏸 Pertandingan sedang berlangsung di lapangan' : 'Menunggu pertandingan dimulai oleh Host'}
+            </div>
+          </div>
+        `;
+      }
+
+      // Host view:
       return `
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:8px;">
           <div class="card-top-title">
@@ -4235,7 +4388,7 @@ function renderCourtsView() {
       `;
     }).join('');
 
-    if (currentRound.resting && currentRound.resting.length > 0) {
+    if (isHost && currentRound.resting && currentRound.resting.length > 0) {
       restingWrap.innerHTML = currentRound.resting.map(p => `
         <span class="resting-chip" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk ganti pemain di lapangan dengan ${p.name}">
           <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}">${p.gender}</span>
@@ -4245,7 +4398,7 @@ function renderCourtsView() {
         </span>
       `).join('');
     } else {
-      restingWrap.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">Semua pemain bertanding.</span>`;
+      restingWrap.innerHTML = isHost ? `<span style="font-size:0.75rem; color:var(--text-muted);">Semua pemain bertanding.</span>` : '';
     }
   } else {
     // Mini Soccer View
@@ -4310,17 +4463,27 @@ function renderCourtsView() {
 }
 
 function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, isWinner = false) {
-  if (!p) return `<div class="player-cell-pill" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, 0)" title="Pilih pemain untuk slot ini"><span style="color:var(--brand-orange); font-size:0.75rem; font-weight:700;">+ Pilih Pemain</span></div>`;
+  const isHost = (typeof userRole !== 'undefined' && userRole === 'host');
+  if (!p) {
+    if (!isHost || isLocked) {
+      return `<div class="player-cell-pill disabled" style="cursor:default;"><span style="color:var(--text-muted); font-size:0.75rem;">(Kosong)</span></div>`;
+    }
+    return `<div class="player-cell-pill" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, 0)" title="Pilih pemain untuk slot ini"><span style="color:var(--brand-orange); font-size:0.75rem; font-weight:700;">+ Pilih Pemain</span></div>`;
+  }
   const isMale = p.gender === 'L';
+  const canSwap = isHost && !isLocked;
+  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${p.name}" style="cursor:pointer;"` : `style="cursor:default;"`;
+  const swapBtnHtml = canSwap ? `<span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>` : '';
+
   return `
-    <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${p.name}">
+    <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" ${clickAttr}>
       <div class="player-cell-top">
         <span class="player-cell-name">${p.name}</span>
         <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
         <span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${p.role}</span>
-        <span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>
+        ${swapBtnHtml}
       </div>
     </div>
   `;
@@ -4953,6 +5116,10 @@ function renderHistory() {
 function renderFinalPodium() {
   const podium = document.getElementById('podiumTop3Container');
   const tbody = document.getElementById('finalTableBody');
+  const btnNewMabar = document.getElementById('btnNewMabarSession');
+  if (btnNewMabar) {
+    btnNewMabar.style.display = (userRole === 'host') ? 'inline-flex' : 'none';
+  }
 
   if (currentSport === 'badminton') {
     const list = getBadmintonStatsAndRankings('wins');
@@ -5184,7 +5351,7 @@ let mqttClient = null;
 let currentRoomId = null;
 let currentRoomTitle = '';
 let isOnlineActive = false;
-let userRole = 'host'; // 'host' | 'spectator'
+// userRole is initialized at the top of script from localStorage ('spectator' by default)
 let isHostCreator = false;
 let pendingHostCandidatePin = null;
 let hostPin = '1234';
@@ -5357,7 +5524,6 @@ function persistAndBroadcast(skipBroadcast = false) {
 
 // ── PERMISSIONS & ROLES ──
 function isEditAllowed() {
-  if (!isOnlineActive) return true; // Offline mode is always allowed
   if (userRole === 'host') return true;
   if (isCollabMode) return true;
   return false;
@@ -5365,7 +5531,7 @@ function isEditAllowed() {
 
 function checkEditPermission() {
   if (isEditAllowed()) return true;
-  promptUpgradeToHost();
+  openSwitchToHostModal();
   return false;
 }
 
@@ -5861,39 +6027,164 @@ function closeJoinChoiceModal() {
   pendingJoinRoomId = null;
 }
 
-function promptUpgradeToHost() {
-  const pin = prompt('Masukkan PIN Host yang dibuat oleh Host awal untuk membuka kontrol skor:');
-  if (!pin) return;
+// ── ROLE & UI ACCESS MANAGEMENT (PENONTON VS HOST) ──
+function applyRoleUI() {
+  const isHost = (userRole === 'host');
 
-  const inputPinHash = hashPin(pin);
-  if (currentRoomPinHash) {
-    if (inputPinHash === currentRoomPinHash || pin === hostPin) {
-      userRole = 'host';
-      hostPin = pin;
-      updateOnlineUI('connected');
-      saveActiveLiveSession();
-      showToast('✅ Akses Host / Wasit Berhasil Diberikan! Anda dapat mengubah skor.', 'success');
-      return;
+  // 1. Header Role Switch Button & Label
+  const btnRole = document.getElementById('btnHeaderRoleSwitch');
+  const roleLabel = document.getElementById('headerRoleLabel');
+  if (btnRole && roleLabel) {
+    if (isHost) {
+      btnRole.className = 'btn-role-badge is-host';
+      btnRole.title = 'Beralih ke Tampilan Penonton';
+      roleLabel.textContent = 'Mode Penonton';
     } else {
-      showToast('❌ PIN Host salah! Akses wasit ditolak.', 'error');
-      alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + (currentRoomId || '') + '.');
-      return;
+      btnRole.className = 'btn-role-badge is-spectator';
+      btnRole.title = 'Beralih ke Mode Host (Buka Semua Fitur)';
+      roleLabel.textContent = 'Masuk Host';
     }
   }
 
-  if (mqttClient && isOnlineActive && currentRoomId) {
-    pendingHostCandidatePin = pin;
-    mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
-      type: 'VERIFY_HOST_PIN_REQUEST',
-      roomId: currentRoomId,
-      senderId: myClientId,
-      candidatePin: pin
-    }));
-    showToast('Memverifikasi PIN Host...');
-  } else {
-    showToast('❌ PIN Host salah!', 'error');
-    alert('PIN Host salah!');
+  // 2. Header Settings Button (Host only)
+  const btnSettings = document.getElementById('btnHeaderSettings');
+  if (btnSettings) {
+    btnSettings.style.display = isHost ? 'inline-flex' : 'none';
   }
+
+  // 3. Spectator Live Room Banner
+  const spectatorBanner = document.getElementById('spectatorLiveBanner');
+  if (spectatorBanner) {
+    if (!isHost) {
+      spectatorBanner.style.display = 'flex';
+      const roomLabel = document.getElementById('spectatorBannerRoomCode');
+      if (roomLabel) {
+        roomLabel.textContent = (isOnlineActive && currentRoomId) ? currentRoomId : 'SIARAN LANGSUNG';
+      }
+    } else {
+      spectatorBanner.style.display = 'none';
+    }
+  }
+
+  // 4. Sub-header Bar (Picker Lapangan & Jumlah Pemain)
+  const appSubbar = document.querySelector('.app-subbar');
+  if (appSubbar) {
+    appSubbar.style.display = isHost ? 'block' : 'none';
+  }
+
+  // 5. Bottom Navigation Tabs:
+  // Untuk Penonton: HANYA Lapangan, Skor, History, Selesai (4 tab)
+  // Untuk Host: Semua tab terbuka (Pemain, Lapangan, Skor, Siaran, History, Selesai)
+  const navPemain = document.getElementById('nav-tab-pemain');
+  if (navPemain) navPemain.style.display = isHost ? 'flex' : 'none';
+
+  const navOnline = document.getElementById('nav-tab-online');
+  if (navOnline) navOnline.style.display = isHost ? 'flex' : 'none';
+
+  // 6. Tab Lapangan (Match) Host Controls vs Spectator View
+  const actionGridTop = document.querySelector('#tab-match .action-grid-2');
+  if (actionGridTop) actionGridTop.style.display = isHost ? 'grid' : 'none';
+
+  const courtBottomActions = document.querySelector('#tab-match .court-bottom-actions');
+  if (courtBottomActions) courtBottomActions.style.display = isHost ? 'grid' : 'none';
+
+  const restingSection = document.getElementById('restingPlayersWrap')?.closest('.os-card');
+  if (restingSection) {
+    restingSection.style.display = isHost ? 'block' : 'none';
+  }
+
+  // 7. Tab Selesai (Podium) Tombol Mabar Baru
+  const btnNewMabar = document.getElementById('btnNewMabarSession');
+  if (btnNewMabar) btnNewMabar.style.display = isHost ? 'inline-flex' : 'none';
+
+  // Sinkronkan tab aktif bila penonton sedang di tab pemain
+  const activeTab = document.querySelector('.app-tab-pane.active')?.id;
+  if (!isHost && activeTab === 'tab-pemain') {
+    switchTab('tab-match');
+  } else if (activeTab === 'tab-match') {
+    renderCourtsView();
+  } else if (activeTab === 'tab-history') {
+    renderHistory();
+  } else if (activeTab === 'tab-selesai') {
+    renderFinalPodium();
+  }
+}
+
+function handleRoleSwitchClick() {
+  if (userRole === 'host') {
+    switchToSpectatorMode();
+  } else {
+    openSwitchToHostModal();
+  }
+}
+
+function openSwitchToHostModal() {
+  const modal = document.getElementById('switchRoleModalOverlay');
+  const inputPin = document.getElementById('inputSwitchHostPin');
+  if (modal) {
+    modal.classList.add('open');
+    if (inputPin) {
+      inputPin.value = '';
+      setTimeout(() => inputPin.focus(), 150);
+    }
+  }
+}
+
+function closeSwitchRoleModal() {
+  const modal = document.getElementById('switchRoleModalOverlay');
+  if (modal) modal.classList.remove('open');
+}
+
+function submitSwitchToHost() {
+  const inputPin = document.getElementById('inputSwitchHostPin');
+  const enteredPin = (inputPin ? inputPin.value.trim() : '');
+
+  if (!enteredPin) {
+    showToast('⚠️ Masukkan PIN Host terlebih dahulu!', 'error');
+    if (inputPin) inputPin.focus();
+    return;
+  }
+
+  const validPins = [hostPin, '1234'].filter(Boolean);
+  const isValid = validPins.includes(enteredPin) || (currentRoomPinHash && hashPin(enteredPin) === currentRoomPinHash);
+
+  if (isValid || (!currentRoomPinHash && enteredPin === (hostPin || '1234'))) {
+    userRole = 'host';
+    hostPin = enteredPin;
+    localStorage.setItem('onesport_user_role', 'host');
+    closeSwitchRoleModal();
+    applyRoleUI();
+    saveActiveLiveSession();
+    showToast('👑 Berhasil masuk sebagai Host! Semua kontrol & fitur terbuka penuh.', 'success');
+  } else {
+    if (mqttClient && isOnlineActive && currentRoomId) {
+      pendingHostCandidatePin = enteredPin;
+      mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+        type: 'VERIFY_HOST_PIN_REQUEST',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        candidatePin: enteredPin
+      }));
+      closeSwitchRoleModal();
+      showToast('Memverifikasi PIN Host...');
+    } else {
+      showToast('❌ PIN Host salah! (Default PIN: 1234)', 'error');
+    }
+  }
+}
+
+function switchToSpectatorMode() {
+  if (confirm('Beralih ke tampilan Penonton? Layar akan diatur ke Siaran Langsung (hanya Lapangan, Skor, History & Selesai). Anda dapat kembali menjadi Host kapan saja.')) {
+    userRole = 'spectator';
+    localStorage.setItem('onesport_user_role', 'spectator');
+    applyRoleUI();
+    switchTab('tab-match');
+    showToast('👀 Sekarang berada di Tampilan Penonton (Siaran Langsung).', 'info');
+  }
+}
+
+function promptUpgradeToHost() {
+  openSwitchToHostModal();
 }
 
 // ── CONNECT TO ISOLATED ONLINE ROOM ──
@@ -5946,6 +6237,7 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
       mqttClient.subscribe(roomTopic, { qos: 1 });
       mqttClient.subscribe(stateTopic, { qos: 1 });
       updateOnlineUI('connected');
+      applyRoleUI();
 
       const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
       const shareInput = document.getElementById('shareRoomUrlInput');
@@ -6078,15 +6370,19 @@ function handleIncomingMessage(topic, rawText) {
       if (msg.targetId === myClientId) {
         if (msg.success) {
           userRole = 'host';
+          localStorage.setItem('onesport_user_role', 'host');
           if (pendingHostCandidatePin) hostPin = pendingHostCandidatePin;
           pendingHostCandidatePin = null;
           currentRoomPinHash = msg.hostPinHash || (hostPin ? hashPin(hostPin) : '');
+          applyRoleUI();
           updateOnlineUI('connected');
           saveActiveLiveSession();
           showToast('✅ PIN Terverifikasi! Akses Wasit / Host Diberikan.', 'success');
         } else {
           pendingHostCandidatePin = null;
           userRole = 'spectator';
+          localStorage.setItem('onesport_user_role', 'spectator');
+          applyRoleUI();
           updateOnlineUI('connected');
           saveActiveLiveSession();
           showToast('❌ PIN Host salah! Akses wasit ditolak.', 'error');
@@ -6151,6 +6447,17 @@ function applyReceivedState(data) {
   if (typeof data.bCurrentRoundIndex === 'number') bCurrentRoundIndex = data.bCurrentRoundIndex;
   if (typeof data.bNumCourts === 'number') bNumCourts = data.bNumCourts;
   if (typeof data.bMinPlays === 'number') bMinPlays = data.bMinPlays;
+  if (typeof data.bCooldownMatches === 'number') bCooldownMatches = data.bCooldownMatches;
+  if (Array.isArray(data.bPartnerRequests)) bPartnerRequests = data.bPartnerRequests;
+  if (data.bPartnerHistory && typeof data.bPartnerHistory === 'object') bPartnerHistory = data.bPartnerHistory;
+  if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object') bOpponentHistory = data.bOpponentHistory;
+  if (data.bShuttlecockInventory && typeof data.bShuttlecockInventory === 'object') bShuttlecockInventory = data.bShuttlecockInventory;
+  if (Array.isArray(data.bAuditLog)) bAuditLog = data.bAuditLog;
+
+  if (window.BadmintonService) {
+    const curCourts = (bSchedule[bCurrentRoundIndex] && bSchedule[bCurrentRoundIndex].courts) || [];
+    BadmintonService.syncActivePlayerStatuses(bPlayers, curCourts);
+  }
   if (Array.isArray(data.sPlayers)) sPlayers = data.sPlayers;
   if (typeof data.sTeamCount === 'number') sTeamCount = data.sTeamCount;
   if (Array.isArray(data.sTeams)) sTeams = data.sTeams;
@@ -6722,7 +7029,7 @@ function leaveOnlineRoom(keepRoomData = false) {
   currentRoomId = null;
   currentRoomPinHash = '';
   pendingHostCandidatePin = null;
-  userRole = 'host';
+  userRole = localStorage.getItem('onesport_user_role') || 'spectator';
   isHostCreator = false;
 
   if (!keepRoomData) {
@@ -6738,8 +7045,9 @@ function leaveOnlineRoom(keepRoomData = false) {
   }
 
   updateOnlineUI('offline');
+  applyRoleUI();
   if (leftRoomId) {
-    showToast(`Keluar dari Room ${leftRoomId}. Mode Lokal Aktif.`);
+    showToast(`Keluar dari Room ${leftRoomId}.`);
   }
 }
 
