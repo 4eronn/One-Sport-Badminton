@@ -3197,6 +3197,17 @@
 //  ONESPORT UNIFIED MULTI-SPORT ENGINE (Badminton & Mini Soccer in One File)
 // ============================================================================
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
 let currentSport = 'badminton'; // 'badminton' | 'minisoccer'
 let userRole = localStorage.getItem('onesport_user_role') || 'spectator'; // 'host' | 'spectator' (Default: Penonton)
 
@@ -3593,7 +3604,7 @@ function renderPlayersList() {
           <div>
             <strong>⚠️ Notifikasi Kuota (${belowQuota.length} Pemain < ${bMinPlays}x Main):</strong>
             <div style="font-size:0.7rem; font-weight:600; margin-top:2px;">
-              ${belowQuota.map(p => `${p.name} (${p.jumlah_main || 0}/${bMinPlays}x)`).join(', ')}
+              ${belowQuota.map(p => `${escapeHtml(p.name)} (${p.jumlah_main || 0}/${bMinPlays}x)`).join(', ')}
             </div>
           </div>
           <span style="font-size:0.68rem; background:#FEF3C7; color:#92400E; padding:3px 7px; border-radius:4px; font-weight:800; white-space:nowrap;">Diprioritaskan</span>
@@ -3666,7 +3677,7 @@ function renderPlayersList() {
             </select>
             <div>
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <span class="player-roster-name" style="${p.is_deleted ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${p.name}</span>
+                <span class="player-roster-name" style="${p.is_deleted ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(p.name)}</span>
                 ${statusBadge}
                 ${quotaBadge}
                 ${leaveNotice}
@@ -3698,7 +3709,7 @@ function renderPlayersList() {
               <option value="P" ${!isMale ? 'selected' : ''}>Putri (P)</option>
             </select>
             <div>
-              <div class="player-roster-name">${p.name}</div>
+              <div class="player-roster-name">${escapeHtml(p.name)}</div>
               <div class="player-roster-badges">
                 ${roleSelectHtml}
               </div>
@@ -3739,7 +3750,7 @@ function openPartnerRequestModal(playerId) {
     select.innerHTML = '<option value="">-- Tidak ada pemain menunggu lain saat ini --</option>';
   } else {
     select.innerHTML = '<option value="">-- Pilih Rekan Menunggu --</option>' + candidates.map(c => `
-      <option value="${c.id}">${c.name} (${c.gender === 'L' ? 'Putra' : 'Putri'} • ${c.role} • ${c.jumlah_main || 0}x main)</option>
+      <option value="${c.id}">${escapeHtml(c.name)} (${c.gender === 'L' ? 'Putra' : 'Putri'} • ${escapeHtml(c.role)} • ${c.jumlah_main || 0}x main)</option>
     `).join('');
   }
 
@@ -3818,7 +3829,7 @@ function openPartnerRequestsListModal() {
         <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <div style="font-weight:800; font-size:0.85rem; color:var(--brand-navy-dark);">
-              ${r.requesterName} 🤝 ${r.targetName}
+              ${escapeHtml(r.requesterName)} 🤝 ${escapeHtml(r.targetName)}
             </div>
             <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
               Status: <strong style="color:${r.status === 'completed' ? '#059669' : '#D97706'};">${r.status.toUpperCase()}</strong>
@@ -4200,14 +4211,14 @@ function renderSoccerTeams() {
   container.innerHTML = sTeams.map(t => `
     <div style="margin-bottom:10px;">
       <div class="team-card-header ${t.key}">
-        <span>${t.name}</span>
+        <span>${escapeHtml(t.name)}</span>
         <span style="font-size:0.75rem; font-weight:800;">${t.players.length} Pemain</span>
       </div>
       <div class="team-members-list">
         ${t.players.map(p => `
           <div class="team-member-item">
-            <span style="font-weight:700; color:var(--brand-navy-dark);">${p.name}</span>
-            <span class="pos-badge pos-${(p.role||'MF').toLowerCase()}">${p.role || 'MF'}</span>
+            <span style="font-weight:700; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</span>
+            <span class="pos-badge pos-${(p.role||'MF').toLowerCase()}">${escapeHtml(p.role || 'MF')}</span>
           </div>
         `).join('')}
       </div>
@@ -4592,9 +4603,9 @@ function updateCustomCourtUI() {
       el.innerHTML = `
         <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
           <span class="gender-badge ${player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.65rem; padding:1px 5px;">${player.gender === 'L' ? 'L' : 'P'}</span>
-          <span style="font-weight:800; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${player.name}</span>
+          <span style="font-weight:800; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${escapeHtml(player.name)}</span>
         </div>
-        <span class="role-pill ${(player.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${player.role}</span>
+        <span class="role-pill ${(player.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${escapeHtml(player.role)}</span>
       `;
     } else {
       el.className = 'custom-court-slot empty';
@@ -4653,7 +4664,7 @@ function renderCustomCourtPlayersList() {
     if (restingIds.has(p.id)) {
       statusBadge = `<span style="background:#DCFCE7; color:#15803D; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">Istirahat</span>`;
     } else if (playerLocMap[p.id]) {
-      statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">${playerLocMap[p.id]}</span>`;
+      statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">${escapeHtml(playerLocMap[p.id])}</span>`;
     }
 
     return `
@@ -4662,9 +4673,9 @@ function renderCustomCourtPlayersList() {
           <input type="checkbox" ${isSelected ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px; accent-color:var(--brand-orange);" onclick="event.stopPropagation(); toggleCustomCourtPlayer(${p.id})">
           <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${p.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${p.name}</div>
+            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</div>
             <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
-              <span class="role-pill ${(p.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${p.role}</span>
+              <span class="role-pill ${(p.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${escapeHtml(p.role)}</span>
               ${statusBadge}
             </div>
           </div>
@@ -4791,17 +4802,17 @@ function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, 
   }
   const isMale = p.gender === 'L';
   const canSwap = isHost && !isLocked;
-  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${p.name}" style="cursor:pointer;"` : `style="cursor:default;"`;
+  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${escapeHtml(p.name)}" style="cursor:pointer;"` : `style="cursor:default;"`;
   const swapBtnHtml = canSwap ? `<span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>` : '';
 
   return `
     <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" ${clickAttr}>
       <div class="player-cell-top">
-        <span class="player-cell-name">${p.name}</span>
+        <span class="player-cell-name">${escapeHtml(p.name)}</span>
         <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-        <span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${p.role}</span>
+        <span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${escapeHtml(p.role)}</span>
         ${swapBtnHtml}
       </div>
     </div>
@@ -4917,8 +4928,8 @@ function renderCourtsView() {
       nextMatchContainer.innerHTML = nextRound.courts.map((court, cIdx) => `
         <div class="match-court-block">
           <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.8rem; font-weight:800; color:var(--brand-navy-dark);">
-            <span>${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${nextRound.roundNumber})</span>
-            <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+            <span>${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))} (Ronde ${nextRound.roundNumber})</span>
+            <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
           </div>
           <div class="match-versus-grid">
             <div class="team-column">
@@ -4978,7 +4989,7 @@ function renderCourtsView() {
           return `
             <div class="os-card dashed" style="margin-top:8px; border:2px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
               <div class="card-top-title" style="margin-bottom:6px;">
-                <span class="card-title-text" style="color:var(--text-muted);">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <span class="court-status-chip pending">⚪ Kosong</span>
               </div>
               <div style="font-size:1.4rem; margin-bottom:4px;">🏸</div>
@@ -4991,7 +5002,7 @@ function renderCourtsView() {
         return `
           <div class="os-card dashed" style="margin-top:8px; border:2px dashed #CBD5E1; background:#F8FAFC;">
             <div class="card-top-title">
-              <span class="card-title-text" style="color:var(--text-muted);">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+              <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <span class="court-status-chip pending">⚪ Kosong</span>
             </div>
             <div style="text-align:center; padding:18px 12px;">
@@ -5023,10 +5034,10 @@ function renderCourtsView() {
             <div class="os-card" style="margin-top:8px; border:2px solid #FCD34D; background:#FFFDF7;">
               <div class="card-top-title">
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                  <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                   <span class="court-status-chip menunggu_acc">⏳ Menunggu Mulai</span>
                 </div>
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
               <div style="background:#FEF3C7; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:6px 10px; margin-bottom:8px; font-size:0.72rem; color:#92400E; text-align:center; font-weight:700;">
                 ⏳ Jadwal pertandingan sedang dipersiapkan dan menunggu konfirmasi Host.
@@ -5052,11 +5063,11 @@ function renderCourtsView() {
           <div class="os-card" style="margin-top:8px; border:2px solid #FCD34D; background:#FFFDF7;">
             <div class="card-top-title">
               <div style="display:flex; align-items:center; gap:6px;">
-                <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <span class="court-status-chip menunggu_acc">⏳ Menunggu ACC Host</span>
               </div>
               <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
                 ${court.isRepeatedPartner ? `<span class="partner-repeated-pill">⚠️ Pasangan Berulang</span>` : ''}
                 ${court.usedRequest ? `<span style="font-size:0.68rem; background:#DCFCE7; color:#15803D; padding:2px 6px; border-radius:4px; font-weight:800;">🤝 Sesuai Request</span>` : ''}
               </div>
@@ -5126,10 +5137,10 @@ function renderCourtsView() {
           return `
             <div class="os-card is-ongoing" style="margin-top:8px; border-color:#3B82F6;">
               <div class="card-top-title">
-                <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
                   <span class="court-status-chip ongoing">🟢 Sedang Main</span>
-                  <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                  <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
                 </div>
               </div>
               <div class="match-versus-grid">
@@ -5155,10 +5166,10 @@ function renderCourtsView() {
         return `
           <div class="os-card is-ongoing" style="margin-top:8px; border-color:#3B82F6;">
             <div class="card-top-title">
-              <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+              <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
                 <span class="court-status-chip ongoing">🟢 Sedang Main</span>
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
             </div>
 
@@ -5198,10 +5209,10 @@ function renderCourtsView() {
         return `
           <div class="os-card is-finished" style="margin-top:8px;">
             <div class="card-top-title">
-              <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+              <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <div style="display:flex; align-items:center; gap:5px;">
                 <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
             </div>
 
@@ -5229,10 +5240,10 @@ function renderCourtsView() {
       return `
         <div class="os-card is-finished" style="margin-top:8px;">
           <div class="card-top-title">
-            <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+            <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
             <div style="display:flex; align-items:center; gap:5px;">
               <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
-              <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+              <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
             </div>
           </div>
 
@@ -5328,9 +5339,9 @@ function renderCourtsView() {
         drawerHtml += `<span style="font-size:0.75rem; color:var(--text-muted);">Tidak ada pemain menunggu.</span>`;
       } else {
         drawerHtml += waitingPlayers.map(p => `
-          <span class="resting-chip" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46;" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk masukkan ${p.name} ke lapangan">
+          <span class="resting-chip" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46;" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk masukkan ${escapeHtml(p.name)} ke lapangan">
             <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}">${p.gender}</span>
-            <strong>${p.name}</strong>
+            <strong>${escapeHtml(p.name)}</strong>
             <span class="quota-badge ${p.jumlah_main >= bMinPlays ? 'quota-ok' : (p.jumlah_main > 0 ? 'quota-mid' : 'quota-0')}">${p.jumlah_main || 0}/${bMinPlays}</span>
           </span>
         `).join('');
@@ -5346,7 +5357,7 @@ function renderCourtsView() {
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
             ${restingPlayers.map(p => `
               <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Cooldown: ${p.cooldown_remaining || 1} match lagi">
-                <span>${p.name}</span>
+                <span>${escapeHtml(p.name)}</span>
                 <span style="font-size:0.65rem; font-weight:800; background:#FEF3C7; padding:1px 5px; border-radius:4px;">${p.cooldown_remaining || 1} match lagi</span>
                 <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly(${p.id})" title="Selesai istirahat sekarang">⚡ Siap</span>
               </span>
@@ -5364,7 +5375,7 @@ function renderCourtsView() {
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             ${onCourtPlayers.map(p => `
               <span class="resting-chip" style="background:#EFF6FF; border:1px solid #BFDBFE; color:#1E40AF;">
-                <span>${p.name}</span>
+                <span>${escapeHtml(p.name)}</span>
                 <span style="font-size:0.65rem; font-weight:700;">(Di Lapangan)</span>
               </span>
             `).join('')}
@@ -5403,18 +5414,18 @@ function renderCourtsView() {
       return `
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px;">
           <div class="card-top-title">
-            <span class="card-title-text">${m.title}</span>
+            <span class="card-title-text">${escapeHtml(m.title)}</span>
             <span class="court-status-chip ${m.status}">${m.status === 'finished' ? 'Selesai' : (isOngoing ? 'Live' : 'Pending')}</span>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; background:#F8FAFC; padding:12px; border-radius:var(--radius-lg); margin-bottom:10px;">
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${m.teamA.name}</strong>
+              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${escapeHtml(m.teamA.name)}</strong>
               <div style="font-size:1.8rem; font-weight:900; color:var(--brand-orange);">${m.scoreA !== null ? m.scoreA : '-'}</div>
             </div>
             <div style="font-size:0.85rem; font-weight:900; color:var(--text-muted);">VS</div>
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${m.teamB.name}</strong>
+              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${escapeHtml(m.teamB.name)}</strong>
               <div style="font-size:1.8rem; font-weight:900; color:var(--brand-navy-dark);">${m.scoreB !== null ? m.scoreB : '-'}</div>
             </div>
           </div>
@@ -5423,8 +5434,8 @@ function renderCourtsView() {
             ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">Mulai Kickoff</button>` : ''}
             <div class="winner-picker-box">
               <span style="font-size:0.74rem; font-weight:800;">Pemenang:</span>
-              <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${m.teamA.name.split(' ')[0]}</button>
-              <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${m.teamB.name.split(' ')[0]}</button>
+              <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${escapeHtml(m.teamA.name.split(' ')[0])}</button>
+              <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${escapeHtml(m.teamB.name.split(' ')[0])}</button>
               <button class="btn-pick-winner ${m.winner === 'D' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'D')">Seri</button>
             </div>
           </div>
@@ -5557,8 +5568,8 @@ function openDirectCourtScoreModal(cIdx) {
   targetInput.value = cIdx;
   titleEl.textContent = `🏸 Input Skor: ${court.courtName}`;
 
-  const tA = (court.teamA || []).map(p => p.name).join(' & ');
-  const tB = (court.teamB || []).map(p => p.name).join(' & ');
+  const tA = (court.teamA || []).map(p => escapeHtml(p.name)).join(' & ');
+  const tB = (court.teamB || []).map(p => escapeHtml(p.name)).join(' & ');
 
   headerEl.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; font-weight:900;">
@@ -5679,8 +5690,8 @@ function openEditFinishedMatchModal(rIdx, cIdx, isArchive = false) {
     document.getElementById('editFinishedIsArchive').value = isArchive ? '1' : '0';
   }
 
-  const tA = (court.teamA || []).map(p => p.name).join(' & ');
-  const tB = (court.teamB || []).map(p => p.name).join(' & ');
+  const tA = (court.teamA || []).map(p => escapeHtml(p.name)).join(' & ');
+  const tB = (court.teamB || []).map(p => escapeHtml(p.name)).join(' & ');
 
   document.getElementById('editFinishedTeamsHeader').innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem;">
@@ -5781,7 +5792,7 @@ function openShuttlecockModal() {
       <div style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark); margin-bottom:6px;">Rincian Penggunaan Per Lapangan:</div>
       ${Object.keys(sum.perCourtUsage).length === 0 ? `<div style="font-size:0.72rem; color:var(--text-muted);">Belum ada pencatatan kok pada pertandingan selesai.</div>` : Object.entries(sum.perCourtUsage).map(([name, u]) => `
         <div style="display:flex; justify-content:space-between; font-size:0.74rem; padding:4px 6px; background:#FFF; border:1px solid var(--border-color); border-radius:4px; margin-bottom:4px;">
-          <strong>${name}</strong>
+          <strong>${escapeHtml(name)}</strong>
           <span>${u.baru} baru · ${u.bekas_layak} bekas (Total: ${u.total})</span>
         </div>
       `).join('')}
@@ -5848,8 +5859,8 @@ function openFinishScoreModal() {
     container.innerHTML = round.courts.map((court, idx) => `
       <div class="score-court-row" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:10px; margin-bottom:8px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:800; font-size:0.85rem;">
-          <span>${court.courtName || ('Lapangan ' + (idx + 1))}</span>
-          <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+          <span>${escapeHtml(court.courtName || ('Lapangan ' + (idx + 1)))}</span>
+          <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
           <label style="display:flex; align-items:center; gap:6px; background:#FFF; padding:6px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.76rem; font-weight:700;">
@@ -5871,15 +5882,15 @@ function openFinishScoreModal() {
   } else {
     container.innerHTML = sMatches.map((m, idx) => `
       <div class="score-court-row" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:10px; margin-bottom:8px;">
-        <div style="font-weight:800; font-size:0.85rem; margin-bottom:6px;">${m.title}</div>
+        <div style="font-weight:800; font-size:0.85rem; margin-bottom:6px;">${escapeHtml(m.title)}</div>
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;">
           <div>
-            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${m.teamA.name}</div>
+            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamA.name)}</div>
             <input type="number" id="inputSoccerScoreA_${idx}" class="input-styled-os" value="${m.scoreA !== null ? m.scoreA : 2}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           </div>
           <strong style="color:var(--text-muted); margin-top:14px;">VS</strong>
           <div>
-            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${m.teamB.name}</div>
+            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamB.name)}</div>
             <input type="number" id="inputSoccerScoreB_${idx}" class="input-styled-os" value="${m.scoreB !== null ? m.scoreB : 1}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           </div>
         </div>
@@ -6304,8 +6315,8 @@ function renderLeaderboard() {
           <div class="player-rank-cell">
             <span class="player-rank-num">${idx + 1}.</span>
             <div>
-              <span class="player-rank-name">${s.name}</span>
-              ${s.tieBreakNote ? `<div class="tiebreak-badge">${s.tieBreakNote}</div>` : ''}
+              <span class="player-rank-name">${escapeHtml(s.name)}</span>
+              ${s.tieBreakNote ? `<div class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</div>` : ''}
             </div>
           </div>
         </td>
@@ -6313,7 +6324,7 @@ function renderLeaderboard() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-right" style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-mid);">
-          ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (s.tieBreakNote || '-')))}
+          ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (escapeHtml(s.tieBreakNote) || '-')))}
         </td>
       </tr>
     `).join('');
@@ -6348,8 +6359,8 @@ function renderLeaderboard() {
     tbody.innerHTML = list.map((s, idx) => `
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-left">
-          <strong>${idx + 1}. ${s.name}</strong>
-          ${s.tieBreakNote ? `<br><span class="tiebreak-badge">${s.tieBreakNote}</span>` : ''}
+          <strong>${idx + 1}. ${escapeHtml(s.name)}</strong>
+          ${s.tieBreakNote ? `<br><span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : ''}
         </td>
         <td class="col-center">${s.p}</td>
         <td class="col-center">${s.w}-${s.d}-${s.l}</td>
@@ -6386,8 +6397,8 @@ function renderHistory() {
         </div>
         ${group.finishedMatches.map(item => {
           const c = item.court;
-          const tA = (c.teamA || []).map(p => p.name).join(' & ') || 'Tim A';
-          const tB = (c.teamB || []).map(p => p.name).join(' & ') || 'Tim B';
+          const tA = (c.teamA || []).map(p => escapeHtml(p.name)).join(' & ') || 'Tim A';
+          const tB = (c.teamB || []).map(p => escapeHtml(p.name)).join(' & ') || 'Tim B';
           const isAWin = c.winner === 'A';
           const isBWin = c.winner === 'B';
           const kokInfo = c.shuttlecocks && (c.shuttlecocks.baru > 0 || c.shuttlecocks.bekas_layak > 0)
@@ -6397,7 +6408,7 @@ function renderHistory() {
           return `
             <div style="background:#FFF; padding:10px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:6px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-mid);">${c.courtName || `Lapangan ${c.courtNumber}`}</span>
+                <span style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-mid);">${escapeHtml(c.courtName || `Lapangan ${c.courtNumber}`)}</span>
                 ${userRole === 'host' ? `
                 <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; border-radius:4px; background:#0F1E36; color:#FFF;" onclick="openEditFinishedMatchModal(${group.rIdx}, ${item.index}, ${item.isArchive})">
                   ✏️ Edit Skor
@@ -6428,9 +6439,9 @@ function renderHistory() {
     }
     container.innerHTML = finished.map(m => `
       <div style="display:flex; justify-content:space-between; align-items:center; background:#FFF; padding:12px; border-radius:var(--radius-md); border:1.5px solid var(--border-color); margin-bottom:8px;">
-        <span style="font-weight:800; color:var(--brand-navy-dark);">${m.teamA.name}</span>
+        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamA.name)}</span>
         <strong style="color:var(--brand-orange); font-size:1.2rem;">${m.scoreA || 0} - ${m.scoreB || 0}</strong>
-        <span style="font-weight:800; color:var(--brand-navy-dark);">${m.teamB.name}</span>
+        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamB.name)}</span>
       </div>
     `).join('');
   }
@@ -6453,7 +6464,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label silver">Juara 2</span>
-          <div class="podium-name">${p2 ? p2.name : '-'}</div>
+          <div class="podium-name">${p2 ? escapeHtml(p2.name) : '-'}</div>
           ${p2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p2.wins} Menang · Skor ${p2.diff >= 0 ? '+' + p2.diff : p2.diff} (${p2.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-2">2</div>
@@ -6461,7 +6472,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label gold">Juara 1</span>
-          <div class="podium-name">${p1 ? p1.name : '-'}</div>
+          <div class="podium-name">${p1 ? escapeHtml(p1.name) : '-'}</div>
           ${p1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${p1.wins} Menang · Skor ${p1.diff >= 0 ? '+' + p1.diff : p1.diff} (${p1.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-1">1</div>
@@ -6469,7 +6480,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label bronze">Juara 3</span>
-          <div class="podium-name">${p3 ? p3.name : '-'}</div>
+          <div class="podium-name">${p3 ? escapeHtml(p3.name) : '-'}</div>
           ${p3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p3.wins} Menang · Skor ${p3.diff >= 0 ? '+' + p3.diff : p3.diff} (${p3.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-3">3</div>
@@ -6491,7 +6502,7 @@ function renderFinalPodium() {
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
         <td class="col-left">
-          <strong>${s.name}</strong>
+          <strong>${escapeHtml(s.name)}</strong>
           ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
         </td>
         <td class="col-center"><strong>${s.wins}</strong></td>
@@ -6500,7 +6511,7 @@ function renderFinalPodium() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-left">
-          ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
+          ${s.tieBreakNote ? `<span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
         </td>
       </tr>
     `).join('');
@@ -6513,7 +6524,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label silver">Juara 2</span>
-          <div class="podium-name">${t2 ? t2.name : '-'}</div>
+          <div class="podium-name">${t2 ? escapeHtml(t2.name) : '-'}</div>
           ${t2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t2.w} Menang · Selisih ${t2.gd >= 0 ? '+' + t2.gd : t2.gd} (${t2.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-2">2</div>
@@ -6521,7 +6532,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label gold">Juara 1</span>
-          <div class="podium-name">${t1 ? t1.name : '-'}</div>
+          <div class="podium-name">${t1 ? escapeHtml(t1.name) : '-'}</div>
           ${t1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${t1.w} Menang · Selisih ${t1.gd >= 0 ? '+' + t1.gd : t1.gd} (${t1.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-1">1</div>
@@ -6529,7 +6540,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label bronze">Juara 3</span>
-          <div class="podium-name">${t3 ? t3.name : '-'}</div>
+          <div class="podium-name">${t3 ? escapeHtml(t3.name) : '-'}</div>
           ${t3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t3.w} Menang · Selisih ${t3.gd >= 0 ? '+' + t3.gd : t3.gd} (${t3.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-3">3</div>
@@ -6551,7 +6562,7 @@ function renderFinalPodium() {
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
         <td class="col-left">
-          <strong>${s.name}</strong>
+          <strong>${escapeHtml(s.name)}</strong>
           ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
         </td>
         <td class="col-center"><strong>${s.w}</strong></td>
@@ -6560,7 +6571,7 @@ function renderFinalPodium() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.gd >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
         <td class="col-left">
-          ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
+          ${s.tieBreakNote ? `<span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
         </td>
       </tr>
     `).join('');
@@ -6815,8 +6826,12 @@ function loadFromLocalStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
-    const data = JSON.parse(raw);
+    let data = JSON.parse(raw);
     if (!data || !data.version) return false;
+    if (window.BadmintonService && typeof BadmintonService.validateAndNormalizeState === 'function') {
+      data = BadmintonService.validateAndNormalizeState(data);
+      if (!data) return false;
+    }
 
     if (data.currentSport) currentSport = data.currentSport;
     if (data.sessionTitle) sessionTitle = data.sessionTitle;
@@ -6997,8 +7012,8 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${cand.player.role}</span></div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
           </div>
         </div>
         <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Pilih</button>
@@ -7053,14 +7068,14 @@ function openSwapFromResting(rIdx, restingPlayerId) {
     listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain yang sedang di lapangan untuk diganti.</div>`;
   } else {
     listEl.innerHTML = `
-      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Pilih pemain di lapangan yang ingin digantikan oleh ${restingPlayer.name}:</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Pilih pemain di lapangan yang ingin digantikan oleh ${escapeHtml(restingPlayer.name)}:</div>
     ` + candidates.map((cand, idx) => `
       <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s; margin-bottom:6px;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwapFromResting(${idx})">
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${cand.player.role}</span></div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
           </div>
         </div>
         <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Gantikan</button>
@@ -7825,8 +7840,16 @@ function handleIncomingMessage(topic, rawText) {
   }
 }
 
-function applyReceivedState(data) {
-  if (!data) return;
+function applyReceivedState(incomingData) {
+  if (!incomingData) return;
+  let data = incomingData;
+  if (window.BadmintonService && typeof BadmintonService.validateAndNormalizeState === 'function') {
+    data = BadmintonService.validateAndNormalizeState(incomingData);
+    if (!data) {
+      console.warn('Rejected invalid received state payload');
+      return;
+    }
+  }
   if (data.currentSport) currentSport = data.currentSport;
   if (data.sessionTitle) sessionTitle = data.sessionTitle;
   if (data.plannedRounds) plannedRounds = data.plannedRounds;
@@ -8260,10 +8283,10 @@ function updateLiveRoomsDirectoryUI() {
           ${escapeHtml(safeTitle)}
         </div>
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:6px;">
-          <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" onclick="joinRoomAsSpectator('${r.roomId}')">
+          <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" data-room-id="${escapeHtml(r.roomId)}" onclick="joinRoomAsSpectator(this.getAttribute('data-room-id'))">
             <span>👁️ Nonton Live</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" onclick="showJoinChoiceModal('${r.roomId}', '${(r.title || '').replace(/'/g, "\\'")}')">
+          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" data-room-id="${escapeHtml(r.roomId)}" data-room-title="${escapeHtml(r.title || '')}" onclick="showJoinChoiceModal(this.getAttribute('data-room-id'), this.getAttribute('data-room-title'))">
             <span>👑 Wasit/Host</span>
           </button>
         </div>
@@ -8286,11 +8309,11 @@ function confirmFinishLiveBroadcast() {
   if (summaryBox) {
     const podium = getPodiumSummaryData();
     let podiumText = podium.length > 0
-      ? podium.map(p => `<strong>${p.label}:</strong> ${p.name} (${p.score})`).join('<br>')
+      ? podium.map(p => `<strong>${escapeHtml(p.label)}:</strong> ${escapeHtml(p.name)} (${escapeHtml(p.score)})`).join('<br>')
       : 'Belum ada juara yang ditentukan.';
 
     summaryBox.innerHTML = `
-      <div style="margin-bottom:4px; color:var(--text-muted);">Judul: <strong>${sessionTitle || '-'}</strong></div>
+      <div style="margin-bottom:4px; color:var(--text-muted);">Judul: <strong>${escapeHtml(sessionTitle || '-')}</strong></div>
       <div style="margin-bottom:4px; color:var(--text-muted);">Olahraga: <strong>${currentSport === 'badminton' ? 'Badminton' : 'Mini Soccer'}</strong></div>
       <div style="margin-top:6px; border-top:1px dashed var(--border-color); padding-top:6px;">
         ${podiumText}
@@ -8365,8 +8388,8 @@ function showLiveEndedNoticeModal(roomId, summary) {
   if (box && summary) {
     let podiumHtml = (summary.podium || []).map(p => `
       <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-        <span>${p.label}: <strong>${p.name}</strong></span>
-        <span style="color:var(--brand-orange); font-weight:700;">${p.score || ''}</span>
+        <span>${escapeHtml(p.label)}: <strong>${escapeHtml(p.name)}</strong></span>
+        <span style="color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</span>
       </div>
     `).join('');
     box.innerHTML = podiumHtml || 'Pertandingan selesai dengan sukses.';
@@ -8500,7 +8523,7 @@ function renderLiveHistoryList() {
   container.innerHTML = list.map(item => {
     const isBadm = item.sport === 'badminton';
     const podiumStr = (item.podium && item.podium.length > 0)
-      ? item.podium.map(p => `<strong>${p.label}:</strong> ${p.name}`).join(' · ')
+      ? item.podium.map(p => `<strong>${escapeHtml(p.label)}:</strong> ${escapeHtml(p.name)}`).join(' · ')
       : 'Hasil tersimpan';
 
     return `
@@ -8526,16 +8549,16 @@ function renderLiveHistoryList() {
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr auto auto; gap:6px; align-items:center;">
-          <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="openHistoryDetailModal('${item.id}')">
+          <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="openHistoryDetailModal(this.getAttribute('data-history-id'))">
             <span>📋 Detail</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:6px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="shareHistoryItemWA('${item.id}')">
+          <button class="btn-court-action" style="font-size:0.72rem; padding:6px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="shareHistoryItemWA(this.getAttribute('data-history-id'))">
             <span>📤 Salin WA</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" onclick="loadHistorySnapshotToApp('${item.id}')">
+          <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" data-history-id="${escapeHtml(item.id)}" onclick="loadHistorySnapshotToApp(this.getAttribute('data-history-id'))">
             📥 Muat
           </button>
-          <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" onclick="deleteLiveHistoryItem('${item.id}')">
+          <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" data-history-id="${escapeHtml(item.id)}" onclick="deleteLiveHistoryItem(this.getAttribute('data-history-id'))">
             ✕
           </button>
         </div>
@@ -8653,15 +8676,15 @@ function openHistoryDetailModal(id) {
     <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:12px; font-size:0.78rem;">
       <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
         <span style="color:var(--text-muted);">Kode Room:</span>
-        <strong style="color:var(--brand-orange);">${item.roomId}</strong>
+        <strong style="color:var(--brand-orange);">${escapeHtml(item.roomId)}</strong>
       </div>
       <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
         <span style="color:var(--text-muted);">Waktu Selesai:</span>
-        <strong>${item.dateFormatted} · ${item.timeFormatted || ''}</strong>
+        <strong>${escapeHtml(item.dateFormatted)} · ${escapeHtml(item.timeFormatted || '')}</strong>
       </div>
       <div style="display:flex; justify-content:space-between;">
         <span style="color:var(--text-muted);">Olahraga / Peran:</span>
-        <strong>${item.sport === 'badminton' ? 'Badminton 🏸' : 'Mini Soccer ⚽'} (${item.role || 'Peserta'})</strong>
+        <strong>${item.sport === 'badminton' ? 'Badminton 🏸' : 'Mini Soccer ⚽'} (${escapeHtml(item.role || 'Peserta')})</strong>
       </div>
     </div>
   `;
@@ -8673,9 +8696,9 @@ function openHistoryDetailModal(id) {
         <div style="display:grid; grid-template-columns:repeat(${Math.min(item.podium.length, 3)}, 1fr); gap:6px;">
           ${item.podium.map(p => `
             <div style="background:#FFF; border:1.5px solid ${p.rank === 1 ? '#F59E0B' : (p.rank === 2 ? '#94A3B8' : '#D97706')}; border-radius:var(--radius-md); padding:8px; text-align:center;">
-              <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">${p.label}</div>
-              <div style="font-size:0.85rem; font-weight:900; color:var(--brand-navy-dark); margin:2px 0;">${p.name}</div>
-              <div style="font-size:0.68rem; color:var(--brand-orange); font-weight:700;">${p.score || ''}</div>
+              <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">${escapeHtml(p.label)}</div>
+              <div style="font-size:0.85rem; font-weight:900; color:var(--brand-navy-dark); margin:2px 0;">${escapeHtml(p.name)}</div>
+              <div style="font-size:0.68rem; color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</div>
             </div>
           `).join('')}
         </div>
@@ -8702,10 +8725,10 @@ function openHistoryDetailModal(id) {
               ${item.leaderboard.map((s, idx) => `
                 <tr style="border-top:1px solid var(--border-color); ${idx < 3 ? 'background:#FFFBEB;' : ''}">
                   <td style="padding:6px 8px; font-weight:800;">${idx + 1}.</td>
-                  <td style="padding:6px 8px; font-weight:700;">${s.name}</td>
-                  <td style="padding:6px 8px; text-align:center;">${s.wins || 0}-${s.losses || 0}</td>
-                  <td style="padding:6px 8px; text-align:center; font-weight:800; color:var(--brand-orange);">${s.totalScore || s.score || 0}</td>
-                  <td style="padding:6px 8px; text-align:center; font-weight:700;">${s.diff || 0}</td>
+                  <td style="padding:6px 8px; font-weight:700;">${escapeHtml(s.name)}</td>
+                  <td style="padding:6px 8px; text-align:center;">${Number(s.wins) || 0}-${Number(s.losses) || 0}</td>
+                  <td style="padding:6px 8px; text-align:center; font-weight:800; color:var(--brand-orange);">${Number(s.totalScore || s.score) || 0}</td>
+                  <td style="padding:6px 8px; text-align:center; font-weight:700;">${Number(s.diff) || 0}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -8723,16 +8746,16 @@ function openHistoryDetailModal(id) {
           ${item.roundsSummary.map(r => `
             <div style="background:#FFF; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px;">
               <div style="font-weight:800; font-size:0.78rem; color:var(--brand-navy-dark); margin-bottom:6px; border-bottom:1px solid #F1F5F9; padding-bottom:4px;">
-                ${r.roundName}
+                ${escapeHtml(r.roundName)}
               </div>
               <div style="display:flex; flex-direction:column; gap:6px;">
                 ${(r.matches || []).map(m => `
                   <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.73rem; background:#F8FAFC; padding:6px 8px; border-radius:var(--radius-sm);">
-                    <div style="font-weight:800; color:var(--brand-navy-mid);">${m.court}</div>
+                    <div style="font-weight:800; color:var(--brand-navy-mid);">${escapeHtml(m.court)}</div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-weight:${m.winner === 'A' ? '900' : '600'}; color:${m.winner === 'A' ? 'var(--brand-orange)' : 'inherit'};">${m.teamA}</span>
-                      <strong style="background:#FFF; padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">${m.scoreA} - ${m.scoreB}</strong>
-                      <span style="font-weight:${m.winner === 'B' ? '900' : '600'}; color:${m.winner === 'B' ? 'var(--brand-orange)' : 'inherit'};">${m.teamB}</span>
+                      <span style="font-weight:${m.winner === 'A' ? '900' : '600'}; color:${m.winner === 'A' ? 'var(--brand-orange)' : 'inherit'};">${escapeHtml(m.teamA)}</span>
+                      <strong style="background:#FFF; padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">${Number(m.scoreA) || 0} - ${Number(m.scoreB) || 0}</strong>
+                      <span style="font-weight:${m.winner === 'B' ? '900' : '600'}; color:${m.winner === 'B' ? 'var(--brand-orange)' : 'inherit'};">${escapeHtml(m.teamB)}</span>
                     </div>
                   </div>
                 `).join('')}
@@ -8858,10 +8881,10 @@ function generateQrCode(url) {
         correctLevel: QRCode.CorrectLevel.M
       });
     } catch (e) {
-      container.innerHTML = `<a href="${url}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${url}</a>`;
+      container.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${escapeHtml(url)}</a>`;
     }
   } else {
-    container.innerHTML = `<a href="${url}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${url}</a>`;
+    container.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${escapeHtml(url)}</a>`;
   }
 }
 
@@ -8958,11 +8981,16 @@ function importSessionJSON(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const data = JSON.parse(e.target.result);
+      const rawData = JSON.parse(e.target.result);
+      let data = rawData;
+      if (window.BadmintonService && typeof BadmintonService.validateAndNormalizeState === 'function') {
+        data = BadmintonService.validateAndNormalizeState(rawData);
+      }
       if (data && (data.bPlayers || data.sPlayers)) {
         applyReceivedState(data);
-        if (Array.isArray(data.liveHistory)) {
-          localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(data.liveHistory));
+        if (Array.isArray(rawData.liveHistory)) {
+          const safeHistory = rawData.liveHistory.filter(h => h && typeof h === 'object').slice(0, 100);
+          localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(safeHistory));
           renderLiveHistoryList();
           updateLiveHistoryBadges();
         }
@@ -8970,7 +8998,7 @@ function importSessionJSON(event) {
         showToast('Data berhasil dipulihkan dari cadangan!');
         closeOnlineModal();
       } else {
-        alert('File JSON tidak valid untuk ONESPORT.');
+        alert('File JSON tidak valid atau struktur data ditolak.');
       }
     } catch(err) {
       alert('Gagal membaca file: ' + err.message);

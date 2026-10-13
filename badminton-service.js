@@ -1093,6 +1093,142 @@
     return entry;
   }
 
+  // ── 11. XSS SANITIZATION HELPER ──
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/`/g, '&#96;');
+  }
+
+  // ── 12. STATE VALIDATION & NORMALIZATION (SEC-1 / Q-6) ──
+  function validateAndNormalizeState(data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+
+    const clean = {
+      version: typeof data.version === 'number' ? data.version : 3,
+      currentSport: data.currentSport === 'minisoccer' ? 'minisoccer' : 'badminton',
+      sessionTitle: typeof data.sessionTitle === 'string' ? data.sessionTitle.trim().slice(0, 80) : 'Mabar',
+      plannedRounds: Number.isInteger(data.plannedRounds) && data.plannedRounds > 0 ? Math.min(data.plannedRounds, 100) : 8,
+      
+      bPlayers: [],
+      bSchedule: [],
+      bCurrentRoundIndex: Number.isInteger(data.bCurrentRoundIndex) && data.bCurrentRoundIndex >= 0 ? data.bCurrentRoundIndex : 0,
+      bNumCourts: Number.isInteger(data.bNumCourts) && data.bNumCourts > 0 ? Math.min(data.bNumCourts, 20) : 2,
+      bMinPlays: Number.isInteger(data.bMinPlays) && data.bMinPlays >= 0 ? Math.min(data.bMinPlays, 20) : 3,
+      bCooldownMatches: Number.isInteger(data.bCooldownMatches) && data.bCooldownMatches >= 0 ? Math.min(data.bCooldownMatches, 10) : 1,
+      bPartnerRequests: [],
+      bPartnerHistory: {},
+      bOpponentHistory: {},
+      bShuttlecockInventory: {
+        stokAwalBaru: 24,
+        stokAwalBekas: 12,
+        terpakaiBaru: 0,
+        terpakaiBekas: 0,
+        bekasLayakDidapat: 0
+      },
+      bAuditLog: [],
+
+      sPlayers: [],
+      sTeamCount: Number.isInteger(data.sTeamCount) && data.sTeamCount >= 2 ? Math.min(data.sTeamCount, 10) : 2,
+      sTeams: [],
+      sMatches: [],
+      sCurrentMatchIndex: Number.isInteger(data.sCurrentMatchIndex) && data.sCurrentMatchIndex >= 0 ? data.sCurrentMatchIndex : 0
+    };
+
+    if (typeof data.rev === 'number') {
+      clean.rev = data.rev;
+    }
+
+    if (Array.isArray(data.bPlayers)) {
+      if (data.bPlayers.length > 200) return null;
+      const seenIds = new Set();
+      for (const p of data.bPlayers) {
+        if (!p || typeof p !== 'object') return null;
+        if (p.id === undefined || p.id === null) return null;
+        const pid = String(p.id);
+        if (seenIds.has(pid)) return null;
+        seenIds.add(pid);
+        clean.bPlayers.push({
+          id: typeof p.id === 'number' ? p.id : pid,
+          name: typeof p.name === 'string' ? p.name.trim().slice(0, 40) : '',
+          gender: p.gender === 'P' ? 'P' : 'L',
+          role: typeof p.role === 'string' ? p.role.slice(0, 20) : 'Intermadiate',
+          paid: Boolean(p.paid !== false),
+          status: Object.values(PLAYER_STATUS).includes(p.status) ? p.status : PLAYER_STATUS.MENUNGGU,
+          jumlah_main: typeof p.jumlah_main === 'number' && p.jumlah_main >= 0 ? Math.floor(p.jumlah_main) : 0,
+          request_used: Boolean(p.request_used),
+          cooldown_remaining: typeof p.cooldown_remaining === 'number' && p.cooldown_remaining >= 0 ? Math.floor(p.cooldown_remaining) : 0,
+          leave_after_match: Boolean(p.leave_after_match),
+          is_deleted: Boolean(p.is_deleted),
+          titles: typeof p.titles === 'number' && p.titles >= 0 ? Math.floor(p.titles) : 0,
+          createdAt: typeof p.createdAt === 'number' ? p.createdAt : Date.now()
+        });
+      }
+    }
+
+    if (Array.isArray(data.bSchedule)) {
+      if (data.bSchedule.length > 200) return null;
+      let totalMatches = 0;
+      for (const r of data.bSchedule) {
+        if (!r || typeof r !== 'object') return null;
+        const numCourts = Array.isArray(r.courts) ? r.courts.length : 0;
+        const numFinished = Array.isArray(r.finishedCourts) ? r.finishedCourts.length : 0;
+        totalMatches += (numCourts + numFinished);
+        if (totalMatches > 2000) return null;
+        clean.bSchedule.push(r);
+      }
+    }
+
+    if (Array.isArray(data.bPartnerRequests)) {
+      if (data.bPartnerRequests.length > 500) return null;
+      clean.bPartnerRequests = data.bPartnerRequests.slice(0, 500);
+    }
+
+    if (data.bPartnerHistory && typeof data.bPartnerHistory === 'object' && !Array.isArray(data.bPartnerHistory)) {
+      clean.bPartnerHistory = { ...data.bPartnerHistory };
+    }
+    if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object' && !Array.isArray(data.bOpponentHistory)) {
+      clean.bOpponentHistory = { ...data.bOpponentHistory };
+    }
+
+    if (data.bShuttlecockInventory && typeof data.bShuttlecockInventory === 'object') {
+      const inv = data.bShuttlecockInventory;
+      clean.bShuttlecockInventory = {
+        stokAwalBaru: typeof inv.stokAwalBaru === 'number' && inv.stokAwalBaru >= 0 ? Math.floor(inv.stokAwalBaru) : 24,
+        stokAwalBekas: typeof inv.stokAwalBekas === 'number' && inv.stokAwalBekas >= 0 ? Math.floor(inv.stokAwalBekas) : 12,
+        terpakaiBaru: typeof inv.terpakaiBaru === 'number' && inv.terpakaiBaru >= 0 ? Math.floor(inv.terpakaiBaru) : 0,
+        terpakaiBekas: typeof inv.terpakaiBekas === 'number' && inv.terpakaiBekas >= 0 ? Math.floor(inv.terpakaiBekas) : 0,
+        bekasLayakDidapat: typeof inv.bekasLayakDidapat === 'number' && inv.bekasLayakDidapat >= 0 ? Math.floor(inv.bekasLayakDidapat) : 0
+      };
+    }
+
+    if (Array.isArray(data.bAuditLog)) {
+      clean.bAuditLog = data.bAuditLog.slice(0, 500);
+    }
+
+    if (Array.isArray(data.sPlayers)) {
+      if (data.sPlayers.length > 200) return null;
+      clean.sPlayers = data.sPlayers.map(p => ({
+        id: p.id,
+        name: typeof p.name === 'string' ? p.name.trim().slice(0, 40) : '',
+        gender: p.gender === 'P' ? 'P' : 'L',
+        role: typeof p.role === 'string' ? p.role.slice(0, 10) : 'MF'
+      }));
+    }
+    if (Array.isArray(data.sTeams)) clean.sTeams = data.sTeams;
+    if (Array.isArray(data.sMatches)) {
+      if (data.sMatches.length > 2000) return null;
+      clean.sMatches = data.sMatches;
+    }
+
+    return clean;
+  }
+
   // ── EXPORT INTERFACE ──
   return {
     PLAYER_STATUS,
@@ -1122,6 +1258,8 @@
     removePlayerIncremental,
     createDefaultShuttlecockInventory,
     getShuttlecockSummary,
-    logHostAction
+    logHostAction,
+    escapeHtml,
+    validateAndNormalizeState
   };
 });

@@ -27,7 +27,9 @@ const {
   addPlayerIncremental,
   removePlayerIncremental,
   getShuttlecockSummary,
-  createDefaultShuttlecockInventory
+  createDefaultShuttlecockInventory,
+  escapeHtml,
+  validateAndNormalizeState
 } = BadmintonService;
 
 let testCount = 0;
@@ -439,6 +441,49 @@ it('Jika semua kandidat sudah pernah berpasangan, fallback dengan penanda isRepe
   assert.strictEqual(split.isRepeatedPartner, true);
   const kA = getPairKey(split.teamA[0].id, split.teamA[1].id);
   assert.ok(kA === getPairKey(1, 3) || kA === getPairKey(2, 4));
+});
+
+// ── TEST: SEC-1 Sanitasi HTML escapeHtml ──
+console.log('--- SEC-1. Sanitasi HTML (escapeHtml) ---');
+it('escapeHtml menangani karakter khusus < > & " \' ` dan tipe falsy', () => {
+  assert.strictEqual(escapeHtml('<script>alert("xss")</script>'), '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+  assert.strictEqual(escapeHtml("Tom & 'Jerry' `code`"), 'Tom &amp; &#39;Jerry&#39; &#96;code&#96;');
+  assert.strictEqual(escapeHtml(null), '');
+  assert.strictEqual(escapeHtml(undefined), '');
+  assert.strictEqual(escapeHtml(123), '123');
+});
+
+console.log('--- SEC-1 / Q-6. Validasi State (validateAndNormalizeState) ---');
+it('validateAndNormalizeState memvalidasi tipe, membatasi panjang nama, membuang field asing, dan menolak data rusak', () => {
+  // Data valid
+  const valid = {
+    version: 3,
+    sessionTitle: 'Mabar Sehat Ceria',
+    bPlayers: [
+      { id: 1, name: 'Pemain Satu Yang Sangat Panjang Sekali Namanya Melebihi Empat Puluh Karakter', role: 'Pemula' },
+      { id: 2, name: 'Pemain Dua', role: 'Amatir' }
+    ],
+    unknownField: 'malicious payload'
+  };
+  const normalized = validateAndNormalizeState(valid);
+  assert.ok(normalized);
+  assert.strictEqual(normalized.sessionTitle, 'Mabar Sehat Ceria');
+  assert.strictEqual(normalized.bPlayers.length, 2);
+  assert.strictEqual(normalized.bPlayers[0].name.length, 40);
+  assert.strictEqual(normalized.unknownField, undefined);
+
+  // Menolak duplikat ID pemain
+  assert.strictEqual(validateAndNormalizeState({
+    bPlayers: [{ id: 1, name: 'A' }, { id: 1, name: 'B' }]
+  }), null);
+
+  // Menolak jumlah pemain > 200
+  const manyPlayers = Array.from({ length: 201 }, (_, i) => ({ id: i, name: `P${i}` }));
+  assert.strictEqual(validateAndNormalizeState({ bPlayers: manyPlayers }), null);
+
+  // Menolak non-objek
+  assert.strictEqual(validateAndNormalizeState(null), null);
+  assert.strictEqual(validateAndNormalizeState('invalid'), null);
 });
 
 console.log(`\n======================================================`);
