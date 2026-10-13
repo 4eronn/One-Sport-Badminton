@@ -621,7 +621,7 @@
    * Host menekan tombol ACC: Pemain resmi menjadi 'di_lapangan' dan court menjadi 'sedang_main'.
    */
   function approveCourtProposal(court, players = [], partnerRequests = []) {
-    if (!court || court.status !== COURT_STATUS.MENUNGGU_ACC) {
+    if (!court || (court.status !== COURT_STATUS.MENUNGGU_ACC && court.status !== 'menunggu_acc' && court.status !== 'pending')) {
       return { success: false, message: 'Status lapangan bukan menunggu ACC.' };
     }
 
