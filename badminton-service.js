@@ -1229,6 +1229,221 @@
     return clean;
   }
 
+  // ── SEC-2 & SEC-3 MQTT AUTH & HARDENING ──
+  function getSubtleCrypto() {
+    if (typeof crypto !== 'undefined' && crypto.subtle) return crypto.subtle;
+    if (typeof require === 'function') {
+      try {
+        const nodeCrypto = require('crypto');
+        if (nodeCrypto.webcrypto && nodeCrypto.webcrypto.subtle) return nodeCrypto.webcrypto.subtle;
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function getRandomValues(array) {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) return crypto.getRandomValues(array);
+    if (typeof require === 'function') {
+      try {
+        const nodeCrypto = require('crypto');
+        if (nodeCrypto.randomFillSync) return nodeCrypto.randomFillSync(array);
+      } catch (e) {}
+    }
+    for (let i = 0; i < array.length; i++) array[i] = Math.floor(Math.random() * 256);
+    return array;
+  }
+
+  function generateNonce(byteLen = 16) {
+    const bytes = new Uint8Array(byteLen);
+    getRandomValues(bytes);
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function deriveHmacKey(pin, roomId) {
+    const subtle = getSubtleCrypto();
+    if (!subtle) throw new Error('WebCrypto subtle is not available in this environment');
+    const enc = new TextEncoder();
+    const pinStr = String(pin || '').trim();
+    const roomStr = String(roomId || '').trim().toUpperCase();
+    const keyMaterial = await subtle.importKey(
+      'raw',
+      enc.encode(pinStr),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    return subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: enc.encode('ONESPORT_SALT_' + roomStr),
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'HMAC', hash: 'SHA-256', length: 256 },
+      false,
+      ['sign', 'verify']
+    );
+  }
+
+  async function generateEcdsaKeyPair() {
+    const subtle = getSubtleCrypto();
+    if (!subtle) throw new Error('WebCrypto subtle is not available in this environment');
+    return subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['sign', 'verify']
+    );
+  }
+
+  async function exportEcdsaPublicKey(publicKey) {
+    const subtle = getSubtleCrypto();
+    if (!subtle) throw new Error('WebCrypto subtle is not available in this environment');
+    const raw = await subtle.exportKey('raw', publicKey);
+    return Array.from(new Uint8Array(raw)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function buildCanonicalPayload(msg) {
+    const contentStr = typeof msg.payload === 'object' && msg.payload !== null
+      ? JSON.stringify(msg.payload)
+      : String(msg.payload || '');
+    return `${msg.type}|${msg.roomId}|${msg.seq}|${msg.ts}|${contentStr}`;
+  }
+
+  async function signMessage(msg, options = {}) {
+    const subtle = getSubtleCrypto();
+    if (!subtle) throw new Error('WebCrypto subtle is not available in this environment');
+    const enc = new TextEncoder();
+    const out = { ...msg };
+    out.seq = typeof options.seq === 'number' ? options.seq : 1;
+    out.ts = typeof options.ts === 'number' ? options.ts : Date.now();
+    const canonical = buildCanonicalPayload(out);
+    const dataBytes = enc.encode(canonical);
+
+    if (options.hmacKey) {
+      const sigBuf = await subtle.sign('HMAC', options.hmacKey, dataBytes);
+      out.sig = Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    if (options.ecdsaPrivateKey) {
+      const pubSigBuf = await subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, options.ecdsaPrivateKey, dataBytes);
+      out.hostPubSig = Array.from(new Uint8Array(pubSigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      out.hostSigPublic = options.hostPubHex;
+    }
+    return out;
+  }
+
+  async function verifyMessage(msg, options = {}) {
+    const subtle = getSubtleCrypto();
+    if (!subtle) throw new Error('WebCrypto subtle is not available in this environment');
+    if (!msg || typeof msg !== 'object') {
+      return { valid: false, reason: 'Invalid message structure' };
+    }
+    if (typeof msg.seq !== 'number' || typeof msg.ts !== 'number') {
+      return { valid: false, reason: 'Missing sequence or timestamp' };
+    }
+    if (typeof options.lastSeenSeq === 'number' && msg.seq <= options.lastSeenSeq) {
+      return { valid: false, reason: 'Replay detected: seq <= lastSeenSeq' };
+    }
+
+    const enc = new TextEncoder();
+    const canonical = buildCanonicalPayload(msg);
+    const dataBytes = enc.encode(canonical);
+
+    // If receiver has HMAC key (Host / Referee with PIN):
+    if (options.hmacKey) {
+      if (!msg.sig || typeof msg.sig !== 'string' || msg.sig.length !== 64) {
+        return { valid: false, reason: 'Missing or malformed HMAC signature' };
+      }
+      try {
+        const sigBytes = new Uint8Array(msg.sig.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        const valid = await subtle.verify('HMAC', options.hmacKey, sigBytes, dataBytes);
+        if (!valid) {
+          return { valid: false, reason: 'HMAC signature verification failed' };
+        }
+        return { valid: true };
+      } catch (e) {
+        return { valid: false, reason: 'HMAC verification error: ' + e.message };
+      }
+    }
+
+    // If spectator (verifying ECDSA via TOFU)
+    if (options.isSpectator) {
+      if (!msg.hostSigPublic || !msg.hostPubSig) {
+        return { valid: false, reason: 'Missing host public key or signature' };
+      }
+      if (options.trustedHostPub && msg.hostSigPublic !== options.trustedHostPub) {
+        return { valid: false, reason: 'Host public key mismatch (possible imposter)' };
+      }
+      try {
+        const pubBytes = new Uint8Array(msg.hostSigPublic.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        const sigBytes = new Uint8Array(msg.hostPubSig.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        const importedPub = await subtle.importKey(
+          'raw',
+          pubBytes,
+          { name: 'ECDSA', namedCurve: 'P-256' },
+          false,
+          ['verify']
+        );
+        const valid = await subtle.verify(
+          { name: 'ECDSA', hash: 'SHA-256' },
+          importedPub,
+          sigBytes,
+          dataBytes
+        );
+        if (!valid) {
+          return { valid: false, reason: 'ECDSA signature verification failed' };
+        }
+        return { valid: true, newHostPub: msg.hostSigPublic };
+      } catch (err) {
+        return { valid: false, reason: 'ECDSA error: ' + err.message };
+      }
+    }
+
+    return { valid: false, reason: 'No verification key provided' };
+  }
+
+  function createPinChallenge(candidateSenderId, reqNonce) {
+    return {
+      candidateSenderId,
+      reqNonce,
+      challengeNonce: generateNonce(16),
+      expires: Date.now() + 30000
+    };
+  }
+
+  async function solvePinChallenge(challengeNonce, pin) {
+    const subtle = getSubtleCrypto();
+    if (!subtle) throw new Error('WebCrypto subtle is not available in this environment');
+    const enc = new TextEncoder();
+    const keyMaterial = await subtle.importKey(
+      'raw',
+      enc.encode(String(pin || '').trim()),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    const sigBuf = await subtle.sign('HMAC', keyMaterial, enc.encode(challengeNonce));
+    return Array.from(new Uint8Array(sigBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function verifyPinResponse(challengeNonce, hostPin, authResponseHex) {
+    if (!authResponseHex || typeof authResponseHex !== 'string') return false;
+    const expected = await solvePinChallenge(challengeNonce, hostPin);
+    return expected.toLowerCase() === authResponseHex.toLowerCase();
+  }
+
+  const MqttAuth = {
+    generateNonce,
+    deriveHmacKey,
+    generateEcdsaKeyPair,
+    exportEcdsaPublicKey,
+    signMessage,
+    verifyMessage,
+    createPinChallenge,
+    solvePinChallenge,
+    verifyPinResponse
+  };
+
   // ── EXPORT INTERFACE ──
   return {
     PLAYER_STATUS,
@@ -1260,6 +1475,7 @@
     getShuttlecockSummary,
     logHostAction,
     escapeHtml,
-    validateAndNormalizeState
+    validateAndNormalizeState,
+    MqttAuth
   };
 });

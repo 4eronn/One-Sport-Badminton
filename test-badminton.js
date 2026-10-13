@@ -48,6 +48,19 @@ function it(name, fn) {
   }
 }
 
+async function itAsync(name, fn) {
+  testCount++;
+  try {
+    await fn();
+    passCount++;
+    console.log(`  ✓ ${name}`);
+  } catch (err) {
+    console.error(`  ✗ ${name}`);
+    console.error(err);
+    process.exitCode = 1;
+  }
+}
+
 console.log('\n=== RUNNING ONESPORT BADMINTON SERVICE UNIT TESTS ===\n');
 
 // ── TEST 1: Logika Antrian & Pemain Sedang/Baru Selesai Main Tidak Masuk Antrian (Fitur 1) ──
@@ -486,6 +499,57 @@ it('validateAndNormalizeState memvalidasi tipe, membatasi panjang nama, membuang
   assert.strictEqual(validateAndNormalizeState('invalid'), null);
 });
 
-console.log(`\n======================================================`);
-console.log(`TEST RESULTS: ${passCount} / ${testCount} Passed (${Math.round((passCount/testCount)*100)}%)`);
-console.log(`======================================================\n`);
+(async () => {
+  console.log('\n--- SEC-2. Autentikasi Pesan MQTT & TOFU (MqttAuth) ---');
+  await itAsync('Host menandatangani pesan dengan HMAC dan penerima menolak signature palsu/replay', async () => {
+    const { deriveHmacKey, signMessage, verifyMessage } = BadmintonService.MqttAuth;
+    const key = await deriveHmacKey('1234', 'ROOM-1');
+    const msg = await signMessage({ type: 'STATE_UPDATE', roomId: 'ROOM-1', payload: { ok: true } }, { hmacKey: key, seq: 1 });
+    
+    // Valid
+    const resOk = await verifyMessage(msg, { hmacKey: key, lastSeenSeq: 0 });
+    assert.strictEqual(resOk.valid, true);
+
+    // Replay
+    const resReplay = await verifyMessage(msg, { hmacKey: key, lastSeenSeq: 1 });
+    assert.strictEqual(resReplay.valid, false);
+
+    // Tampered payload
+    const tampered = { ...msg, payload: { ok: false } };
+    const resTampered = await verifyMessage(tampered, { hmacKey: key, lastSeenSeq: 0 });
+    assert.strictEqual(resTampered.valid, false);
+  });
+
+  await itAsync('Penonton memverifikasi signature Host via TOFU ECDSA', async () => {
+    const { deriveHmacKey, generateEcdsaKeyPair, exportEcdsaPublicKey, signMessage, verifyMessage } = BadmintonService.MqttAuth;
+    const kp = await generateEcdsaKeyPair();
+    const pubHex = await exportEcdsaPublicKey(kp.publicKey);
+    const key = await deriveHmacKey('1234', 'ROOM-1');
+
+    const msg = await signMessage({ type: 'STATE_UPDATE', roomId: 'ROOM-1', payload: {} }, {
+      hmacKey: key,
+      ecdsaPrivateKey: kp.privateKey,
+      hostPubHex: pubHex,
+      seq: 2
+    });
+
+    const resTofu = await verifyMessage(msg, { isSpectator: true, trustedHostPub: null, lastSeenSeq: 0 });
+    assert.strictEqual(resTofu.valid, true);
+    assert.strictEqual(resTofu.newHostPub, pubHex);
+  });
+
+  console.log('\n--- SEC-3. Challenge-Response PIN (Tanpa Kebocoran Hash / PIN) ---');
+  await itAsync('Challenge-response PIN memverifikasi kecocokan tanpa mempublikasikan PIN mentah atau pinHash', async () => {
+    const { createPinChallenge, solvePinChallenge, verifyPinResponse } = BadmintonService.MqttAuth;
+    const challenge = createPinChallenge('candidate-1', 'nonce-123');
+    const solution = await solvePinChallenge(challenge.challengeNonce, '4321');
+    const wrongSolution = await solvePinChallenge(challenge.challengeNonce, '9999');
+
+    assert.strictEqual(await verifyPinResponse(challenge.challengeNonce, '4321', solution), true);
+    assert.strictEqual(await verifyPinResponse(challenge.challengeNonce, '4321', wrongSolution), false);
+  });
+
+  console.log(`\n======================================================`);
+  console.log(`TEST RESULTS: ${passCount} / ${testCount} Passed (${Math.round((passCount/testCount)*100)}%)`);
+  console.log(`======================================================\n`);
+})();

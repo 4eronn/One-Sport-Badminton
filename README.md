@@ -157,8 +157,8 @@ cd android
 ## Known limitations
 
 - **No backend.** All state lives in the browser. Clearing site data removes a session unless it was exported first.
-- **Public MQTT brokers.** Live sync relies on free public brokers (EMQX, HiveMQ and the Mosquitto test server), so availability is outside this project's control. Anyone who knows or guesses a room code can subscribe to it.
-- **The host PIN is a convenience, not security.** It is hashed on the client with a simple non-cryptographic function and is meant to prevent accidental score edits, not to stop a determined user.
+- **Public MQTT brokers & Confidentiality.** Live sync relies on public brokers (EMQX, HiveMQ, and Mosquitto test server). While message integrity and role elevation are cryptographically secured (HMAC-SHA256 with PBKDF2 100k iterations, monotonic sequence numbers against replay, and nonce challenge-response PIN verification without transmitting plaintext or hashes), state data is not encrypted end-to-end. Anyone who subscribes to a room topic on a public broker can inspect match scores and player rosters.
+- **Spectator Host Verification (Trust-on-First-Use).** Spectators verify the broadcast host's ephemeral ECDSA signature on a trust-on-first-use (TOFU) basis. Subsequent state updates must match the initial host key, but initial connection trusts the current broadcaster.
 - **Android release signing.** Release APKs are currently signed with the debug keystore. They install fine, but they are not suitable for Play Store distribution as-is.
 
 ## Contributing
