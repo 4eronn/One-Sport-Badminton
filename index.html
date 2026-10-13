@@ -6708,7 +6708,6 @@ function saveActiveLiveSession() {
       roomId: currentRoomId,
       role: userRole,
       isHostCreator: userRole === 'host' && (isHostCreator || !pendingHostCandidatePin),
-      hostPin: hostPin,
       roomStartTime: roomStartTime || Date.now(),
       sessionTitle: sessionTitle,
       currentSport: currentSport,
@@ -6716,6 +6715,9 @@ function saveActiveLiveSession() {
       savedAt: Date.now()
     };
     localStorage.setItem(STORAGE_ACTIVE_LIVE_SESSION, JSON.stringify(sessionData));
+    if (hostPin) {
+      sessionStorage.setItem('onesport_host_pin_' + currentRoomId, hostPin);
+    }
 
     // Sinkronkan juga URL browser (?room=CODE) tanpa reload
     if (window.history && window.history.replaceState) {
@@ -6731,6 +6733,9 @@ function saveActiveLiveSession() {
 function clearActiveLiveSession() {
   try {
     localStorage.removeItem(STORAGE_ACTIVE_LIVE_SESSION);
+    if (currentRoomId) {
+      sessionStorage.removeItem('onesport_host_pin_' + currentRoomId);
+    }
     if (window.history && window.history.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.delete('room');
@@ -6764,7 +6769,7 @@ function restoreActiveLiveSessionIfAny() {
     currentRoomId = session.roomId;
     userRole = session.role || 'host';
     isHostCreator = session.isHostCreator !== false;
-    hostPin = session.hostPin || '1234';
+    hostPin = sessionStorage.getItem('onesport_host_pin_' + session.roomId) || '1234';
     roomStartTime = session.roomStartTime || Date.now();
     isCollabMode = !!session.isCollabMode;
     if (session.sessionTitle) sessionTitle = session.sessionTitle;
