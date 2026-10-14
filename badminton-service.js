@@ -1242,6 +1242,18 @@
     };
   }
 
+  // ── PEER HEARTBEAT COUNTER (BUG-7) ──
+  function calculateActivePeers(heartbeats = {}, maxAgeMs = 40000, now = Date.now()) {
+    let count = 0;
+    const entries = heartbeats instanceof Map ? heartbeats.entries() : Object.entries(heartbeats || {});
+    for (const [, lastSeen] of entries) {
+      if (now - Number(lastSeen) <= maxAgeMs) {
+        count++;
+      }
+    }
+    return count + 1; // +1 untuk perangkat lokal sendiri
+  }
+
   // ── 11. XSS SANITIZATION HELPER ──
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -1621,6 +1633,7 @@
     createDefaultShuttlecockInventory,
     getShuttlecockSummary,
     resetBadmintonSession,
+    calculateActivePeers,
     logHostAction,
     escapeHtml,
     validateAndNormalizeState,

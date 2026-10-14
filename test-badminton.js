@@ -30,6 +30,7 @@ const {
   getShuttlecockSummary,
   createDefaultShuttlecockInventory,
   resetBadmintonSession,
+  calculateActivePeers,
   escapeHtml,
   validateAndNormalizeState
 } = BadmintonService;
@@ -703,8 +704,25 @@ it('BUG-4: Reset menyeluruh statistik, antrian, riwayat, dan kok namun mempertah
   assert.strictEqual(res2.players.some(p => p.id === 3), false, 'Pemain tidak aktif harus terhapus permanen');
 });
 
+// ── TEST: BUG-7 Perangkat Terhubung ──
+console.log('\n--- BUG-7. Hitungan Perangkat Terhubung (calculateActivePeers) ---');
+it('BUG-7: calculateActivePeers menghitung peer aktif berdasarkan heartbeat dan membuang peer kadaluarsa', () => {
+  const now = 100000;
+  const heartbeats = new Map();
+  heartbeats.set('peer-1', now - 10000); // 10s lalu (aktif)
+  heartbeats.set('peer-2', now - 35000); // 35s lalu (aktif)
+  heartbeats.set('peer-3', now - 45000); // 45s lalu (>40s, stale)
+
+  // 2 aktif + 1 diri sendiri = 3
+  const count = calculateActivePeers(heartbeats, 40000, now);
+  assert.strictEqual(count, 3);
+
+  // Jika heartbeats kosong, tetap ada 1 (perangkat sendiri)
+  assert.strictEqual(calculateActivePeers(new Map(), 40000, now), 1);
+});
+
 // ── TEST: SEC-1 Sanitasi HTML escapeHtml ──
-console.log('--- SEC-1. Sanitasi HTML (escapeHtml) ---');
+console.log('\n--- SEC-1. Sanitasi HTML (escapeHtml) ---');
 it('escapeHtml menangani karakter khusus < > & " \' ` dan tipe falsy', () => {
   assert.strictEqual(escapeHtml('<script>alert("xss")</script>'), '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
   assert.strictEqual(escapeHtml("Tom & 'Jerry' `code`"), 'Tom &amp; &#39;Jerry&#39; &#96;code&#96;');
