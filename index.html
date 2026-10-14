@@ -3660,7 +3660,16 @@ function renderPlayersList() {
       // Partner Request Button / Tag (Poin 2)
       let partnerReqHtml = '';
       if (!p.is_deleted && st !== BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
-        if (p.request_used) {
+        const activeReq = bPartnerRequests.find(r => 
+          (r.status === BadmintonService.REQUEST_STATUS.PENDING || r.status === BadmintonService.REQUEST_STATUS.APPROVED) &&
+          (r.requesterId === p.id || r.targetId === p.id)
+        );
+
+        if (activeReq) {
+          const isRequester = activeReq.requesterId === p.id;
+          const otherName = isRequester ? activeReq.targetName : activeReq.requesterName;
+          partnerReqHtml = `<span style="font-size:0.65rem; color:#065F46; font-weight:700; background:#D1FAE5; padding:2px 6px; border-radius:4px; border:1px solid #A7F3D0;" title="Menunggu jadwal match bersama ${escapeHtml(otherName)}">🤝 Request: ${escapeHtml(otherName)}</span>`;
+        } else if (p.request_used) {
           partnerReqHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:700; background:#F1F5F9; padding:2px 6px; border-radius:4px;">🤝 Kuota Request Habis</span>`;
         } else if (st === BadmintonService.PLAYER_STATUS.MENUNGGU) {
           partnerReqHtml = `<button class="btn-court-quick-action" onclick="openPartnerRequestModal(${p.id})" title="Ajukan request rekan tim (Maks. 1x)">🤝 Request Rekan</button>`;
@@ -3864,6 +3873,26 @@ function openPartnerRequestsListModal() {
   } else {
     container.innerHTML = bPartnerRequests.map(r => {
       const isPending = r.status === BadmintonService.REQUEST_STATUS.PENDING || r.status === BadmintonService.REQUEST_STATUS.APPROVED;
+      let statusColor = '#D97706';
+      let statusLabel = r.status ? r.status.toUpperCase() : 'PENDING';
+      if (r.status === BadmintonService.REQUEST_STATUS.COMPLETED) {
+        statusColor = '#059669';
+        statusLabel = 'SELESAI (COMPLETED)';
+      } else if (r.status === BadmintonService.REQUEST_STATUS.CANCELLED) {
+        statusColor = '#6B7280';
+        statusLabel = 'DIBATALKAN';
+      } else if (r.status === BadmintonService.REQUEST_STATUS.APPROVED) {
+        const p1 = bPlayers.find(x => x.id === r.requesterId);
+        const inMatch = p1 && p1.status === BadmintonService.PLAYER_STATUS.DI_LAPANGAN;
+        if (inMatch) {
+          statusColor = '#2563EB';
+          statusLabel = 'SEDANG BERMAIN';
+        } else {
+          statusColor = '#D97706';
+          statusLabel = 'MENUNGGU JADWAL';
+        }
+      }
+
       return `
         <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <div>
@@ -3871,13 +3900,13 @@ function openPartnerRequestsListModal() {
               ${escapeHtml(r.requesterName)} 🤝 ${escapeHtml(r.targetName)}
             </div>
             <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
-              Status: <strong style="color:${r.status === 'completed' ? '#059669' : '#D97706'};">${r.status.toUpperCase()}</strong>
+              Status: <strong style="color:${statusColor};">${statusLabel}</strong>
               ${r.hasPartneredBefore ? ` • <span style="color:#DC2626; font-weight:700;">⚠️ Pernah berpasangan ${r.timesPartnered}x</span>` : ' • Pasangan Baru'}
             </div>
           </div>
           ${isPending ? `
             <button class="btn-court-reject" style="font-size:0.72rem; padding:4px 8px;" onclick="cancelPartnerRequestByHost(${r.id})">Batalkan</button>
-          ` : `<span style="font-size:0.72rem; color:var(--text-muted);">Selesai</span>`}
+          ` : `<span style="font-size:0.72rem; color:var(--text-muted);">${r.status === 'completed' ? 'Selesai' : 'Batal'}</span>`}
         </div>
       `;
     }).join('');
@@ -5537,7 +5566,7 @@ function hostRejectCourt(cIdx) {
   const court = round.courts[cIdx];
   if (!court) return;
 
-  const res = BadmintonService.rejectCourtProposal(court, bPlayers);
+  const res = BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
   BadmintonService.logHostAction(bAuditLog, 'REJECT_MATCH', { courtNumber: cIdx + 1 });
   renderCourtsView();
   renderPlayersList();
@@ -5551,7 +5580,7 @@ function clearCourt(cIdx) {
   const court = round.courts[cIdx];
   if (!court) return;
 
-  BadmintonService.rejectCourtProposal(court, bPlayers);
+  BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
   court.status = BadmintonService.COURT_STATUS.KOSONG;
   BadmintonService.logHostAction(bAuditLog, 'CLEAR_COURT', { courtNumber: cIdx + 1 });
   renderCourtsView();

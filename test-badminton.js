@@ -373,6 +373,75 @@ it('BUG-3: pickNextFourPlayersForMatch membatalkan request jika pemain target ti
   assert.strictEqual(p1.request_used, false);
 });
 
+it('BUG-3/Fix: Request rekan tim TIDAK menjadi COMPLETED saat match di-ACC, dan tetap APPROVED jika match ditolak/dikosongkan', () => {
+  const p1 = { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, gender: 'L', role: 'Pemula', request_used: false };
+  const p2 = { id: 2, name: 'Budi', status: PLAYER_STATUS.MENUNGGU, gender: 'L', role: 'Pemula', request_used: false };
+  const p3 = { id: 3, name: 'Caca', status: PLAYER_STATUS.MENUNGGU, gender: 'L', role: 'Pemula', request_used: false };
+  const p4 = { id: 4, name: 'Dedi', status: PLAYER_STATUS.MENUNGGU, gender: 'L', role: 'Pemula', request_used: false };
+  const players = [p1, p2, p3, p4];
+  const partnerRequests = [];
+
+  submitPartnerRequest({
+    requesterId: 1,
+    targetId: 2,
+    players,
+    partnerRequests
+  });
+
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.APPROVED);
+
+  // Buat usulan match
+  const prop = createCourtProposal({
+    courtNumber: 1,
+    players,
+    partnerRequests
+  });
+  assert.strictEqual(prop.court.status, COURT_STATUS.MENUNGGU_ACC);
+
+  // ACC proposal
+  const accRes = approveCourtProposal(prop.court, players, partnerRequests);
+  assert.strictEqual(accRes.success, true);
+  assert.strictEqual(prop.court.status, COURT_STATUS.SEDANG_MAIN);
+
+  // Request tidak boleh langsung COMPLETED saat match baru dimulai / ACC!
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.APPROVED, 'Status request harus tetap APPROVED selama match belum selesai');
+
+  // Skenario: Host membatalkan / mengosongkan lapangan di tengah jalan (clearCourt / rejectCourtProposal)
+  rejectCourtProposal(prop.court, players, partnerRequests);
+  assert.strictEqual(prop.court.status, COURT_STATUS.KOSONG);
+  assert.strictEqual(p1.status, PLAYER_STATUS.MENUNGGU);
+  assert.strictEqual(p2.status, PLAYER_STATUS.MENUNGGU);
+
+  // Request masih tetap APPROVED (tidak hangus dan tidak selesai prematur)
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.APPROVED, 'Status request harus tetap APPROVED agar bisa dipasangkan di usulan berikutnya');
+
+  // Usulkan match kembali -> pasangan 1 & 2 harus dipasangkan kembali
+  const prop2 = createCourtProposal({
+    courtNumber: 1,
+    players,
+    partnerRequests
+  });
+  assert.strictEqual(prop2.court.status, COURT_STATUS.MENUNGGU_ACC);
+  const inTeamA = prop2.court.teamA.some(p => p.id === 1) && prop2.court.teamA.some(p => p.id === 2);
+  const inTeamB = prop2.court.teamB.some(p => p.id === 1) && prop2.court.teamB.some(p => p.id === 2);
+  assert.strictEqual(inTeamA || inTeamB, true, 'Andi dan Budi harus tetap dipasangkan bersama');
+
+  // ACC dan selesaikan match dengan skor resmi
+  approveCourtProposal(prop2.court, players, partnerRequests);
+  const finRes = recordMatchFinished({
+    court: prop2.court,
+    scoreA: 21,
+    scoreB: 15,
+    winner: 'A',
+    players,
+    partnerRequests
+  });
+  assert.strictEqual(finRes.success, true);
+
+  // BARU di sini request resmi menjadi COMPLETED!
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.COMPLETED, 'Request harus resmi COMPLETED setelah match selesai');
+});
+
 // ── TEST 3: Tambah/Kurangi Pemain Tanpa Reset Data (Fitur 3) ──
 console.log('\n--- 3. Tambah & Kurangi Pemain Tanpa Reset (Fitur 3) ---');
 

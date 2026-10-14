@@ -470,11 +470,28 @@
         const k1 = getPairKey(teamA[0].id, teamA[1].id);
         const k2 = getPairKey(teamB[0].id, teamB[1].id);
         const isRepeated = (partnerHistory[k1] || 0) > 0 || (partnerHistory[k2] || 0) > 0;
+
+        const usedRequests = [];
+        if (Array.isArray(approvedRequests)) {
+          approvedRequests.forEach(req => {
+            if (!req || req.status !== REQUEST_STATUS.APPROVED) return;
+            const inA = teamA.some(x => x.id === req.requesterId) && teamA.some(x => x.id === req.targetId);
+            const inB = teamB.some(x => x.id === req.requesterId) && teamB.some(x => x.id === req.targetId);
+            if (inA || inB) {
+              usedRequests.push(req);
+            }
+          });
+        }
+        if (usedRequests.length === 0 && forcedPairing.request) {
+          usedRequests.push(forcedPairing.request);
+        }
+
         return {
           teamA,
           teamB,
           isRepeatedPartner: isRepeated,
-          usedRequest: forcedPairing.request
+          usedRequest: usedRequests[0] || forcedPairing.request,
+          usedRequests
         };
       }
     }
@@ -753,14 +770,9 @@
       }
     });
 
-    // Tandai request rekan tim sebagai selesai jika digunakan
-    const reqsToComplete = court.usedRequests || (court.usedRequest ? [court.usedRequest] : []);
-    reqsToComplete.forEach(ur => {
-      const req = partnerRequests.find(r => r.id === ur.id);
-      if (req) {
-        req.status = REQUEST_STATUS.COMPLETED;
-      }
-    });
+    // Catatan: Request rekan tim TIDAK diselesaikan (COMPLETED) di sini,
+    // melainkan saat match resmi selesai dicatat skornya di recordMatchFinished.
+    // Jika match ditolak/dikosongkan sebelum selesai, status tetap APPROVED.
 
     court.status = COURT_STATUS.SEDANG_MAIN;
     court.startedAt = Date.now();
@@ -769,9 +781,11 @@
   }
 
   /**
-   * Host menolak usulan: Pemain kembali ke status 'menunggu', lapangan menjadi 'kosong'.
+   * Host menolak usulan / mengosongkan lapangan:
+   * Pemain kembali ke status 'menunggu', lapangan menjadi 'kosong',
+   * dan request rekan tim yang belum selesai dipertahankan berstatus 'approved'.
    */
-  function rejectCourtProposal(court, players = []) {
+  function rejectCourtProposal(court, players = [], partnerRequests = []) {
     if (!court) return { success: false };
 
     const matchPlayers = [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean);
@@ -782,6 +796,17 @@
       }
     });
 
+    // Jika ada request rekan tim di court ini, pastikan statusnya tetap/kembali APPROVED
+    const reqsToRestore = court.usedRequests || (court.usedRequest ? [court.usedRequest] : []);
+    if (Array.isArray(partnerRequests)) {
+      reqsToRestore.forEach(ur => {
+        const req = partnerRequests.find(r => r.id === ur.id);
+        if (req && req.status !== REQUEST_STATUS.CANCELLED) {
+          req.status = REQUEST_STATUS.APPROVED;
+        }
+      });
+    }
+
     court.status = COURT_STATUS.KOSONG;
     court.teamA = [];
     court.teamB = [];
@@ -790,6 +815,7 @@
     court.winner = null;
     court.playerSummaries = null;
     court.usedRequest = null;
+    court.usedRequests = [];
 
     return { success: true, court };
   }
@@ -907,6 +933,18 @@
 
       // 4. Proses cooldown pemain
       processCooldownsOnMatchEnd(players, allCourtPlayers, defaultCooldown, partnerRequests);
+
+      // 5. Tandai request rekan tim sebagai selesai jika digunakan pada match ini
+      const reqsToComplete = court.usedRequests || (court.usedRequest ? [court.usedRequest] : []);
+      if (Array.isArray(partnerRequests)) {
+        reqsToComplete.forEach(ur => {
+          const req = partnerRequests.find(r => r.id === ur.id);
+          if (req) {
+            req.status = REQUEST_STATUS.COMPLETED;
+            req.completedAt = Date.now();
+          }
+        });
+      }
     }
 
     return {
