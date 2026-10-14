@@ -6753,6 +6753,8 @@ const MQTT_BROKER_URLS = [
   'wss://test.mosquitto.org:8081/mqtt'
 ];
 let currentBrokerIndex = 0;
+let consecutiveBrokerErrors = 0;
+const MAX_BROKER_RETRIES = 3;
 const LOBBY_DISCOVERY_TOPIC = 'onesport/v3/lobby/discovery';
 const LOBBY_ROOMS_PREFIX = 'onesport/v3/lobby/rooms/';
 
@@ -7717,69 +7719,87 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
       initMqttDiscovery();
     }
 
-    const roomTopic = `onesport/v3/room/${currentRoomId}`;
-    const stateTopic = `onesport/v3/room/${currentRoomId}/state`;
-
-    const setupSubscriptions = () => {
-      isOnlineActive = true;
-      mqttClient.subscribe(roomTopic, { qos: 1 });
-      mqttClient.subscribe(stateTopic, { qos: 1 });
-      updateOnlineUI('connected');
-      applyRoleUI();
-
-      const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
-      const shareInput = document.getElementById('shareRoomUrlInput');
-      if (shareInput) shareInput.value = fullUrl;
-      generateQrCode(fullUrl);
-
-      if (userRole === 'host') {
-        saveActiveLiveSession();
-        broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
-        startHeartbeatTimer();
-        broadcastStateUpdate();
-        showToast(`🔴 Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
-      } else if (pendingHostCandidatePin) {
-        // Minta verifikasi PIN Host melalui challenge-response
-        pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
-          ? BadmintonService.MqttAuth.generateNonce(16)
-          : String(Date.now());
-        mqttClient.publish(roomTopic, JSON.stringify({
-          type: 'VERIFY_HOST_PIN_INIT',
-          roomId: currentRoomId,
-          senderId: myClientId,
-          reqNonce: pendingPinReqNonce
-        }));
-        showToast(`Memverifikasi PIN Host untuk Room: ${currentRoomId}...`);
-      } else {
-        // Penonton biasa
-        saveActiveLiveSession();
-        mqttClient.publish(roomTopic, JSON.stringify({
-          type: 'REQUEST_STATE',
-          roomId: currentRoomId,
-          senderId: myClientId,
-          timestamp: Date.now()
-        }));
-        showToast(`Terhubung ke Room: ${currentRoomId} (Penonton)`);
-      }
-
-      mqttClient.publish(roomTopic, JSON.stringify({
-        type: 'PEER_PING',
-        roomId: currentRoomId,
-        senderId: myClientId,
-        role: userRole
-      }));
-    };
-
-    if (mqttClient.connected) {
-      setupSubscriptions();
+    isOnlineActive = true;
+    if (mqttClient && mqttClient.connected) {
+      onMqttConnected();
     } else {
-      mqttClient.once('connect', setupSubscriptions);
+      updateOnlineUI('connecting');
+      if (!mqttClient) {
+        initMqttDiscovery();
+      }
     }
   } catch (err) {
     console.error('MQTT room connect failed:', err);
     updateOnlineUI('offline');
     alert('Gagal menghubungkan ke server realtime: ' + err.message);
   }
+}
+
+function onMqttConnected() {
+  consecutiveBrokerErrors = 0;
+  const brokerUrl = MQTT_BROKER_URLS[currentBrokerIndex % MQTT_BROKER_URLS.length];
+  console.log('Connected to MQTT Live Broker:', brokerUrl);
+
+  if (!mqttClient) return;
+
+  mqttClient.subscribe(LOBBY_DISCOVERY_TOPIC, { qos: 1 });
+  mqttClient.subscribe(LOBBY_ROOMS_PREFIX + '+', { qos: 1 });
+  mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
+    type: 'DISCOVER_ROOMS_REQUEST',
+    senderId: myClientId
+  }));
+
+  if (isOnlineActive && currentRoomId) {
+    const roomTopic = `onesport/v3/room/${currentRoomId}`;
+    const stateTopic = `onesport/v3/room/${currentRoomId}/state`;
+
+    mqttClient.subscribe(roomTopic, { qos: 1 });
+    mqttClient.subscribe(stateTopic, { qos: 1 });
+    updateOnlineUI('connected');
+    applyRoleUI();
+
+    const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
+    const shareInput = document.getElementById('shareRoomUrlInput');
+    if (shareInput) shareInput.value = fullUrl;
+    generateQrCode(fullUrl);
+
+    if (userRole === 'host') {
+      saveActiveLiveSession();
+      broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
+      startHeartbeatTimer();
+      broadcastStateUpdate();
+      showToast(`🔴 Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
+    } else if (pendingHostCandidatePin) {
+      pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
+        ? BadmintonService.MqttAuth.generateNonce(16)
+        : String(Date.now());
+      mqttClient.publish(roomTopic, JSON.stringify({
+        type: 'VERIFY_HOST_PIN_INIT',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        reqNonce: pendingPinReqNonce
+      }));
+      showToast(`Memverifikasi PIN Host untuk Room: ${currentRoomId}...`);
+    } else {
+      saveActiveLiveSession();
+      mqttClient.publish(roomTopic, JSON.stringify({
+        type: 'REQUEST_STATE',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        timestamp: Date.now()
+      }));
+      showToast(`Terhubung ke Room: ${currentRoomId} (Penonton)`);
+    }
+
+    mqttClient.publish(roomTopic, JSON.stringify({
+      type: 'PEER_PING',
+      roomId: currentRoomId,
+      senderId: myClientId,
+      role: userRole
+    }));
+  }
+
+  updateLiveRoomsDirectoryUI();
 }
 
 async function broadcastStateUpdate() {
@@ -8204,18 +8224,7 @@ function initMqttDiscovery() {
     });
 
     mqttClient.on('connect', () => {
-      console.log('Connected to MQTT Live Broker:', brokerUrl);
-      mqttClient.subscribe(LOBBY_DISCOVERY_TOPIC, { qos: 1 });
-      mqttClient.subscribe(LOBBY_ROOMS_PREFIX + '+', { qos: 1 });
-      mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
-        type: 'DISCOVER_ROOMS_REQUEST',
-        senderId: myClientId
-      }));
-      if (isOnlineActive && currentRoomId) {
-        mqttClient.subscribe(`onesport/v3/room/${currentRoomId}`, { qos: 1 });
-        mqttClient.subscribe(`onesport/v3/room/${currentRoomId}/state`, { qos: 1 });
-      }
-      updateLiveRoomsDirectoryUI();
+      onMqttConnected();
     });
 
     mqttClient.on('message', (topic, message) => {
@@ -8224,7 +8233,10 @@ function initMqttDiscovery() {
 
     mqttClient.on('error', (err) => {
       console.warn('MQTT error on broker', brokerUrl, err);
-      if (!mqttClient || !mqttClient.connected) {
+      consecutiveBrokerErrors++;
+      if (consecutiveBrokerErrors >= MAX_BROKER_RETRIES) {
+        console.warn(`Gagal terhubung setelah ${consecutiveBrokerErrors}x error berturut-turut, memutar ke broker cadangan...`);
+        consecutiveBrokerErrors = 0;
         tryNextBroker();
       }
     });
@@ -8248,7 +8260,9 @@ function tryNextBroker() {
     try { mqttClient.end(true); } catch(e){}
     mqttClient = null;
   }
+  consecutiveBrokerErrors = 0;
   currentBrokerIndex = (currentBrokerIndex + 1) % MQTT_BROKER_URLS.length;
+  console.log('Beralih ke broker MQTT:', MQTT_BROKER_URLS[currentBrokerIndex]);
   setTimeout(() => initMqttDiscovery(), 1200);
 }
 
