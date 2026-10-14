@@ -1289,9 +1289,7 @@
       sCurrentMatchIndex: Number.isInteger(data.sCurrentMatchIndex) && data.sCurrentMatchIndex >= 0 ? data.sCurrentMatchIndex : 0
     };
 
-    if (typeof data.rev === 'number') {
-      clean.rev = data.rev;
-    }
+    clean.rev = Number.isInteger(data.rev) && data.rev >= 0 ? data.rev : 0;
 
     if (Array.isArray(data.bPlayers)) {
       if (data.bPlayers.length > 200) return null;

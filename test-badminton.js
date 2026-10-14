@@ -732,6 +732,12 @@ it('validateAndNormalizeState memvalidasi tipe, membatasi panjang nama, membuang
   assert.strictEqual(normalized.bPlayers[0].name.length, 40);
   assert.strictEqual(normalized.unknownField, undefined);
 
+  // BUG-6: Memvalidasi dan mempertahankan nomor revisi state (rev)
+  assert.strictEqual(validateAndNormalizeState({ ...valid, rev: 42 }).rev, 42);
+  assert.strictEqual(validateAndNormalizeState({ ...valid, rev: -5 }).rev, 0);
+  assert.strictEqual(validateAndNormalizeState({ ...valid, rev: 'invalid' }).rev, 0);
+  assert.strictEqual(validateAndNormalizeState(valid).rev, 0);
+
   // Menolak duplikat ID pemain
   assert.strictEqual(validateAndNormalizeState({
     bPlayers: [{ id: 1, name: 'A' }, { id: 1, name: 'B' }]

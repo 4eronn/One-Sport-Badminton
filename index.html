@@ -6769,6 +6769,9 @@ let hostPin = '1234';
 let currentRoomPinHash = '';
 let isCollabMode = false;
 let connectedPeersCount = 1;
+let currentRev = 0;
+let lastHostConflictWarningTime = 0;
+const peerHeartbeats = new Map();
 let myClientId = 'onesport_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now().toString(36);
 let qrcodeInstance = null;
 let roomStartTime = null;
@@ -6869,6 +6872,7 @@ function restoreActiveLiveSessionIfAny() {
 function getCurrentAppState() {
   return {
     version: 3,
+    rev: currentRev || 0,
     timestamp: Date.now(),
     currentSport,
     sessionTitle,
@@ -6912,6 +6916,7 @@ function loadFromLocalStorage() {
       if (!data) return false;
     }
 
+    if (typeof data.rev === 'number') currentRev = Math.max(currentRev, data.rev);
     if (data.currentSport) currentSport = data.currentSport;
     if (data.sessionTitle) sessionTitle = data.sessionTitle;
     if (data.plannedRounds) plannedRounds = data.plannedRounds;
@@ -6954,6 +6959,9 @@ function loadFromLocalStorage() {
 }
 
 function persistAndBroadcast(skipBroadcast = false) {
+  if (userRole === 'host' || isCollabMode) {
+    currentRev++;
+  }
   if (isOnlineActive && currentRoomId) {
     try {
       localStorage.setItem('onesport_room_cache_' + currentRoomId, JSON.stringify(getCurrentAppState()));
@@ -7797,6 +7805,8 @@ function onMqttConnected() {
       senderId: myClientId,
       role: userRole
     }));
+
+    startHeartbeatTimer();
   }
 
   updateLiveRoomsDirectoryUI();
@@ -7809,6 +7819,7 @@ async function broadcastStateUpdate() {
 
   const rawPayload = {
     version: 3,
+    rev: currentRev || 0,
     type: 'STATE_UPDATE',
     roomId: currentRoomId,
     sessionTitle: sessionTitle || 'Pertandingan Live',
@@ -7861,9 +7872,17 @@ async function handleIncomingMessage(topic, rawText) {
     }
 
     if (msg.type === 'PEER_PING') {
-      connectedPeersCount = Math.max(connectedPeersCount + 1, 2);
-      const peerEl = document.getElementById('onlineDisplayPeerCount');
-      if (peerEl) peerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>${connectedPeersCount} Perangkat Terhubung</span>`;
+      peerHeartbeats.set(msg.senderId, Date.now());
+      pruneStalePeers();
+
+      // Deteksi split-brain host (BUG-6)
+      if (userRole === 'host' && msg.role === 'host' && msg.senderId !== myClientId) {
+        const now = Date.now();
+        if (now - lastHostConflictWarningTime > 20000) {
+          lastHostConflictWarningTime = now;
+          showToast('⚠️ Konflik Host: Terdeteksi perangkat lain bertindak sebagai Host di room ini!', 'warning');
+        }
+      }
       return;
     }
 
@@ -7984,8 +8003,15 @@ async function handleIncomingMessage(topic, rawText) {
     }
 
     if (msg.type === 'STATE_UPDATE') {
+      if (userRole === 'host' && msg.role === 'host' && msg.senderId !== myClientId) {
+        const now = Date.now();
+        if (now - lastHostConflictWarningTime > 20000) {
+          lastHostConflictWarningTime = now;
+          showToast('⚠️ Konflik Host: Terdeteksi perangkat lain mengirim state update sebagai Host!', 'warning');
+        }
+      }
       if (userRole === 'spectator' || isCollabMode) {
-        applyReceivedState(msg.payload);
+        applyReceivedState(msg.payload || msg);
         showToast('Data pertandingan diperbarui langsung oleh Host');
       }
       return;
@@ -8016,6 +8042,15 @@ function applyReceivedState(incomingData) {
       console.warn('Rejected invalid received state payload');
       return;
     }
+  }
+
+  // BUG-6: Tolak update state jika versinya lebih lama dari state lokal (stale revision)
+  if (typeof data.rev === 'number') {
+    if (typeof currentRev === 'number' && data.rev < currentRev) {
+      console.warn(`Mengabaikan state usang: rev masuk ${data.rev} < rev lokal ${currentRev}`);
+      return;
+    }
+    currentRev = Math.max(currentRev, data.rev);
   }
   if (data.currentSport) currentSport = data.currentSport;
   if (data.sessionTitle) sessionTitle = data.sessionTitle;
@@ -8320,8 +8355,33 @@ function broadcastRoomLobbyAnnounce(type = 'ROOM_HEARTBEAT') {
 function startHeartbeatTimer() {
   stopHeartbeatTimer();
   heartbeatInterval = setInterval(() => {
-    broadcastRoomLobbyAnnounce('ROOM_HEARTBEAT');
+    if (isOnlineActive && currentRoomId && mqttClient && mqttClient.connected) {
+      if (userRole === 'host') {
+        broadcastRoomLobbyAnnounce('ROOM_HEARTBEAT');
+      }
+      mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+        type: 'PEER_PING',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        role: userRole
+      }));
+      pruneStalePeers();
+    }
   }, 12000);
+}
+
+function pruneStalePeers() {
+  const now = Date.now();
+  for (const [id, lastSeen] of peerHeartbeats.entries()) {
+    if (now - lastSeen > 40000) {
+      peerHeartbeats.delete(id);
+    }
+  }
+  connectedPeersCount = peerHeartbeats.size + 1; // +1 untuk perangkat lokal
+  const peerEl = document.getElementById('onlineDisplayPeerCount');
+  if (peerEl) {
+    peerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>${connectedPeersCount} Perangkat Terhubung</span>`;
+  }
 }
 
 function stopHeartbeatTimer() {
@@ -8584,6 +8644,8 @@ function openHistoryFromEndedNotice() {
 
 function leaveOnlineRoom(keepRoomData = false) {
   stopHeartbeatTimer();
+  peerHeartbeats.clear();
+  connectedPeersCount = 1;
   clearActiveLiveSession();
   if (mqttClient && isOnlineActive && currentRoomId) {
     const leftRoom = currentRoomId;
