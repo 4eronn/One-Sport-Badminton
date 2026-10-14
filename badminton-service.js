@@ -234,10 +234,26 @@
     });
   }
 
+  function cancelRequestsForPlayer(playerId, players = [], partnerRequests = []) {
+    if (!partnerRequests || !Array.isArray(partnerRequests)) return;
+    partnerRequests.forEach(req => {
+      if (!req || (req.status !== REQUEST_STATUS.PENDING && req.status !== REQUEST_STATUS.APPROVED)) return;
+      if (req.requesterId === playerId || req.targetId === playerId) {
+        req.status = REQUEST_STATUS.CANCELLED;
+        if (req.requesterId !== playerId) {
+          const reqPlayer = players.find(p => p.id === req.requesterId);
+          if (reqPlayer) {
+            reqPlayer.request_used = false;
+          }
+        }
+      }
+    });
+  }
+
   /**
    * Memproses penyelesaian cooldown ketika sebuah match selesai di salah satu lapangan.
    */
-  function processCooldownsOnMatchEnd(players = [], finishedPlayers = [], defaultCooldown = 1) {
+  function processCooldownsOnMatchEnd(players = [], finishedPlayers = [], defaultCooldown = 1, partnerRequests = []) {
     const finishedIds = new Set(finishedPlayers.map(p => p.id));
 
     players.forEach(p => {
@@ -246,7 +262,9 @@
         // Cek apakah pemain berniat keluar setelah match
         if (p.leave_after_match) {
           p.status = PLAYER_STATUS.TIDAK_AKTIF;
+          p.is_deleted = true;
           p.cooldown_remaining = 0;
+          cancelRequestsForPlayer(p.id, players, partnerRequests);
         } else if (defaultCooldown > 0) {
           p.status = PLAYER_STATUS.ISTIRAHAT;
           p.cooldown_remaining = defaultCooldown;
@@ -309,6 +327,31 @@
       return {
         success: false,
         message: `Rekan yang dituju (${target.name}) saat ini sedang ${target.status.replace('_', ' ')}. Request hanya bisa saat keduanya berstatus menunggu.`
+      };
+    }
+
+    // Cek apakah pemain memiliki kombinasi role terlarang (Intermediate & Advance tidak boleh 1 tim)
+    if (hasInterAndAdvanceTogether([requester, target])) {
+      return {
+        success: false,
+        message: 'Regulasi melarang pemain level Intermediate dan Advance berpasangan dalam satu tim.'
+      };
+    }
+
+    // Cek apakah sudah ada request aktif yang melibatkan requester atau target
+    const duplicateOrConflicting = partnerRequests.find(r => {
+      if (!r || (r.status !== REQUEST_STATUS.PENDING && r.status !== REQUEST_STATUS.APPROVED)) return false;
+      return r.requesterId === requesterId || r.targetId === requesterId ||
+             r.requesterId === targetId || r.targetId === targetId;
+    });
+
+    if (duplicateOrConflicting) {
+      const isTargetBusy = duplicateOrConflicting.requesterId === targetId || duplicateOrConflicting.targetId === targetId;
+      return {
+        success: false,
+        message: isTargetBusy
+          ? `${target.name} sudah memiliki request pasangan aktif yang menunggu jadwal bermain.`
+          : `${requester.name} sudah memiliki request pasangan aktif yang belum diselesaikan.`
       };
     }
 
@@ -484,11 +527,25 @@
     let teamB = [...best.pair.t2];
     const isRepeatedPartner = best.partnerPenalty > 0;
 
+    // Cek semua request berstatus APPROVED yang terpasang dalam tim A atau tim B
+    const usedRequests = [];
+    if (Array.isArray(approvedRequests)) {
+      approvedRequests.forEach(req => {
+        if (!req || req.status !== REQUEST_STATUS.APPROVED) return;
+        const inA = teamA.some(x => x.id === req.requesterId) && teamA.some(x => x.id === req.targetId);
+        const inB = teamB.some(x => x.id === req.requesterId) && teamB.some(x => x.id === req.targetId);
+        if (inA || inB) {
+          usedRequests.push(req);
+        }
+      });
+    }
+
     return {
       teamA,
       teamB,
       isRepeatedPartner,
-      usedRequest: null
+      usedRequest: usedRequests[0] || null,
+      usedRequests
     };
   }
 
@@ -499,7 +556,8 @@
   function pickNextFourPlayersForMatch(
     eligibleQueue = [],
     partnerRequests = [],
-    partnerHistory = {}
+    partnerHistory = {},
+    allPlayers = []
   ) {
     if (eligibleQueue.length < 4) return null;
 
@@ -509,6 +567,18 @@
 
     for (const req of partnerRequests) {
       if (req.status === REQUEST_STATUS.APPROVED) {
+        // Cek jika requester atau target sudah tidak aktif atau terhapus
+        const reqP = allPlayers.length ? allPlayers.find(p => p.id === req.requesterId) : queueMap.get(req.requesterId);
+        const tgtP = allPlayers.length ? allPlayers.find(p => p.id === req.targetId) : queueMap.get(req.targetId);
+        if ((reqP && (reqP.status === PLAYER_STATUS.TIDAK_AKTIF || reqP.is_deleted)) ||
+            (tgtP && (tgtP.status === PLAYER_STATUS.TIDAK_AKTIF || tgtP.is_deleted))) {
+          req.status = REQUEST_STATUS.CANCELLED;
+          if (reqP && reqP.status !== PLAYER_STATUS.TIDAK_AKTIF && !reqP.is_deleted) {
+            reqP.request_used = false;
+          }
+          continue;
+        }
+
         if (queueMap.has(req.requesterId) && queueMap.has(req.targetId)) {
           reqPair = [queueMap.get(req.requesterId), queueMap.get(req.targetId)];
           break;
@@ -595,7 +665,7 @@
       };
     }
 
-    const four = pickNextFourPlayersForMatch(queue, partnerRequests, partnerHistory);
+    const four = pickNextFourPlayersForMatch(queue, partnerRequests, partnerHistory, players);
     const split = splitFourIntoTeamsSmart(four, partnerHistory, opponentHistory, partnerRequests);
 
     const hasFemale = four.some(p => p.gender === 'P');
@@ -641,6 +711,7 @@
       },
       playerSummaries,
       usedRequest: split.usedRequest || null,
+      usedRequests: split.usedRequests || (split.usedRequest ? [split.usedRequest] : []),
       shuttlecocks: { baru: 0, bekas_layak: 0, bekas_dihasilkan: 0 },
       proposedAt: Date.now()
     };
@@ -683,12 +754,13 @@
     });
 
     // Tandai request rekan tim sebagai selesai jika digunakan
-    if (court.usedRequest) {
-      const req = partnerRequests.find(r => r.id === court.usedRequest.id);
+    const reqsToComplete = court.usedRequests || (court.usedRequest ? [court.usedRequest] : []);
+    reqsToComplete.forEach(ur => {
+      const req = partnerRequests.find(r => r.id === ur.id);
       if (req) {
         req.status = REQUEST_STATUS.COMPLETED;
       }
-    }
+    });
 
     court.status = COURT_STATUS.SEDANG_MAIN;
     court.startedAt = Date.now();
@@ -768,6 +840,7 @@
     players = [],
     partnerHistory = {},
     opponentHistory = {},
+    partnerRequests = [],
     shuttlecocks = null,
     defaultCooldown = 1,
     inventory = null
@@ -833,7 +906,7 @@
       });
 
       // 4. Proses cooldown pemain
-      processCooldownsOnMatchEnd(players, allCourtPlayers, defaultCooldown);
+      processCooldownsOnMatchEnd(players, allCourtPlayers, defaultCooldown, partnerRequests);
     }
 
     return {
@@ -1022,7 +1095,7 @@
   /**
    * Mengurangi pemain di tengah sesi tanpa menghapus histori skor/klasemen.
    */
-  function removePlayerIncremental(playerId, players = [], activeCourts = []) {
+  function removePlayerIncremental(playerId, players = [], activeCourts = [], partnerRequests = []) {
     const player = players.find(p => p.id === playerId);
     if (!player) return { success: false, message: 'Pemain tidak ditemukan.' };
 
@@ -1047,6 +1120,7 @@
     player.status = PLAYER_STATUS.TIDAK_AKTIF;
     player.is_deleted = true;
     player.cooldown_remaining = 0;
+    cancelRequestsForPlayer(playerId, players, partnerRequests);
 
     return {
       success: true,

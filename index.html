@@ -3544,7 +3544,7 @@ function removePlayer(id) {
   if (currentSport === 'badminton') {
     const round = bSchedule[bCurrentRoundIndex];
     const activeCourts = (round && round.courts) || [];
-    const res = BadmintonService.removePlayerIncremental(id, bPlayers, activeCourts);
+    const res = BadmintonService.removePlayerIncremental(id, bPlayers, activeCourts, bPartnerRequests);
     if (!res.success) {
       showToast(res.message, 'error');
       return;
@@ -3753,11 +3753,24 @@ function openPartnerRequestModal(playerId) {
   document.getElementById('partnerReqRequesterInfo').textContent = `${p.name} (${p.gender === 'L' ? 'Putra' : 'Putri'} • ${p.role})`;
 
   const select = document.getElementById('selectPartnerTarget');
-  // Hanya ambil kandidat yang berstatus menunggu dan bukan dirinya
-  const candidates = BadmintonService.getEligibleQueue(bPlayers).filter(x => x.id !== p.id);
+  // Hanya ambil kandidat yang berstatus menunggu, bukan dirinya, belum punya request aktif, dan bukan kombinasi peran terlarang
+  const busyIds = new Set();
+  bPartnerRequests.forEach(r => {
+    if (r && (r.status === BadmintonService.REQUEST_STATUS.PENDING || r.status === BadmintonService.REQUEST_STATUS.APPROVED)) {
+      busyIds.add(r.requesterId);
+      busyIds.add(r.targetId);
+    }
+  });
+
+  const candidates = BadmintonService.getEligibleQueue(bPlayers).filter(x => {
+    if (x.id === p.id) return false;
+    if (busyIds.has(x.id)) return false;
+    if (BadmintonService.hasInterAndAdvanceTogether([p, x])) return false;
+    return true;
+  });
 
   if (candidates.length === 0) {
-    select.innerHTML = '<option value="">-- Tidak ada pemain menunggu lain saat ini --</option>';
+    select.innerHTML = '<option value="">-- Tidak ada rekan kompatibel yang menunggu saat ini --</option>';
   } else {
     select.innerHTML = '<option value="">-- Pilih Rekan Menunggu --</option>' + candidates.map(c => `
       <option value="${c.id}">${escapeHtml(c.name)} (${c.gender === 'L' ? 'Putra' : 'Putri'} • ${escapeHtml(c.role)} • ${c.jumlah_main || 0}x main)</option>
@@ -3779,6 +3792,22 @@ function checkPartnerTargetWarning() {
 
   if (!reqId || !targetId) {
     alertEl.style.display = 'none';
+    return;
+  }
+
+  const p1 = bPlayers.find(x => x.id === reqId);
+  const p2 = bPlayers.find(x => x.id === targetId);
+
+  if (p1 && p2 && BadmintonService.hasInterAndAdvanceTogether([p1, p2])) {
+    alertEl.style.display = 'block';
+    alertEl.innerHTML = `❌ <strong>Regulasi Terlarang:</strong> Pemain level <strong>Intermediate</strong> dan <strong>Advance</strong> tidak boleh berada dalam satu tim!`;
+    return;
+  }
+
+  const busyReq = bPartnerRequests.find(r => (r.status === 'pending' || r.status === 'approved') && (r.requesterId === targetId || r.targetId === targetId));
+  if (busyReq) {
+    alertEl.style.display = 'block';
+    alertEl.innerHTML = `⚠️ <strong>Perhatian:</strong> Rekan yang dipilih sudah memiliki jadwal request aktif lain.`;
     return;
   }
 
@@ -5643,6 +5672,7 @@ function submitDirectScore() {
     players: bPlayers,
     partnerHistory: bPartnerHistory,
     opponentHistory: bOpponentHistory,
+    partnerRequests: bPartnerRequests,
     shuttlecocks: { baru: kokBaru, bekas_layak: kokBekas, bekas_dihasilkan: kokLayakDihasilkan },
     defaultCooldown: bCooldownMatches,
     inventory: bShuttlecockInventory

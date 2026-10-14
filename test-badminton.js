@@ -262,6 +262,115 @@ it('Memberikan peringatan ke host jika pasangan request pernah berpasangan sebel
   assert.match(res.warning, /sudah pernah berpasangan/i);
 });
 
+it('BUG-3: Target request dihapus -> request CANCELLED dan kuota pemohon kembali', () => {
+  const players = [
+    { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, request_used: false },
+    { id: 2, name: 'Budi', status: PLAYER_STATUS.MENUNGGU, request_used: false },
+    { id: 3, name: 'Caca', status: PLAYER_STATUS.MENUNGGU, request_used: false }
+  ];
+  const partnerRequests = [];
+
+  submitPartnerRequest({
+    requesterId: 1,
+    targetId: 2,
+    players,
+    partnerRequests
+  });
+
+  assert.strictEqual(players[0].request_used, true);
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.APPROVED);
+
+  // Target (Budi, id: 2) dihapus
+  removePlayerIncremental(2, players, [], partnerRequests);
+
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.CANCELLED);
+  assert.strictEqual(players[0].request_used, false, 'Kuota request pemohon harus kembali false');
+
+  // Pemohon bisa request pemain lain (Caca, id: 3)
+  const res2 = submitPartnerRequest({
+    requesterId: 1,
+    targetId: 3,
+    players,
+    partnerRequests
+  });
+  assert.strictEqual(res2.success, true);
+});
+
+it('BUG-3: Target ditandai leave_after_match -> request CANCELLED saat match selesai dan kuota pemohon kembali', () => {
+  const p1 = { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, request_used: false };
+  const p2 = { id: 2, name: 'Budi', status: PLAYER_STATUS.DI_LAPANGAN, leave_after_match: true };
+  const players = [p1, p2];
+  const partnerRequests = [
+    {
+      id: 101,
+      requesterId: 1,
+      targetId: 2,
+      status: REQUEST_STATUS.APPROVED
+    }
+  ];
+  p1.request_used = true;
+
+  processCooldownsOnMatchEnd(players, [p2], 1, partnerRequests);
+
+  assert.strictEqual(p2.status, PLAYER_STATUS.TIDAK_AKTIF);
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.CANCELLED);
+  assert.strictEqual(p1.request_used, false);
+});
+
+it('BUG-3: Request rekan tim menolak pasangan role Intermediate & Advance', () => {
+  const players = [
+    { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, role: 'Advance', request_used: false },
+    { id: 2, name: 'Budi', status: PLAYER_STATUS.MENUNGGU, role: 'Intermadiate', request_used: false }
+  ];
+  const partnerRequests = [];
+
+  const res = submitPartnerRequest({
+    requesterId: 1,
+    targetId: 2,
+    players,
+    partnerRequests
+  });
+
+  assert.strictEqual(res.success, false);
+  assert.match(res.message, /Intermediate dan Advance/i);
+});
+
+it('BUG-3: Request rekan tim menolak jika target sudah memiliki request aktif lain', () => {
+  const players = [
+    { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, request_used: false },
+    { id: 2, name: 'Budi', status: PLAYER_STATUS.MENUNGGU, request_used: false },
+    { id: 3, name: 'Caca', status: PLAYER_STATUS.MENUNGGU, request_used: false }
+  ];
+  const partnerRequests = [];
+
+  // Andi request Budi
+  const res1 = submitPartnerRequest({ requesterId: 1, targetId: 2, players, partnerRequests });
+  assert.strictEqual(res1.success, true);
+
+  // Caca juga coba request Budi
+  const res2 = submitPartnerRequest({ requesterId: 3, targetId: 2, players, partnerRequests });
+  assert.strictEqual(res2.success, false);
+  assert.match(res2.message, /sudah memiliki request pasangan aktif/i);
+});
+
+it('BUG-3: pickNextFourPlayersForMatch membatalkan request jika pemain target tidak aktif', () => {
+  const p1 = { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, request_used: true };
+  const p2 = { id: 2, name: 'Budi', status: PLAYER_STATUS.TIDAK_AKTIF, is_deleted: true };
+  const p3 = { id: 3, name: 'Caca', status: PLAYER_STATUS.MENUNGGU };
+  const p4 = { id: 4, name: 'Dedi', status: PLAYER_STATUS.MENUNGGU };
+  const p5 = { id: 5, name: 'Eko', status: PLAYER_STATUS.MENUNGGU };
+  const players = [p1, p2, p3, p4, p5];
+  const queue = [p1, p3, p4, p5];
+  const partnerRequests = [
+    { id: 1, requesterId: 1, targetId: 2, status: REQUEST_STATUS.APPROVED }
+  ];
+
+  const selected = pickNextFourPlayersForMatch(queue, partnerRequests, {}, players);
+  assert.strictEqual(selected.length, 4);
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.CANCELLED);
+  assert.strictEqual(p1.request_used, false);
+});
+
 // ── TEST 3: Tambah/Kurangi Pemain Tanpa Reset Data (Fitur 3) ──
 console.log('\n--- 3. Tambah & Kurangi Pemain Tanpa Reset (Fitur 3) ---');
 
