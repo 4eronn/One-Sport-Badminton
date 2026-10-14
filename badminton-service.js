@@ -1198,6 +1198,50 @@
     return entry;
   }
 
+  // ── RESET SESI MABAR (BUG-4) ──
+  function resetBadmintonSession({
+    players = [],
+    inventory = null,
+    clearInactive = false
+  } = {}) {
+    let updatedPlayers = players;
+    if (clearInactive) {
+      updatedPlayers = updatedPlayers.filter(p => !p.is_deleted && p.status !== PLAYER_STATUS.TIDAK_AKTIF);
+    }
+
+    updatedPlayers.forEach(p => {
+      p.jumlah_main = 0;
+      p.cooldown_remaining = 0;
+      p.request_used = false;
+      p.leave_after_match = false;
+      if (!p.is_deleted && p.status !== PLAYER_STATUS.TIDAK_AKTIF) {
+        p.status = PLAYER_STATUS.MENUNGGU;
+      }
+    });
+
+    let resetInventory = null;
+    if (inventory) {
+      resetInventory = {
+        stokAwalBaru: Number(inventory.stokAwalBaru) || 24,
+        stokAwalBekas: Number(inventory.stokAwalBekas) || 12,
+        terpakaiBaru: 0,
+        terpakaiBekas: 0,
+        bekasLayakDidapat: 0
+      };
+    }
+
+    return {
+      players: updatedPlayers,
+      partnerHistory: {},
+      opponentHistory: {},
+      partnerRequests: [],
+      auditLog: [],
+      schedule: [],
+      currentRoundIndex: 0,
+      inventory: resetInventory
+    };
+  }
+
   // ── 11. XSS SANITIZATION HELPER ──
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -1578,6 +1622,7 @@
     removePlayerIncremental,
     createDefaultShuttlecockInventory,
     getShuttlecockSummary,
+    resetBadmintonSession,
     logHostAction,
     escapeHtml,
     validateAndNormalizeState,

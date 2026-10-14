@@ -29,6 +29,7 @@ const {
   removePlayerIncremental,
   getShuttlecockSummary,
   createDefaultShuttlecockInventory,
+  resetBadmintonSession,
   escapeHtml,
   validateAndNormalizeState
 } = BadmintonService;
@@ -650,6 +651,56 @@ it('Jika semua kandidat sudah pernah berpasangan, fallback dengan penanda isRepe
   assert.strictEqual(split.isRepeatedPartner, true);
   const kA = getPairKey(split.teamA[0].id, split.teamA[1].id);
   assert.ok(kA === getPairKey(1, 3) || kA === getPairKey(2, 4));
+});
+
+// ── TEST: BUG-4 Reset Sesi Mabar Baru ──
+console.log('\n--- BUG-4. Reset Sesi Mabar Baru (resetBadmintonSession) ---');
+it('BUG-4: Reset menyeluruh statistik, antrian, riwayat, dan kok namun mempertahankan pemain dan gelar juara', () => {
+  const players = [
+    { id: 1, name: 'Andi', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 3, cooldown_remaining: 1, request_used: true, leave_after_match: true, titles: 2 },
+    { id: 2, name: 'Budi', status: PLAYER_STATUS.ISTIRAHAT, jumlah_main: 2, cooldown_remaining: 2, request_used: true, titles: 1 },
+    { id: 3, name: 'Caca', status: PLAYER_STATUS.TIDAK_AKTIF, is_deleted: true, jumlah_main: 1, titles: 0 }
+  ];
+  const inventory = {
+    stokAwalBaru: 24,
+    stokAwalBekas: 12,
+    terpakaiBaru: 6,
+    terpakaiBekas: 4,
+    bekasLayakDidapat: 3
+  };
+
+  // Test 1: Pertahankan pemain non-aktif (clearInactive: false)
+  const res1 = resetBadmintonSession({ players, inventory, clearInactive: false });
+  assert.strictEqual(res1.players.length, 3);
+  assert.strictEqual(res1.players[0].status, PLAYER_STATUS.MENUNGGU);
+  assert.strictEqual(res1.players[0].jumlah_main, 0);
+  assert.strictEqual(res1.players[0].cooldown_remaining, 0);
+  assert.strictEqual(res1.players[0].request_used, false);
+  assert.strictEqual(res1.players[0].leave_after_match, false);
+  assert.strictEqual(res1.players[0].titles, 2, 'Titles pemain harus tetap dipertahankan');
+
+  // Pemain tidak aktif tetap berstatus tidak aktif jika clearInactive false
+  assert.strictEqual(res1.players[2].status, PLAYER_STATUS.TIDAK_AKTIF);
+  assert.strictEqual(res1.players[2].is_deleted, true);
+
+  // Riwayat dan schedule ter-reset kosong
+  assert.deepStrictEqual(res1.partnerHistory, {});
+  assert.deepStrictEqual(res1.opponentHistory, {});
+  assert.deepStrictEqual(res1.partnerRequests, []);
+  assert.deepStrictEqual(res1.auditLog, []);
+  assert.deepStrictEqual(res1.schedule, []);
+  assert.strictEqual(res1.currentRoundIndex, 0);
+
+  // Stok terpakai kok direset, stok awal dipertahankan
+  assert.strictEqual(res1.inventory.stokAwalBaru, 24);
+  assert.strictEqual(res1.inventory.stokAwalBekas, 12);
+  assert.strictEqual(res1.inventory.terpakaiBaru, 0);
+  assert.strictEqual(res1.inventory.terpakaiBekas, 0);
+
+  // Test 2: Hapus permanen pemain non-aktif (clearInactive: true)
+  const res2 = resetBadmintonSession({ players, inventory, clearInactive: true });
+  assert.strictEqual(res2.players.length, 2);
+  assert.strictEqual(res2.players.some(p => p.id === 3), false, 'Pemain tidak aktif harus terhapus permanen');
 });
 
 // ── TEST: SEC-1 Sanitasi HTML escapeHtml ──

@@ -6667,11 +6667,45 @@ function closeRulesModal() {
 
 function startNewMabarSession() {
   if (!checkEditPermission()) return;
-  if (!confirm('Mulai sesi mabar baru? Skor akan direset.')) return;
-  if (currentSport === 'badminton') generateInitialBadminton();
-  else generateSoccerTeams();
+  if (!confirm('Mulai sesi mabar baru? Seluruh skor, antrian, dan riwayat pertandingan akan direset.')) return;
+
+  if (currentSport === 'badminton') {
+    const hasInactive = bPlayers.some(p => p.is_deleted || p.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF);
+    let clearInactive = false;
+    if (hasInactive) {
+      clearInactive = confirm('Apakah pemain yang berstatus Tidak Aktif ingin dihapus permanen dari daftar pemain?\n\n• OK = Hapus permanen pemain tidak aktif\n• Batal = Tetap pertahankan dalam daftar');
+    }
+
+    const reset = BadmintonService.resetBadmintonSession({
+      players: bPlayers,
+      inventory: bShuttlecockInventory,
+      clearInactive
+    });
+
+    bPlayers = reset.players;
+    bPartnerHistory = reset.partnerHistory;
+    bOpponentHistory = reset.opponentHistory;
+    bPartnerRequests = reset.partnerRequests;
+    bAuditLog = reset.auditLog;
+    bSchedule = reset.schedule;
+    bCurrentRoundIndex = reset.currentRoundIndex;
+    if (reset.inventory) bShuttlecockInventory = reset.inventory;
+
+    ensureBadmintonCourtsInitialized();
+  } else {
+    sPlayers.forEach(p => { p.w = 0; p.l = 0; p.d = 0; p.pts = 0; p.gf = 0; p.ga = 0; p.gd = 0; });
+    generateSoccerTeams();
+  }
+
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
   persistAndBroadcast();
   switchTab('tab-match');
+  showToast('✅ Sesi mabar baru berhasil dimulai! Statistik dan riwayat telah direset.', 'success');
 }
 
 // ── SETTINGS MODAL ──
