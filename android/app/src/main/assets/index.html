@@ -3425,6 +3425,9 @@
     </div>
 
     <form onsubmit="event.preventDefault(); submitLoginForm();" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;">
+      <div id="loginErrorMessage" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.74rem; font-weight: 700; line-height: 1.4; text-align: center;">
+        Akses ditolak: Username atau password salah!
+      </div>
       <div>
         <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username / Email</label>
         <input type="text" id="loginInputEmail" class="input-styled-os" placeholder="" autocomplete="username" required>
@@ -3469,14 +3472,21 @@ let currentUser = null;
 try {
   const savedUser = localStorage.getItem('onesport_auth_user');
   if (savedUser) {
-    currentUser = JSON.parse(savedUser);
+    const parsed = JSON.parse(savedUser);
+    if (parsed && parsed.email && (parsed.email.toLowerCase() === HOST_EMAIL.toLowerCase() || parsed.email.toLowerCase() === 'admin') && parsed.role === 'host') {
+      currentUser = parsed;
+    } else {
+      currentUser = null;
+      localStorage.removeItem('onesport_auth_user');
+      localStorage.removeItem('onesport_user_role');
+    }
   }
 } catch (e) {
   currentUser = null;
 }
 
 function isHostUser() {
-  return !!(currentUser && currentUser.email && currentUser.email.toLowerCase() === HOST_EMAIL.toLowerCase());
+  return !!(currentUser && currentUser.email && (currentUser.email.toLowerCase() === HOST_EMAIL.toLowerCase() || currentUser.email.toLowerCase() === 'admin') && currentUser.role === 'host');
 }
 
 let userRole = isHostUser() ? 'host' : 'spectator';
@@ -8119,16 +8129,9 @@ function renderAuthUI() {
         <button class="btn-logout-header" onclick="logoutUser()" title="Keluar">Keluar</button>
       </div>
     `;
-  } else if (currentUser && currentUser.email) {
-    container.innerHTML = `
-      <div class="user-auth-badge" title="Masuk sebagai Penonton">
-        <span class="auth-user-name">${escapeHtml(currentUser.name || currentUser.email)}</span>
-        <button class="btn-logout-header" onclick="logoutUser()" title="Keluar">Keluar</button>
-      </div>
-    `;
   } else {
     container.innerHTML = `
-      <button class="btn-login-header" onclick="openLoginModal()" title="Masuk ke Akun">
+      <button class="btn-login-header" onclick="openLoginModal()" title="Masuk ke Akun Host">
         Masuk
       </button>
     `;
@@ -8139,6 +8142,8 @@ function openLoginModal() {
   const modal = document.getElementById('loginModalOverlay');
   const inputEmail = document.getElementById('loginInputEmail');
   const inputPass = document.getElementById('loginInputPassword');
+  const errEl = document.getElementById('loginErrorMessage');
+  if (errEl) errEl.style.display = 'none';
   if (modal) {
     modal.classList.add('open');
     if (inputEmail) {
@@ -8151,6 +8156,8 @@ function openLoginModal() {
 
 function closeLoginModal() {
   const modal = document.getElementById('loginModalOverlay');
+  const errEl = document.getElementById('loginErrorMessage');
+  if (errEl) errEl.style.display = 'none';
   if (modal) modal.classList.remove('open');
 }
 
@@ -8159,8 +8166,14 @@ function submitLoginForm() {
   const passInput = document.getElementById('loginInputPassword');
   const email = emailInput ? emailInput.value.trim() : '';
   const pass = passInput ? passInput.value.trim() : '';
+  const errEl = document.getElementById('loginErrorMessage');
+  if (errEl) errEl.style.display = 'none';
 
   if (!email || !pass) {
+    if (errEl) {
+      errEl.textContent = 'Harap masukkan username/email dan password.';
+      errEl.style.display = 'block';
+    }
     showToast('Harap masukkan username/email dan password.', 'error');
     return;
   }
@@ -8171,38 +8184,38 @@ function submitLoginForm() {
 function loginUser(email, password) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanPass = (password || '').trim();
+  const errEl = document.getElementById('loginErrorMessage');
 
-  if (cleanEmail === HOST_EMAIL.toLowerCase()) {
-    if (cleanPass === HOST_PASSWORD) {
-      currentUser = {
-        email: HOST_EMAIL,
-        name: 'Admin OneSport',
-        role: 'host'
-      };
-      userRole = 'host';
-      localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
-      localStorage.setItem('onesport_user_role', 'host');
-      closeLoginModal();
-      applyRoleUI();
-      showToast('Berhasil masuk sebagai Host (Admin).', 'success');
-      return true;
-    } else {
-      showToast('Password Host salah!', 'error');
-      return false;
-    }
-  } else {
+  const isHostUsername = (cleanEmail === HOST_EMAIL.toLowerCase() || cleanEmail === 'admin');
+  const isHostPassword = (cleanPass === HOST_PASSWORD);
+
+  if (isHostUsername && isHostPassword) {
     currentUser = {
-      email: cleanEmail,
-      name: cleanEmail.includes('@') ? cleanEmail.split('@')[0] : cleanEmail,
-      role: 'spectator'
+      email: HOST_EMAIL,
+      name: 'Admin OneSport',
+      role: 'host'
     };
-    userRole = 'spectator';
+    userRole = 'host';
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
-    localStorage.setItem('onesport_user_role', 'spectator');
+    localStorage.setItem('onesport_user_role', 'host');
+    if (errEl) errEl.style.display = 'none';
     closeLoginModal();
     applyRoleUI();
-    showToast('Berhasil masuk sebagai ' + currentUser.name + '.', 'info');
+    showToast('Berhasil masuk sebagai Host (Admin).', 'success');
     return true;
+  } else {
+    // Akses otomatis ditolak karena salah akun / password
+    if (errEl) {
+      errEl.textContent = 'Akses ditolak: Username atau password salah!';
+      errEl.style.display = 'block';
+    }
+    showToast('Akses ditolak: Username atau password salah!', 'error');
+    const passInput = document.getElementById('loginInputPassword');
+    if (passInput) {
+      passInput.value = '';
+      passInput.focus();
+    }
+    return false;
   }
 }
 
