@@ -1091,15 +1091,120 @@
       return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.diff - a.diff || b.totalScore - a.totalScore);
     }
 
-    // Default: Wins -> Diff -> Total Poin -> H2H
-    return list.sort((a, b) => {
-      if (b.wins !== a.wins) return b.wins - a.wins;
-      if (b.diff !== a.diff) return b.diff - a.diff;
-      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-      const h2h = getH2H(a, b);
-      if (h2h !== 0) return -h2h;
-      return (b.titles || 0) - (a.titles || 0);
+    // Default: Regulasi resmi (Wins -> H2H bila tepat 2 seri -> Total Poin -> Gelar/Titles)
+    return resolveStandingsByRules(list, getH2H);
+  }
+
+  /**
+   * Aturan Penentuan Peringkat Hierarkis Resmi (BUG-9 / README):
+   * 1. Peringkat utama: Jumlah Kemenangan terbanyak (Wins) / Poin klasemen (Soccer).
+   * 2. Jika menang sama:
+   *    a. Head-to-Head (H2H jika tepat 2 pemain/tim pernah bertanding langsung).
+   *    b. Total Poin yang didapat di seluruh ronde.
+   *    c. Rekam Jejak Juara (titles).
+   *    d. Undian / Nilai Sama.
+   */
+  function resolveStandingsByRules(items = [], getH2H) {
+    items.forEach(it => { it.tieBreakNote = ''; });
+
+    const groups = {};
+    items.forEach(it => {
+      const primaryKey = (it.pts !== undefined && it.p !== undefined) ? (it.pts || 0) : (it.wins || 0);
+      if (!groups[primaryKey]) groups[primaryKey] = [];
+      groups[primaryKey].push(it);
     });
+
+    const sortedKeys = Object.keys(groups).map(Number).sort((a, b) => b - a);
+    let result = [];
+    sortedKeys.forEach(k => {
+      result = result.concat(resolveTiedSubset(groups[k], getH2H));
+    });
+    return result;
+  }
+
+  function resolveTiedSubset(subset, getH2H) {
+    if (subset.length <= 1) return subset;
+
+    // 1. Head-to-Head HANYA jika tepat 2 tim/pemain yang seri
+    if (subset.length === 2 && typeof getH2H === 'function') {
+      const h2h = getH2H(subset[0], subset[1]);
+      if (h2h > 0) {
+        subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
+        return [subset[0], subset[1]];
+      } else if (h2h < 0) {
+        subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
+        return [subset[1], subset[0]];
+      }
+    }
+
+    // 2. Total Poin yang Didapat di Seluruh Ronde (totalScore / scored)
+    const scoreGroups = {};
+    subset.forEach(it => {
+      const s = (it.totalScore !== undefined) ? it.totalScore : (it.scored || 0);
+      if (!scoreGroups[s]) scoreGroups[s] = [];
+      scoreGroups[s].push(it);
+    });
+    const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
+
+    if (scoreKeys.length > 1) {
+      let result = [];
+      scoreKeys.forEach(s => {
+        const sub = scoreGroups[s];
+        if (sub.length === 1) {
+          sub[0].tieBreakNote = `Total Poin (${s} Poin)`;
+          result.push(sub[0]);
+        } else {
+          result = result.concat(resolveByTitles(sub, getH2H));
+        }
+      });
+      return result;
+    }
+
+    // Jika total poin sama semua:
+    return resolveByTitles(subset, getH2H);
+  }
+
+  function resolveByTitles(subset, getH2H) {
+    if (subset.length <= 1) return subset;
+
+    // Jika setelah filter poin tersisa tepat 2 pemain, cek H2H
+    if (subset.length === 2 && typeof getH2H === 'function') {
+      const h2h = getH2H(subset[0], subset[1]);
+      if (h2h > 0) {
+        subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
+        return [subset[0], subset[1]];
+      } else if (h2h < 0) {
+        subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
+        return [subset[1], subset[0]];
+      }
+    }
+
+    // 3. Rekam Jejak Juara (titles)
+    const titleGroups = {};
+    subset.forEach(it => {
+      const t = it.titles || 0;
+      if (!titleGroups[t]) titleGroups[t] = [];
+      titleGroups[t].push(it);
+    });
+    const titleKeys = Object.keys(titleGroups).map(Number).sort((a, b) => b - a);
+
+    if (titleKeys.length > 1) {
+      let result = [];
+      titleKeys.forEach(t => {
+        const sub = titleGroups[t];
+        if (sub.length === 1) {
+          sub[0].tieBreakNote = `Gelar Juara (${t} kali)`;
+          result.push(sub[0]);
+        } else {
+          result = result.concat(sub);
+        }
+      });
+      return result;
+    }
+
+    // 4. Undian / Nilai Sama
+    subset[0].tieBreakNote = subset[0].tieBreakNote || 'Undian / Nilai Sama';
+    return subset;
   }
 
   // ── 8. FITUR 3: PENANGANAN TAMBAH & SOFT DELETE PEMAIN ──
@@ -1336,6 +1441,10 @@
     };
 
     clean.rev = Number.isInteger(data.rev) && data.rev >= 0 ? data.rev : 0;
+    clean.bSessionId = typeof data.bSessionId === 'string' ? data.bSessionId.slice(0, 100) : ('sess_' + Date.now());
+    clean.bAwardedSessionIds = Array.isArray(data.bAwardedSessionIds)
+      ? data.bAwardedSessionIds.filter(id => typeof id === 'string').slice(0, 100)
+      : [];
 
     if (Array.isArray(data.bPlayers)) {
       if (data.bPlayers.length > 200) return null;
@@ -1662,6 +1771,7 @@
     recordMatchFinished,
     editFinishedMatchScore,
     calculateStandings,
+    resolveStandingsByRules,
     addPlayerIncremental,
     removePlayerIncremental,
     createDefaultShuttlecockInventory,

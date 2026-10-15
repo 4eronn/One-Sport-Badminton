@@ -3233,6 +3233,8 @@ let bPartnerHistory = {}; // Riwayat berpasangan (idA-idB -> count)
 let bOpponentHistory = {}; // Riwayat bertanding lawan (idA-idB -> count)
 let bShuttlecockInventory = { stokAwalBaru: 24, stokAwalBekas: 12, terpakaiBaru: 0, terpakaiBekas: 0, bekasLayakDidapat: 0 };
 let bAuditLog = []; // Log riwayat aksi manual & override host
+let bSessionId = 'sess_' + Date.now();
+let bAwardedSessionIds = [];
 
 // ── MINI SOCCER STATE ──
 let sPlayers = [];
@@ -6100,21 +6102,24 @@ function saveScoresAndAdvance() {
 // ============================================================================
 
 /**
- * Aturan Penentuan Peringkat Hierarkis:
+ * Aturan Penentuan Peringkat Hierarkis Resmi (BUG-9 / README):
  * 1. Peringkat utama: Jumlah Kemenangan terbanyak (Wins) / Poin klasemen (Soccer).
- * 2. Jika menang sama: Ditentukan dari SKOR JUARA, yaitu jumlah poin menang/didapat
- *    di setiap ronde dikurangi jumlah poin lawan di setiap rondenya (Point Difference / Diff).
- * 3. Jika skor selisih poin masih sama: Total Poin yang didapat di seluruh ronde.
- * 4. Jika masih sama: Head-to-Head (H2H jika tepat 2 tim/pemain pernah bertanding langsung).
- * 5. Jika masih sama: Rekam Jejak Juara (titles), lalu Undian panitia.
+ * 2. Jika menang sama:
+ *    a. Head-to-Head (H2H jika tepat 2 pemain/tim pernah bertanding langsung).
+ *    b. Total Poin yang didapat di seluruh ronde.
+ *    c. Rekam Jejak Juara (titles).
+ *    d. Undian / Nilai Sama.
  */
 function resolveStandingsByRules(items, getH2H) {
+  if (window.BadmintonService && typeof BadmintonService.resolveStandingsByRules === 'function') {
+    return BadmintonService.resolveStandingsByRules(items, getH2H);
+  }
+
   // Reset tieBreakNote agar tidak bercampur dari pemanggilan sebelumnya
   items.forEach(it => { it.tieBreakNote = ''; });
 
   const groups = {};
   items.forEach(it => {
-    // Prioritas utama: pts (untuk mini soccer jika ada) atau wins (untuk badminton & match umum)
     const primaryKey = (it.pts !== undefined && it.p !== undefined) ? (it.pts || 0) : (it.wins || 0);
     if (!groups[primaryKey]) groups[primaryKey] = [];
     groups[primaryKey].push(it);
@@ -6130,69 +6135,7 @@ function resolveStandingsByRules(items, getH2H) {
 function resolveTiedSubset(subset, getH2H) {
   if (subset.length <= 1) return subset;
 
-  // 1. Kriteria Utama saat Menang Sama: Skor Selisih Poin (Poin Ronde Didapat - Poin Ronde Lawan)
-  const diffGroups = {};
-  subset.forEach(it => {
-    const d = (it.diff !== undefined) ? it.diff : ((it.scored || 0) - (it.conceded || 0));
-    if (!diffGroups[d]) diffGroups[d] = [];
-    diffGroups[d].push(it);
-  });
-  const diffKeys = Object.keys(diffGroups).map(Number).sort((a, b) => b - a);
-
-  // Jika skor selisih memisahkan peringkat:
-  if (diffKeys.length > 1) {
-    let result = [];
-    diffKeys.forEach(d => {
-      const sub = diffGroups[d];
-      if (sub.length === 1) {
-        const sign = sub[0].diff >= 0 ? '+' : '';
-        sub[0].tieBreakNote = `Skor Selisih (${sign}${sub[0].diff})`;
-        result.push(sub[0]);
-      } else {
-        // Jika masih ada 2 atau lebih pemain yang memiliki skor selisih yang sama persis:
-        result = result.concat(resolveByTotalScore(sub, getH2H));
-      }
-    });
-    return result;
-  }
-
-  // Jika seluruh tim di subset memiliki skor selisih poin yang sama persis:
-  return resolveByTotalScore(subset, getH2H);
-}
-
-function resolveByTotalScore(subset, getH2H) {
-  if (subset.length <= 1) return subset;
-
-  // 2. Kriteria Selanjutnya: Total Poin yang Didapat di Semua Ronde
-  const scoreGroups = {};
-  subset.forEach(it => {
-    const s = it.totalScore || 0;
-    if (!scoreGroups[s]) scoreGroups[s] = [];
-    scoreGroups[s].push(it);
-  });
-  const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
-
-  if (scoreKeys.length > 1) {
-    let result = [];
-    scoreKeys.forEach(s => {
-      const sub = scoreGroups[s];
-      if (sub.length === 1) {
-        sub[0].tieBreakNote = `Total Poin (${sub[0].totalScore} Poin)`;
-        result.push(sub[0]);
-      } else {
-        result = result.concat(resolveByH2HAndTitles(sub, getH2H));
-      }
-    });
-    return result;
-  }
-
-  return resolveByH2HAndTitles(subset, getH2H);
-}
-
-function resolveByH2HAndTitles(subset, getH2H) {
-  if (subset.length <= 1) return subset;
-
-  // 3. Head-to-Head (jika tepat 2 tim/pemain)
+  // 1. Head-to-Head HANYA jika tepat 2 tim/pemain yang seri
   if (subset.length === 2 && typeof getH2H === 'function') {
     const h2h = getH2H(subset[0], subset[1]);
     if (h2h > 0) {
@@ -6204,7 +6147,47 @@ function resolveByH2HAndTitles(subset, getH2H) {
     }
   }
 
-  // 4. Riwayat Rekam Jejak Juara (titles)
+  // 2. Total Poin yang didapat di seluruh ronde
+  const scoreGroups = {};
+  subset.forEach(it => {
+    const s = (it.totalScore !== undefined) ? it.totalScore : (it.scored || 0);
+    if (!scoreGroups[s]) scoreGroups[s] = [];
+    scoreGroups[s].push(it);
+  });
+  const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
+
+  if (scoreKeys.length > 1) {
+    let result = [];
+    scoreKeys.forEach(s => {
+      const sub = scoreGroups[s];
+      if (sub.length === 1) {
+        sub[0].tieBreakNote = `Total Poin (${s} Poin)`;
+        result.push(sub[0]);
+      } else {
+        result = result.concat(resolveByTitles(sub, getH2H));
+      }
+    });
+    return result;
+  }
+
+  return resolveByTitles(subset, getH2H);
+}
+
+function resolveByTitles(subset, getH2H) {
+  if (subset.length <= 1) return subset;
+
+  if (subset.length === 2 && typeof getH2H === 'function') {
+    const h2h = getH2H(subset[0], subset[1]);
+    if (h2h > 0) {
+      subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
+      return [subset[0], subset[1]];
+    } else if (h2h < 0) {
+      subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
+      return [subset[1], subset[0]];
+    }
+  }
+
+  // 3. Rekam Jejak Juara (titles)
   const titleGroups = {};
   subset.forEach(it => {
     const t = it.titles || 0;
@@ -6226,7 +6209,7 @@ function resolveByH2HAndTitles(subset, getH2H) {
     return result;
   }
 
-  // 5. Undian / Nilai Sama
+  // 4. Undian / Nilai Sama
   subset[0].tieBreakNote = subset[0].tieBreakNote || 'Undian / Nilai Sama';
   return subset;
 }
@@ -6333,7 +6316,7 @@ function getBadmintonStatsAndRankings(sortMode = 'wins') {
   } else if (sortMode === 'wr') {
     return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.diff - a.diff || b.totalScore - a.totalScore);
   } else {
-    // Sesuai Regulasi Penentuan Juara: Menang -> Skor Selisih Poin (Poin Ronde - Poin Lawan) -> Total Poin
+    // Sesuai Regulasi Penentuan Juara (README / BUG-9): Menang -> H2H (tepat 2 seri) -> Total Poin -> Gelar
     return resolveStandingsByRules(list, getH2H);
   }
 }
@@ -6596,8 +6579,43 @@ function renderHistory() {
   }
 }
 
+// ── PENGHARGAAN GELAR JUARA SESI (BUG-9) ──
+function awardSessionWinnerTitle() {
+  if (currentSport !== 'badminton') return null;
+  // Pastikan ada setidaknya 1 match yang telah selesai
+  const hasFinishedMatch = bSchedule.some(r =>
+    (r.courts && r.courts.some(c => c.status === 'finished')) ||
+    (r.finishedCourts && r.finishedCourts.length > 0)
+  );
+  if (!hasFinishedMatch) return null;
+
+  if (!Array.isArray(bAwardedSessionIds)) bAwardedSessionIds = [];
+  const currentSessId = bSessionId || ('sess_' + Date.now());
+  if (bAwardedSessionIds.includes(currentSessId)) return null;
+
+  const rankings = getBadmintonStatsAndRankings('wins');
+  if (!rankings || rankings.length === 0) return null;
+  const winner = rankings[0];
+  if (!winner || winner.wins <= 0) return null;
+
+  const targetPlayer = bPlayers.find(p => p.id === winner.id);
+  if (targetPlayer) {
+    targetPlayer.titles = (targetPlayer.titles || 0) + 1;
+    bAwardedSessionIds.push(currentSessId);
+    return targetPlayer;
+  }
+  return null;
+}
+
 // ── FINAL PODIUM ──
 function renderFinalPodium() {
+  if (userRole === 'host') {
+    const awarded = awardSessionWinnerTitle();
+    if (awarded) {
+      persistAndBroadcast();
+    }
+  }
+
   const podium = document.getElementById('podiumTop3Container');
   const tbody = document.getElementById('finalTableBody');
   const btnNewMabar = document.getElementById('btnNewMabarSession');
@@ -6776,9 +6794,11 @@ function closeRulesModal() {
 
 function startNewMabarSession() {
   if (!checkEditPermission()) return;
-  if (!confirm('Mulai sesi mabar baru? Seluruh skor, antrian, dan riwayat pertandingan akan direset.')) return;
+  if (!confirm('Mulai sesi mabar baru?\n\n• Skor, antrian, dan riwayat pertandingan akan direset.\n• Daftar pemain, gelar juara (titles), dan pengaturan sesi tetap dipertahankan.')) return;
 
   if (currentSport === 'badminton') {
+    awardSessionWinnerTitle();
+    bSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
     const hasInactive = bPlayers.some(p => p.is_deleted || p.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF);
     let clearInactive = false;
     if (hasInactive) {
@@ -6997,6 +7017,8 @@ function getCurrentAppState() {
     bOpponentHistory,
     bShuttlecockInventory,
     bAuditLog,
+    bSessionId: bSessionId || ('sess_' + Date.now()),
+    bAwardedSessionIds: Array.isArray(bAwardedSessionIds) ? bAwardedSessionIds : [],
     sPlayers,
     sTeamCount,
     sTeams,
@@ -7040,6 +7062,8 @@ function loadFromLocalStorage() {
     if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object') bOpponentHistory = data.bOpponentHistory;
     if (data.bShuttlecockInventory && typeof data.bShuttlecockInventory === 'object') bShuttlecockInventory = data.bShuttlecockInventory;
     if (Array.isArray(data.bAuditLog)) bAuditLog = data.bAuditLog;
+    if (typeof data.bSessionId === 'string') bSessionId = data.bSessionId;
+    if (Array.isArray(data.bAwardedSessionIds)) bAwardedSessionIds = data.bAwardedSessionIds;
 
     if (Array.isArray(data.sPlayers)) sPlayers = data.sPlayers;
     if (typeof data.sTeamCount === 'number') sTeamCount = data.sTeamCount;

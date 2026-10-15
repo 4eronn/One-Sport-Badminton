@@ -616,6 +616,120 @@ it('BUG-2/Edit: Mengedit skor membalik pemenang dan memperbarui klasemen tanpa e
   assert.strictEqual(st2[2].diff, -6);
 });
 
+it('BUG-9: Skenario 2 pemain seri menang dengan H2H berbeda (H2H diprioritaskan sebelum Diff)', () => {
+  const p1 = { id: 1, name: 'Andi' };
+  const p2 = { id: 2, name: 'Budi' };
+  const p3 = { id: 3, name: 'Caca' };
+  const p4 = { id: 4, name: 'Dedi' };
+  const p5 = { id: 5, name: 'Eko' };
+  const players = [p1, p2, p3, p4, p5];
+
+  // Eko (P5) menang semua match (3 win) -> Juara 1 bersih
+  // Match 1: Eko (P5) vs Caca (P3) -> Eko menang 21-10
+  // Match 2: Eko (P5) vs Dedi (P4) -> Eko menang 21-10
+  // Match 3: Eko (P5) vs Andi (P1) -> Eko menang 21-18 (Andi skor 18, diff -3)
+  // Match 4: Andi (P1) vs Budi (P2) -> Andi menang 21-19 (H2H Andi > Budi, diff Andi +2, Budi -2)
+  // Match 5: Budi (P2) vs Caca (P3) -> Budi menang 21-15 (Budi diff +6)
+  // Total Win:
+  // Eko: 3 win
+  // Andi (P1): 1 win (diff -1, total poin 39)
+  // Budi (P2): 1 win (diff +4, total poin 40)
+  // Caca (P3): 0 win
+  // Dedi (P4): 0 win
+  const schedule = [
+    {
+      roundNumber: 1,
+      courts: [],
+      finishedCourts: [
+        { courtNumber: 1, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 10, winner: 'A', teamA: [p5], teamB: [p3] },
+        { courtNumber: 2, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 10, winner: 'A', teamA: [p5], teamB: [p4] },
+        { courtNumber: 3, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 18, winner: 'A', teamA: [p5], teamB: [p1] },
+        { courtNumber: 4, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 19, winner: 'A', teamA: [p1], teamB: [p2] },
+        { courtNumber: 5, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 15, winner: 'A', teamA: [p2], teamB: [p3] }
+      ]
+    }
+  ];
+
+  const standings = calculateStandings(players, schedule);
+  // P5 juara 1 (3 win).
+  // Tepat 2 pemain seri di 1 win: P1 dan P2.
+  // Walaupun P2 memiliki total poin lebih banyak (40 vs 39) dan diff lebih besar (+4 vs -1),
+  // aturan resmi (README) menegaskan H2H didahulukan saat tepat 2 pemain seri!
+  // P1 mengalahkan P2 langsung (Match 4), maka P1 harus di atas P2.
+  assert.strictEqual(standings[0].id, 5, 'Eko harus peringkat 1 (3 win)');
+  assert.strictEqual(standings[1].id, 1, 'P1 harus di atas P2 karena unggul H2H langsung');
+  assert.strictEqual(standings[2].id, 2, 'P2 harus berada di bawah P1');
+  assert.ok(standings[1].tieBreakNote.includes('H2H'), 'Catatan tie-break P1 harus mencantumkan H2H');
+});
+
+it('BUG-9: Skenario 3 pemain seri (H2H tidak dipakai, total poin menentukan urutan)', () => {
+  const p1 = { id: 1, name: 'Andi' };
+  const p2 = { id: 2, name: 'Budi' };
+  const p3 = { id: 3, name: 'Caca' };
+  const p4 = { id: 4, name: 'Dedi' };
+  const players = [p1, p2, p3, p4];
+
+  // Lingkaran H2H 3 arah (rock-paper-scissors):
+  // Andi kalahkan Budi (21-10)
+  // Budi kalahkan Caca (21-10)
+  // Caca kalahkan Andi (21-10)
+  // Dedi kalah semua
+  // P1 total poin: 21 + 10 = 31
+  // Tambahkan match lain agar total poin berbeda:
+  // Match 4: Caca vs Dedi (25-20) -> Caca menang, sekarang Caca 2 menang
+  // Agar 3 pemain sama-sama 1 menang:
+  // P1: main 2x, 1 menang (21-10 vs P2), 1 kalah (20-22 vs P4). Total poin: 41
+  // P2: main 2x, 1 menang (21-10 vs P3), 1 kalah (10-21 vs P1). Total poin: 31
+  // P3: main 2x, 1 menang (21-10 vs P1), 1 kalah (10-21 vs P2). Total poin: 31, tapi beri skor 15-21 jadi Total poin: 36
+  const schedule = [
+    {
+      roundNumber: 1,
+      courts: [],
+      finishedCourts: [
+        { courtNumber: 1, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 10, winner: 'A', teamA: [p1], teamB: [p2] },
+        { courtNumber: 2, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 15, winner: 'A', teamA: [p2], teamB: [p3] },
+        { courtNumber: 3, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 19, winner: 'A', teamA: [p3], teamB: [p1] }
+      ]
+    }
+  ];
+  // Di sini P1, P2, P3 masing-masing 1 menang.
+  // P1 total poin: 21 + 19 = 40
+  // P2 total poin: 10 + 21 = 31
+  // P3 total poin: 15 + 21 = 36
+  // Karena 3 pemain seri menang, H2H tidak dipakai, total poin menentukan urutan: P1 (40) -> P3 (36) -> P2 (31)
+  const standings = calculateStandings(players, schedule);
+  assert.strictEqual(standings[0].id, 1, 'P1 harus pertama (40 poin)');
+  assert.strictEqual(standings[1].id, 3, 'P3 harus kedua (36 poin)');
+  assert.strictEqual(standings[2].id, 2, 'P2 harus ketiga (31 poin)');
+  assert.ok(standings[0].tieBreakNote.includes('Total Poin') || standings[1].tieBreakNote.includes('Total Poin'));
+});
+
+it('BUG-9: Skenario titles menentukan urutan saat menang, H2H, dan total poin sama', () => {
+  const p1 = { id: 1, name: 'Andi', titles: 0 };
+  const p2 = { id: 2, name: 'Budi', titles: 2 };
+  const p3 = { id: 3, name: 'Caca', titles: 0 };
+  const players = [p1, p2, p3];
+
+  // P1 vs P3 (21-10) -> P1 menang (21 poin)
+  // P2 vs P3 (21-10) -> P2 menang (21 poin)
+  // P1 dan P2 tidak saling bertanding (H2H = 0), wins sama (1), totalScore sama (21), diff sama (+11).
+  const schedule = [
+    {
+      roundNumber: 1,
+      courts: [],
+      finishedCourts: [
+        { courtNumber: 1, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 10, winner: 'A', teamA: [p1], teamB: [p3] },
+        { courtNumber: 2, status: COURT_STATUS.FINISHED, scoreA: 21, scoreB: 10, winner: 'A', teamA: [p2], teamB: [p3] }
+      ]
+    }
+  ];
+
+  const standings = calculateStandings(players, schedule);
+  assert.strictEqual(standings[0].id, 2, 'P2 harus unggul karena memiliki 2 gelar juara (titles)');
+  assert.strictEqual(standings[1].id, 1, 'P1 harus kedua karena memiliki 0 gelar');
+  assert.ok(standings[0].tieBreakNote.includes('Gelar Juara'));
+});
+
 // ── TEST 5: Jadwal Masuk Lapangan Harus Di-ACC Host (Fitur 5) ──
 console.log('\n--- 5. Workflow ACC Host (Fitur 5) ---');
 
