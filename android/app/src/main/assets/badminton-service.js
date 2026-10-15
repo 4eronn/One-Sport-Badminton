@@ -257,12 +257,13 @@
 
   function cancelRequestsForPlayer(playerId, players = [], partnerRequests = []) {
     if (!partnerRequests || !Array.isArray(partnerRequests)) return;
+    const pIdStr = String(playerId);
     partnerRequests.forEach(req => {
       if (!req || (req.status !== REQUEST_STATUS.PENDING && req.status !== REQUEST_STATUS.APPROVED)) return;
-      if (req.requesterId === playerId || req.targetId === playerId) {
+      if (String(req.requesterId) === pIdStr || String(req.targetId) === pIdStr) {
         req.status = REQUEST_STATUS.CANCELLED;
-        if (req.requesterId !== playerId) {
-          const reqPlayer = players.find(p => p.id === req.requesterId);
+        if (String(req.requesterId) !== pIdStr) {
+          const reqPlayer = players.find(p => String(p.id) === String(req.requesterId));
           if (reqPlayer) {
             reqPlayer.request_used = false;
           }
@@ -275,11 +276,11 @@
    * Memproses penyelesaian cooldown ketika sebuah match selesai di salah satu lapangan.
    */
   function processCooldownsOnMatchEnd(players = [], finishedPlayers = [], defaultCooldown = 1, partnerRequests = []) {
-    const finishedIds = new Set(finishedPlayers.map(p => p.id));
+    const finishedIds = new Set(finishedPlayers.map(p => String(p.id)));
 
     players.forEach(p => {
       if (!p) return;
-      if (finishedIds.has(p.id)) {
+      if (finishedIds.has(String(p.id))) {
         // Cek apakah pemain berniat keluar setelah match
         if (p.leave_after_match) {
           p.status = PLAYER_STATUS.TIDAK_AKTIF;
@@ -318,8 +319,10 @@
     partnerRequests = [],
     partnerHistory = {}
   }) {
-    const requester = players.find(p => p.id === requesterId);
-    const target = players.find(p => p.id === targetId);
+    const reqIdStr = String(requesterId);
+    const tgtIdStr = String(targetId);
+    const requester = players.find(p => String(p.id) === reqIdStr);
+    const target = players.find(p => String(p.id) === tgtIdStr);
 
     if (!requester) {
       return { success: false, message: 'Pemain pemohon tidak ditemukan.' };
@@ -327,7 +330,7 @@
     if (!target) {
       return { success: false, message: 'Pemain rekan yang dituju tidak ditemukan.' };
     }
-    if (requesterId === targetId) {
+    if (reqIdStr === tgtIdStr) {
       return { success: false, message: 'Tidak bisa request diri sendiri.' };
     }
 
@@ -364,12 +367,13 @@
     // Cek apakah sudah ada request aktif yang melibatkan requester atau target
     const duplicateOrConflicting = partnerRequests.find(r => {
       if (!r || (r.status !== REQUEST_STATUS.PENDING && r.status !== REQUEST_STATUS.APPROVED)) return false;
-      return r.requesterId === requesterId || r.targetId === requesterId ||
-             r.requesterId === targetId || r.targetId === targetId;
+      const rReq = String(r.requesterId);
+      const rTgt = String(r.targetId);
+      return rReq === reqIdStr || rTgt === reqIdStr || rReq === tgtIdStr || rTgt === tgtIdStr;
     });
 
     if (duplicateOrConflicting) {
-      const isTargetBusy = duplicateOrConflicting.requesterId === targetId || duplicateOrConflicting.targetId === targetId;
+      const isTargetBusy = String(duplicateOrConflicting.requesterId) === tgtIdStr || String(duplicateOrConflicting.targetId) === tgtIdStr;
       return {
         success: false,
         message: isTargetBusy
@@ -412,13 +416,14 @@
    * Host membatalkan atau menolak request rekan tim.
    */
   function cancelOrRejectPartnerRequest(requestId, partnerRequests = [], players = []) {
-    const req = partnerRequests.find(r => r.id === requestId);
+    const reqIdStr = String(requestId);
+    const req = partnerRequests.find(r => String(r.id) === reqIdStr);
     if (!req) return { success: false, message: 'Request tidak ditemukan.' };
 
     req.status = REQUEST_STATUS.CANCELLED;
 
     // Kembalikan kuota jika request dibatalkan host sebelum terpakai
-    const requester = players.find(p => p.id === req.requesterId);
+    const requester = players.find(p => String(p.id) === String(req.requesterId));
     if (requester) {
       requester.request_used = false;
     }
@@ -648,11 +653,11 @@
     let candidateFour = eligibleQueue.slice(0, 4);
     const femalesInCandidate = candidateFour.filter(p => p && p.gender === 'P');
 
-    // c) Hindari 3 putra + 1 putri jika ada alternatif putra di sisa antrian
-    if (femalesInCandidate.length === 1) {
+    // c) Hindari 3 putra + 1 putri jika ada alternatif putra di sisa antrian (kecuali putri berlevel Advance yang dapat masuk match terbuka)
+    if (femalesInCandidate.length === 1 && !isAdvanceRole(femalesInCandidate[0])) {
       const remainingMales = eligibleQueue.slice(4).filter(p => p && p.gender !== 'P');
       if (remainingMales.length > 0) {
-        candidateFour = candidateFour.filter(p => p.id !== femalesInCandidate[0].id);
+        candidateFour = candidateFour.filter(p => String(p.id) !== String(femalesInCandidate[0].id));
         candidateFour.push(remainingMales[0]);
       }
     }
@@ -792,9 +797,22 @@
       return { success: false, message: 'Pemain di lapangan ini kurang dari 4 orang.' };
     }
 
+    // Cek apakah ada pemain yang tidak aktif atau dihapus
+    const inactivePlayer = matchPlayers.find(mp => {
+      const found = players.find(p => String(p.id) === String(mp.id));
+      return !found || found.is_deleted || found.status === PLAYER_STATUS.TIDAK_AKTIF;
+    });
+
+    if (inactivePlayer) {
+      return {
+        success: false,
+        message: `Pemain ${inactivePlayer.name || 'terkait'} sudah tidak aktif atau dihapus.`
+      };
+    }
+
     // Cek apakah ada pemain yang tidak sengaja sudah di lapangan lain
     const busyPlayer = matchPlayers.find(mp => {
-      const found = players.find(p => p.id === mp.id);
+      const found = players.find(p => String(p.id) === String(mp.id));
       return found && found.status === PLAYER_STATUS.DI_LAPANGAN;
     });
 
@@ -807,7 +825,7 @@
 
     // Ubah status pemain menjadi di_lapangan
     matchPlayers.forEach(mp => {
-      const found = players.find(p => p.id === mp.id);
+      const found = players.find(p => String(p.id) === String(mp.id));
       if (found) {
         found.status = PLAYER_STATUS.DI_LAPANGAN;
       }
@@ -819,6 +837,7 @@
 
     court.status = COURT_STATUS.SEDANG_MAIN;
     court.startedAt = Date.now();
+    court.matchId = court.matchId || ('m_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
 
     return { success: true, court };
   }
@@ -833,8 +852,8 @@
 
     const matchPlayers = [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean);
     matchPlayers.forEach(mp => {
-      const found = players.find(p => p.id === mp.id);
-      if (found && found.status !== PLAYER_STATUS.TIDAK_AKTIF) {
+      const found = players.find(p => String(p.id) === String(mp.id));
+      if (found && found.status !== PLAYER_STATUS.TIDAK_AKTIF && !found.is_deleted) {
         found.status = PLAYER_STATUS.MENUNGGU;
       }
     });
@@ -843,7 +862,7 @@
     const reqsToRestore = court.usedRequests || (court.usedRequest ? [court.usedRequest] : []);
     if (Array.isArray(partnerRequests)) {
       reqsToRestore.forEach(ur => {
-        const req = partnerRequests.find(r => r.id === ur.id);
+        const req = partnerRequests.find(r => String(r.id) === String(ur.id));
         if (req && req.status !== REQUEST_STATUS.CANCELLED) {
           req.status = REQUEST_STATUS.APPROVED;
         }
@@ -955,6 +974,7 @@
     court.winner = validation.winner;
     court.status = COURT_STATUS.FINISHED;
     court.finishedAt = Date.now();
+    court.matchId = court.matchId || ('m_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
 
     if (shuttlecocks) {
       court.shuttlecocks = {
@@ -973,7 +993,7 @@
     if (!wasAlreadyFinished) {
       // 1. Tambah counter jumlah_main pemain
       allCourtPlayers.forEach(cp => {
-        const p = players.find(x => x.id === cp.id);
+        const p = players.find(x => String(x.id) === String(cp.id));
         if (p) {
           p.jumlah_main = (p.jumlah_main || 0) + 1;
         }
@@ -1004,8 +1024,25 @@
       const reqsToComplete = court.usedRequests || (court.usedRequest ? [court.usedRequest] : []);
       if (Array.isArray(partnerRequests)) {
         reqsToComplete.forEach(ur => {
-          const req = partnerRequests.find(r => r.id === ur.id);
+          const req = partnerRequests.find(r => String(r.id) === String(ur.id));
           if (req) {
+            req.status = REQUEST_STATUS.COMPLETED;
+            req.completedAt = Date.now();
+          }
+        });
+
+        // Auto-complete request jika pemain berpasangan di tim A atau tim B
+        partnerRequests.forEach(req => {
+          if (!req || req.status !== REQUEST_STATUS.APPROVED) return;
+          const rReq = String(req.requesterId);
+          const rTgt = String(req.targetId);
+          const inA = teamA.length >= 2 &&
+            ((String(teamA[0].id) === rReq && String(teamA[1].id) === rTgt) ||
+             (String(teamA[1].id) === rReq && String(teamA[0].id) === rTgt));
+          const inB = teamB.length >= 2 &&
+            ((String(teamB[0].id) === rReq && String(teamB[1].id) === rTgt) ||
+             (String(teamB[1].id) === rReq && String(teamB[0].id) === rTgt));
+          if (inA || inB) {
             req.status = REQUEST_STATUS.COMPLETED;
             req.completedAt = Date.now();
           }
@@ -1083,9 +1120,16 @@
 
     schedule.forEach(round => {
       if (!round) return;
-      const allCourts = [...(round.courts || []), ...(round.finishedCourts || [])];
-      allCourts.forEach(c => {
+      const seenCourts = new Set();
+      const allCourts = [];
+      [...(round.courts || []), ...(round.finishedCourts || [])].forEach(c => {
         if (!c || c.status !== 'finished') return;
+        if (seenCourts.has(c)) return;
+        if (c.matchId && Array.from(seenCourts).some(sc => sc.matchId === c.matchId)) return;
+        seenCourts.add(c);
+        allCourts.push(c);
+      });
+      allCourts.forEach(c => {
         const sA = Number(c.scoreA) || 0;
         const sB = Number(c.scoreB) || 0;
         const isWinA = c.winner === 'A';
@@ -1301,6 +1345,7 @@
       paid: true,
       status: PLAYER_STATUS.MENUNGGU,
       jumlah_main: 0,
+      titles: typeof newPlayerData.titles === 'number' && newPlayerData.titles >= 0 ? Math.floor(newPlayerData.titles) : 0,
       request_used: false,
       cooldown_remaining: 0,
       leave_after_match: false,
@@ -1322,14 +1367,17 @@
    * Mengurangi pemain di tengah sesi tanpa menghapus histori skor/klasemen.
    */
   function removePlayerIncremental(playerId, players = [], activeCourts = [], partnerRequests = []) {
-    const player = players.find(p => p.id === playerId);
+    const pIdStr = String(playerId);
+    const player = players.find(p => String(p.id) === pIdStr);
     if (!player) return { success: false, message: 'Pemain tidak ditemukan.' };
 
-    // Cek apakah pemain sedang bermain di lapangan aktif
+    // Cek apakah pemain sedang bermain di pertandingan aktif (sedang main / ongoing)
     const isCurrentlyPlaying = activeCourts.some(c => {
-      if (!c || c.status === COURT_STATUS.FINISHED) return false;
+      if (!c) return false;
+      const isLiveMatch = c.status === COURT_STATUS.SEDANG_MAIN || c.status === 'sedang_main' || c.status === 'ongoing';
+      if (!isLiveMatch) return false;
       const courtPlayers = [...(c.teamA || []), ...(c.teamB || [])].filter(Boolean);
-      return courtPlayers.some(p => p.id === playerId);
+      return courtPlayers.some(p => String(p.id) === pIdStr);
     });
 
     if (isCurrentlyPlaying) {
@@ -1341,6 +1389,15 @@
         message: `${player.name} sedang bertanding di lapangan. Ditandai akan keluar otomatis setelah pertandingannya selesai.`
       };
     }
+
+    // Jika pemain ada di lapangan yang masih berstatus proposal (menunggu_acc), batalkan proposal lapangan tersebut
+    activeCourts.forEach(c => {
+      if (!c || (c.status !== COURT_STATUS.MENUNGGU_ACC && c.status !== 'menunggu_acc')) return;
+      const courtPlayers = [...(c.teamA || []), ...(c.teamB || [])].filter(Boolean);
+      if (courtPlayers.some(p => String(p.id) === pIdStr)) {
+        rejectCourtProposal(c, players, partnerRequests);
+      }
+    });
 
     // Jika sedang menunggu atau istirahat, segera nonaktifkan
     player.status = PLAYER_STATUS.TIDAK_AKTIF;
@@ -1371,7 +1428,15 @@
 
     schedule.forEach(round => {
       if (!round) return;
-      const allCourts = [...(round.courts || []), ...(round.finishedCourts || [])];
+      const seenCourts = new Set();
+      const allCourts = [];
+      [...(round.courts || []), ...(round.finishedCourts || [])].forEach(c => {
+        if (!c) return;
+        if (seenCourts.has(c)) return;
+        if (c.matchId && Array.from(seenCourts).some(sc => sc.matchId === c.matchId)) return;
+        seenCourts.add(c);
+        allCourts.push(c);
+      });
       allCourts.forEach(c => {
         if (!c) return;
         const sh = c.shuttlecocks || { baru: 0, bekas_layak: 0, bekas_dihasilkan: 0 };

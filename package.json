@@ -1,0 +1,31 @@
+{
+  "name": "one-sport-badminton",
+  "version": "3.2.0",
+  "description": "Match rotation, live scoring, automatic standings, and Vercel database backend for casual badminton sessions",
+  "main": "badminton-service.js",
+  "scripts": {
+    "test": "node test-badminton.js && node test-mqtt-auth.js",
+    "start": "node -e \"console.log('Serve index.html with any static server or deploy to Vercel')\""
+  },
+  "dependencies": {
+    "@vercel/postgres": "^0.10.0",
+    "pg": "^8.13.1",
+    "@vercel/kv": "^3.0.0",
+    "@upstash/redis": "^1.34.3"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "badminton",
+    "rotation",
+    "standings",
+    "live-scoring",
+    "vercel",
+    "postgres",
+    "kv"
+  ],
+  "author": "4eronn",
+  "license": "MIT"
+}

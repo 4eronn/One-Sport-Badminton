@@ -14,3 +14,5 @@ android/app/build/
 local.properties
 .idea/
 *.iml
+node_modules/
+.vercel/

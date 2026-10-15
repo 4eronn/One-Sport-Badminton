@@ -1197,6 +1197,151 @@ it('validateAndNormalizeState memvalidasi tipe, membatasi panjang nama, membuang
   assert.strictEqual(validateAndNormalizeState([1, 2, 3]), null);
 });
 
+console.log('\n--- 9. Robustness & Fix Audit (Edge Cases) ---');
+
+it('removePlayerIncremental membatalkan proposal court (menunggu_acc) dan menonaktifkan pemain langsung tanpa leave_after_match', () => {
+  const p1 = { id: 'p1', name: 'Player 1', status: PLAYER_STATUS.MENUNGGU, leave_after_match: false };
+  const p2 = { id: 'p2', name: 'Player 2', status: PLAYER_STATUS.MENUNGGU };
+  const p3 = { id: 'p3', name: 'Player 3', status: PLAYER_STATUS.MENUNGGU };
+  const p4 = { id: 'p4', name: 'Player 4', status: PLAYER_STATUS.MENUNGGU };
+  const players = [p1, p2, p3, p4];
+  const court = {
+    id: 'court_1',
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const res = removePlayerIncremental('p1', players, [court], []);
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.mode, 'immediate_inactive');
+  assert.strictEqual(p1.leave_after_match, false);
+  assert.strictEqual(p1.status, PLAYER_STATUS.TIDAK_AKTIF);
+  assert.strictEqual(court.status, COURT_STATUS.KOSONG);
+  assert.deepStrictEqual(court.teamA, []);
+  assert.deepStrictEqual(court.teamB, []);
+  assert.strictEqual(p2.status, PLAYER_STATUS.MENUNGGU);
+  assert.strictEqual(p3.status, PLAYER_STATUS.MENUNGGU);
+  assert.strictEqual(p4.status, PLAYER_STATUS.MENUNGGU);
+});
+
+it('approveCourtProposal menolak proposal jika ada pemain yang tidak aktif atau terhapus', () => {
+  const p1 = { id: 1, name: 'P1', status: PLAYER_STATUS.MENUNGGU };
+  const p2 = { id: 2, name: 'P2', status: PLAYER_STATUS.MENUNGGU };
+  const p3 = { id: 3, name: 'P3', status: PLAYER_STATUS.TIDAK_AKTIF };
+  const p4 = { id: 4, name: 'P4', status: PLAYER_STATUS.MENUNGGU };
+  const players = [p1, p2, p3, p4];
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const res = approveCourtProposal(court, players, []);
+  assert.strictEqual(res.success, false);
+  assert.strictEqual(court.status, COURT_STATUS.MENUNGGU_ACC);
+});
+
+it('Dukungan ID string pada processCooldownsOnMatchEnd dan recordMatchFinished', () => {
+  const p1 = { id: 'str_1', name: 'Alpha', status: PLAYER_STATUS.ISTIRAHAT, cooldown_remaining: 1 };
+  const p2 = { id: 'str_2', name: 'Beta', status: PLAYER_STATUS.DI_LAPANGAN, cooldown_remaining: 0 };
+  const players = [p1, p2];
+
+  processCooldownsOnMatchEnd(players, [p2], 1);
+  assert.strictEqual(p1.status, PLAYER_STATUS.MENUNGGU);
+  assert.strictEqual(p1.cooldown_remaining, 0);
+
+  const pa = { id: 'pa', name: 'PA', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const pb = { id: 'pb', name: 'PB', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const pc = { id: 'pc', name: 'PC', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const pd = { id: 'pd', name: 'PD', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const matchPlayers = [pa, pb, pc, pd];
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.SEDANG_MAIN,
+    teamA: [pa, pb],
+    teamB: [pc, pd]
+  };
+
+  const finishRes = recordMatchFinished({
+    court,
+    scoreA: 21,
+    scoreB: 15,
+    winner: 'A',
+    players: matchPlayers,
+    partnerHistory: {},
+    opponentHistory: {},
+    defaultCooldown: 1
+  });
+  assert.strictEqual(finishRes.success, true);
+  assert.strictEqual(pa.jumlah_main, 1);
+  assert.strictEqual(pb.jumlah_main, 1);
+  assert.strictEqual(pc.jumlah_main, 1);
+  assert.strictEqual(pd.jumlah_main, 1);
+
+  const standings = calculateStandings(matchPlayers, [{ courts: [court] }]);
+  assert.strictEqual(standings[0].id, 'pa');
+  assert.strictEqual(standings[0].wins, 1);
+  assert.strictEqual(standings[0].diff, 6);
+});
+
+it('recordMatchFinished otomatis menyelesaikan (COMPLETED) partner request aktif saat pasangan bermain bersama', () => {
+  const p1 = { id: 10, name: 'P10', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const p2 = { id: 20, name: 'P20', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const p3 = { id: 30, name: 'P30', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const p4 = { id: 40, name: 'P40', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
+  const players = [p1, p2, p3, p4];
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.SEDANG_MAIN,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+  const req = {
+    id: 'req_1',
+    requesterId: 10,
+    targetId: 20,
+    status: REQUEST_STATUS.APPROVED
+  };
+
+  const res = recordMatchFinished({
+    court,
+    scoreA: 21,
+    scoreB: 18,
+    winner: 'A',
+    players,
+    partnerHistory: {},
+    opponentHistory: {},
+    defaultCooldown: 1,
+    partnerRequests: [req]
+  });
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(req.status, REQUEST_STATUS.COMPLETED);
+});
+
+it('pickNextFourPlayersForMatch mengizinkan pemain putri level Advance masuk ke match terbuka', () => {
+  const pAdvFemale = { id: 1, name: 'Susi Susanti', gender: 'P', role: 'Advance', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0, waitingSince: 1 };
+  const pMale1 = { id: 2, name: 'Male 1', gender: 'L', role: 'Intermediate', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0, waitingSince: 2 };
+  const pMale2 = { id: 3, name: 'Male 2', gender: 'L', role: 'Advance', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0, waitingSince: 3 };
+  const pMale3 = { id: 4, name: 'Male 3', gender: 'L', role: 'Intermediate', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0, waitingSince: 4 };
+  const pMale4 = { id: 5, name: 'Male 4', gender: 'L', role: 'Intermediate', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0, waitingSince: 5 };
+
+  const eligibleQueue = [pAdvFemale, pMale1, pMale2, pMale3, pMale4];
+  const partnerRequests = [];
+  const partnerHistory = {};
+  const allPlayers = [pAdvFemale, pMale1, pMale2, pMale3, pMale4];
+
+  const result = pickNextFourPlayersForMatch(eligibleQueue, partnerRequests, partnerHistory, allPlayers);
+  assert.ok(result);
+  assert.strictEqual(Array.isArray(result), true);
+  assert.strictEqual(result.length, 4);
+  const pickedIds = result.map(p => p.id);
+  assert.ok(pickedIds.includes(1), 'Pemain putri Advance harus tetap berada dalam 4 pemain terpilih dan tidak ditukar');
+});
+
 (async () => {
   console.log('\n--- SEC-2. Autentikasi Pesan MQTT & TOFU (MqttAuth) ---');
   await itAsync('Host menandatangani pesan dengan HMAC dan penerima menolak signature palsu/replay', async () => {

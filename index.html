@@ -1909,6 +1909,7 @@
       </div>
     </div>
     <div class="header-actions">
+      <span id="vercelDbStatusBadge" style="font-size:0.7rem; font-weight:800; padding:4px 9px; border-radius:999px; background:#0284C7; color:#FFF; display:inline-flex; align-items:center; gap:4px; cursor:default;" title="Status Sinkronisasi Database Vercel">⚡ Vercel DB</span>
       <button class="btn-role-badge is-spectator" id="btnHeaderRoleSwitch" onclick="handleRoleSwitchClick()" title="Beralih Peran">
         <span>👑</span>
         <span id="headerRoleLabel">Masuk Host</span>
@@ -3271,8 +3272,109 @@ const ROLE_SCORES = {
   'FW': 3
 };
 
+// ── VERCEL DATABASE CLIENT & SYNC MODULE ──
+const VercelDbSync = {
+  dbProvider: 'standby',
+
+  async loadInitialState() {
+    const roomId = currentRoomId || 'DEFAULT';
+    try {
+      const res = await fetch(`/api/state?roomId=${encodeURIComponent(roomId)}`);
+      if (!res.ok) {
+        this.updateIndicator('standby');
+        return;
+      }
+      const json = await res.json();
+      if (json && json.success) {
+        this.dbProvider = json.provider || 'connected';
+        this.updateIndicator(this.dbProvider);
+        if (json.data && typeof applyReceivedState === 'function') {
+          applyReceivedState(json.data);
+          console.log('[Vercel DB] State sinkron dari database:', json.provider);
+        }
+      } else {
+        this.updateIndicator('standby');
+      }
+    } catch (e) {
+      this.updateIndicator('standby');
+    }
+  },
+
+  async saveState(roomId, payload) {
+    const targetRoom = roomId || currentRoomId || 'DEFAULT';
+    try {
+      const res = await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: targetRoom, payload })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        this.dbProvider = json.provider || 'connected';
+        this.updateIndicator(this.dbProvider);
+        return true;
+      }
+    } catch (e) {
+      this.updateIndicator('standby');
+    }
+    return false;
+  },
+
+  async savePlayer(roomId, player) {
+    const targetRoom = roomId || currentRoomId || 'DEFAULT';
+    try {
+      await fetch('/api/players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: targetRoom, player })
+      });
+    } catch (e) {}
+  },
+
+  async deletePlayer(roomId, playerId) {
+    const targetRoom = roomId || currentRoomId || 'DEFAULT';
+    try {
+      await fetch(`/api/players?id=${encodeURIComponent(playerId)}&roomId=${encodeURIComponent(targetRoom)}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {}
+  },
+
+  updateIndicator(status) {
+    const el = document.getElementById('vercelDbStatusBadge');
+    if (!el) return;
+    if (status === 'postgres') {
+      el.textContent = '⚡ Vercel Postgres';
+      el.style.display = 'inline-flex';
+      el.style.background = '#059669';
+      el.style.color = '#FFF';
+    } else if (status === 'kv') {
+      el.textContent = '⚡ Vercel KV';
+      el.style.display = 'inline-flex';
+      el.style.background = '#7C3AED';
+      el.style.color = '#FFF';
+    } else if (status === 'memory' || status === 'connected') {
+      el.textContent = '⚡ Vercel DB Ready';
+      el.style.display = 'inline-flex';
+      el.style.background = '#0284C7';
+      el.style.color = '#FFF';
+    } else {
+      el.textContent = '⚡ Vercel DB';
+      el.style.display = 'inline-flex';
+      el.style.background = '#64748B';
+      el.style.color = '#FFF';
+    }
+  }
+};
+
 // ── INITIALIZATION ──
 window.addEventListener('DOMContentLoaded', () => {
+  // Jika ini pertama kali pembaruan versi bersih, hapus cache lokal lama agar murni kosong untuk input manual
+  if (!localStorage.getItem('onesport_v3_clean_start')) {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem('onesport_v3_clean_start', 'true');
+  }
+
   const hasSaved = loadFromLocalStorage();
   if (!hasSaved) {
     bPlayers = [];
@@ -3280,7 +3382,14 @@ window.addEventListener('DOMContentLoaded', () => {
     bSchedule = [];
     sTeams = [];
     sMatches = [];
+    bPartnerRequests = [];
+    bPartnerHistory = {};
+    bOpponentHistory = {};
+    bAuditLog = [];
   }
+
+  // Sinkronisasi data dari Database Vercel
+  VercelDbSync.loadInitialState();
 
   document.getElementById('finalTitleHeader').textContent = sessionTitle;
   document.getElementById('settingSessionTitle').value = sessionTitle;
@@ -3428,10 +3537,15 @@ function loadPresetPlayers() {}
 
 function clearAllPlayers() {
   if (!checkEditPermission()) return;
-  if (!confirm('Hapus semua pemain dan reset jadwal?')) return;
+  if (!confirm('Hapus semua data pemain dan reset jadwal? Data akan dikosongkan untuk input manual baru.')) return;
   if (currentSport === 'badminton') {
     bPlayers = [];
     bSchedule = [];
+    bPartnerRequests = [];
+    bPartnerHistory = {};
+    bOpponentHistory = {};
+    bAuditLog = [];
+    ensureBadmintonCourtsInitialized();
   } else {
     sPlayers = [];
     sTeams = [];
@@ -3440,7 +3554,11 @@ function clearAllPlayers() {
   updateSessionLabels();
   renderPlayersList();
   renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
   persistAndBroadcast();
+  showToast('Semua data pemain telah dihapus (kosong) dan disinkronkan ke Database Vercel.', 'info');
 }
 
 function updateSessionLabels() {
@@ -3504,6 +3622,7 @@ function addNewPlayer() {
       gender: genderInput.value,
       role: roleInput.value
     });
+    VercelDbSync.savePlayer(currentRoomId, newP);
     if (newP.warning) {
       showToast(`⚠️ Peringatan: ${newP.warning} Pemain tetap ditambahkan.`, 'warning');
     } else {
@@ -3518,6 +3637,7 @@ function addNewPlayer() {
       paid: true
     };
     sPlayers.push(newP);
+    VercelDbSync.savePlayer(currentRoomId, newP);
     generateSoccerTeams();
   }
 
@@ -3612,8 +3732,10 @@ function renderPlayersList() {
 
   if (list.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">
-        Belum ada pemain terdaftar.
+      <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:0.85rem; background:#FFFFFF; border:1.5px dashed var(--border-color); border-radius:var(--radius-lg); margin:10px 0;">
+        <div style="font-size:2.2rem; margin-bottom:8px;">🏸</div>
+        <strong style="color:var(--brand-navy-dark); font-size:0.95rem; display:block; margin-bottom:4px;">Daftar Pemain Kosong</strong>
+        <span>Belum ada pemain. Tambahkan nama pemain secara manual di atas untuk memulai sesi mabar. Data akan otomatis tersimpan ke Database Vercel.</span>
       </div>
     `;
     return;
@@ -6147,6 +6269,9 @@ function resolveByTitles(subset, getH2H) {
 
 // ── PERHITUNGAN STATISTIK & KLASEMEN BADMINTON ──
 function getBadmintonStatsAndRankings(sortMode = 'wins') {
+  if (window.BadmintonService && typeof BadmintonService.calculateStandings === 'function') {
+    return BadmintonService.calculateStandings(bPlayers, bSchedule, sortMode);
+  }
   const stats = {};
   bPlayers.forEach(p => {
     stats[p.id] = {
@@ -6529,7 +6654,7 @@ function awardSessionWinnerTitle() {
   const winner = rankings[0];
   if (!winner || winner.wins <= 0) return null;
 
-  const targetPlayer = bPlayers.find(p => p.id === winner.id);
+  const targetPlayer = bPlayers.find(p => String(p.id) === String(winner.id));
   if (targetPlayer) {
     targetPlayer.titles = (targetPlayer.titles || 0) + 1;
     bAwardedSessionIds.push(currentSessId);
@@ -7036,13 +7161,20 @@ function persistAndBroadcast(skipBroadcast = false) {
   if (userRole === 'host' || isCollabMode) {
     currentRev++;
   }
+  const appState = getCurrentAppState();
   if (isOnlineActive && currentRoomId) {
     try {
-      localStorage.setItem('onesport_room_cache_' + currentRoomId, JSON.stringify(getCurrentAppState()));
+      localStorage.setItem('onesport_room_cache_' + currentRoomId, JSON.stringify(appState));
     } catch(e){}
     saveActiveLiveSession();
   }
   saveToLocalStorage();
+
+  // Sinkronisasi otomatis ke Database Vercel
+  if (userRole === 'host' || isCollabMode) {
+    VercelDbSync.saveState(currentRoomId, appState);
+  }
+
   if (!skipBroadcast && isOnlineActive && mqttClient && currentRoomId && (userRole === 'host' || isCollabMode)) {
     broadcastStateUpdate();
   }
@@ -8140,6 +8272,9 @@ function applyReceivedState(incomingData) {
   if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object') bOpponentHistory = data.bOpponentHistory;
   if (data.bShuttlecockInventory && typeof data.bShuttlecockInventory === 'object') bShuttlecockInventory = data.bShuttlecockInventory;
   if (Array.isArray(data.bAuditLog)) bAuditLog = data.bAuditLog;
+  if (typeof data.bSessionId === 'string') bSessionId = data.bSessionId;
+  if (Array.isArray(data.bAwardedSessionIds)) bAwardedSessionIds = data.bAwardedSessionIds;
+  if (typeof data.bOfficialScoring === 'boolean') bOfficialScoring = data.bOfficialScoring;
 
   if (window.BadmintonService) {
     const curCourts = (bSchedule[bCurrentRoundIndex] && bSchedule[bCurrentRoundIndex].courts) || [];
