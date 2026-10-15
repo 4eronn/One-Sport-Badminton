@@ -27,10 +27,29 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare Web Distribution (_site)
+        run: |
+          mkdir -p _site
+          cp -f index.html _site/
+          cp -f badminton-service.js _site/
+          cp -f minisoccer.html _site/
+          cp -f manifest.json _site/
+          cp -f sw.js _site/
+          cp -f onesport-home-hero.jpg _site/
+          if ls logo*.png 1> /dev/null 2>&1; then
+            cp -f logo*.png _site/
+          fi
+          if [ -f badminton.html ]; then
+            cp -f badminton.html _site/
+          fi
+          if [ -d vendor ]; then
+            cp -rf vendor _site/
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment
