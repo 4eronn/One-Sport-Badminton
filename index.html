@@ -3240,7 +3240,7 @@ let bCooldownMatches = 1; // Default cooldown 1 match setelah main
 let bPartnerRequests = []; // Daftar request rekan tim (Maks. 1x)
 let bPartnerHistory = {}; // Riwayat berpasangan (idA-idB -> count)
 let bOpponentHistory = {}; // Riwayat bertanding lawan (idA-idB -> count)
-let bShuttlecockInventory = { stokAwalBaru: 24, stokAwalBekas: 12, terpakaiBaru: 0, terpakaiBekas: 0, bekasLayakDidapat: 0 };
+let bShuttlecockInventory = { stokAwalBaru: 24, stokAwalBekas: 12 };
 let bAuditLog = []; // Log riwayat aksi manual & override host
 let bSessionId = 'sess_' + Date.now();
 let bAwardedSessionIds = [];
@@ -5971,11 +5971,14 @@ function closeShuttlecockModal() {
 
 function saveShuttlecockInventorySettings() {
   if (!checkEditPermission()) return;
-  const baru = Number(document.getElementById('inputSettingStokBaru').value) || 0;
-  const bekas = Number(document.getElementById('inputSettingStokBekas').value) || 0;
+  const baru = Math.max(0, Math.floor(Number(document.getElementById('inputSettingStokBaru').value) || 0));
+  const bekas = Math.max(0, Math.floor(Number(document.getElementById('inputSettingStokBekas').value) || 0));
 
   bShuttlecockInventory.stokAwalBaru = baru;
   bShuttlecockInventory.stokAwalBekas = bekas;
+  delete bShuttlecockInventory.terpakaiBaru;
+  delete bShuttlecockInventory.terpakaiBekas;
+  delete bShuttlecockInventory.bekasLayakDidapat;
 
   persistAndBroadcast();
   openShuttlecockModal();

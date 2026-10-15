@@ -856,6 +856,64 @@ it('Mencatat penggunaan kok baru dan bekas serta update sisa stok', () => {
   assert.strictEqual(summary.sisaBekas, 10); // 12 - 3 + 1
 });
 
+it('Q-2: recordMatchFinished tidak memutasi inventory langsung, clamp input kok >= 0 dan bulat, re-record tidak duplikasi ringkasan', () => {
+  const inv = createDefaultShuttlecockInventory(20, 10);
+  // Default baru tidak boleh memiliki counter terpakaiBaru dll
+  assert.strictEqual('terpakaiBaru' in inv, false, 'stok default baru tidak menyimpan counter terpakaiBaru');
+
+  const court = {
+    courtNumber: 1,
+    teamA: [{ id: 1, name: 'P1' }, { id: 2, name: 'P2' }],
+    teamB: [{ id: 3, name: 'P3' }, { id: 4, name: 'P4' }],
+    status: 'sedang_main'
+  };
+
+  const schedule = [{ courts: [court], finishedCourts: [] }];
+
+  // Input dengan bilangan negatif dan desimal harus diclamp ke integer >= 0
+  const res1 = recordMatchFinished({
+    court,
+    scoreA: 21,
+    scoreB: 15,
+    winner: 'A',
+    players: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+    shuttlecocks: { baru: -2, bekas_layak: 2.8, bekas_dihasilkan: '1' },
+    inventory: inv
+  });
+  assert.strictEqual(res1.success, true);
+  assert.strictEqual(court.shuttlecocks.baru, 0, 'kok baru negatif diclamp ke 0');
+  assert.strictEqual(court.shuttlecocks.bekas_layak, 2, 'kok bekas 2.8 dibulatkan ke bawah');
+  assert.strictEqual(court.shuttlecocks.bekas_dihasilkan, 1);
+  assert.strictEqual('terpakaiBaru' in inv, false, 'inventory tidak dimutasi langsung oleh recordMatchFinished');
+
+  // Ringkasan dari schedule
+  const sum1 = getShuttlecockSummary(schedule, inv);
+  assert.strictEqual(sum1.terpakaiBaru, 0);
+  assert.strictEqual(sum1.terpakaiBekas, 2);
+  assert.strictEqual(sum1.sisaBaru, 20);
+  assert.strictEqual(sum1.sisaBekas, 9); // 10 - 2 + 1
+
+  // Re-record / edit skor match yang sama
+  const res2 = recordMatchFinished({
+    court,
+    scoreA: 21,
+    scoreB: 18,
+    winner: 'A',
+    players: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+    shuttlecocks: { baru: 1, bekas_layak: 2, bekas_dihasilkan: 1 },
+    inventory: inv
+  });
+  assert.strictEqual(res2.success, true);
+  assert.strictEqual('terpakaiBaru' in inv, false);
+
+  const sum2 = getShuttlecockSummary(schedule, inv);
+  assert.strictEqual(sum2.terpakaiBaru, 1);
+  assert.strictEqual(sum2.terpakaiBekas, 2);
+  assert.strictEqual(sum2.sisaBaru, 19);
+  assert.strictEqual(sum2.sisaBekas, 9);
+});
+
+
 // ── TEST 7: Minimal Main 3x Per Pemain (Fitur 7) ──
 console.log('\n--- 7. Minimal Main 3x Per Pemain (Fitur 7) ---');
 

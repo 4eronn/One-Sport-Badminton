@@ -915,17 +915,11 @@
 
     if (shuttlecocks) {
       court.shuttlecocks = {
-        baru: Number(shuttlecocks.baru) || 0,
-        bekas_layak: Number(shuttlecocks.bekas_layak) || 0,
-        bekas_dihasilkan: Number(shuttlecocks.bekas_dihasilkan) || 0
+        baru: Math.max(0, Math.floor(Number(shuttlecocks.baru) || 0)),
+        bekas_layak: Math.max(0, Math.floor(Number(shuttlecocks.bekas_layak) || 0)),
+        bekas_dihasilkan: Math.max(0, Math.floor(Number(shuttlecocks.bekas_dihasilkan) || 0))
       };
-
-      // Update stok inventaris jika ada
-      if (inventory) {
-        inventory.terpakaiBaru = (inventory.terpakaiBaru || 0) + court.shuttlecocks.baru;
-        inventory.terpakaiBekas = (inventory.terpakaiBekas || 0) + court.shuttlecocks.bekas_layak;
-        inventory.bekasLayakDidapat = (inventory.bekasLayakDidapat || 0) + court.shuttlecocks.bekas_dihasilkan;
-      }
+      // Q-2: Mutasi langsung ke inventory dihapus. Sumber kebenaran tunggal adalah getShuttlecockSummary(schedule, inventory).
     }
 
     const teamA = (court.teamA || []).filter(Boolean);
@@ -1306,11 +1300,8 @@
   // ── 9. FITUR 6: MONITORING & MANAJEMEN KOK ──
   function createDefaultShuttlecockInventory(stokAwalBaru = 24, stokAwalBekas = 12) {
     return {
-      stokAwalBaru: Number(stokAwalBaru) || 0,
-      stokAwalBekas: Number(stokAwalBekas) || 0,
-      terpakaiBaru: 0,
-      terpakaiBekas: 0,
-      bekasLayakDidapat: 0
+      stokAwalBaru: Math.max(0, Math.floor(Number(stokAwalBaru) || 0)),
+      stokAwalBekas: Math.max(0, Math.floor(Number(stokAwalBekas) || 0))
     };
   }
 
@@ -1345,8 +1336,8 @@
     });
 
     const inv = inventory || createDefaultShuttlecockInventory();
-    const sisaBaru = Math.max(0, inv.stokAwalBaru - terpakaiBaru);
-    const sisaBekas = Math.max(0, inv.stokAwalBekas - terpakaiBekas + bekasLayakDidapat);
+    const sisaBaru = Math.max(0, (Number(inv.stokAwalBaru) || 0) - terpakaiBaru);
+    const sisaBekas = Math.max(0, (Number(inv.stokAwalBekas) || 0) - terpakaiBekas + bekasLayakDidapat);
 
     return {
       terpakaiBaru,
@@ -1396,12 +1387,12 @@
     let resetInventory = null;
     if (inventory) {
       resetInventory = {
-        stokAwalBaru: Number(inventory.stokAwalBaru) || 24,
-        stokAwalBekas: Number(inventory.stokAwalBekas) || 12,
-        terpakaiBaru: 0,
-        terpakaiBekas: 0,
-        bekasLayakDidapat: 0
+        stokAwalBaru: Math.max(0, Math.floor(Number(inventory.stokAwalBaru) || 24)),
+        stokAwalBekas: Math.max(0, Math.floor(Number(inventory.stokAwalBekas) || 12))
       };
+      if ('terpakaiBaru' in inventory) resetInventory.terpakaiBaru = 0;
+      if ('terpakaiBekas' in inventory) resetInventory.terpakaiBekas = 0;
+      if ('bekasLayakDidapat' in inventory) resetInventory.bekasLayakDidapat = 0;
     }
 
     return {
@@ -1538,11 +1529,18 @@
       const inv = data.bShuttlecockInventory;
       clean.bShuttlecockInventory = {
         stokAwalBaru: typeof inv.stokAwalBaru === 'number' && inv.stokAwalBaru >= 0 ? Math.floor(inv.stokAwalBaru) : 24,
-        stokAwalBekas: typeof inv.stokAwalBekas === 'number' && inv.stokAwalBekas >= 0 ? Math.floor(inv.stokAwalBekas) : 12,
-        terpakaiBaru: typeof inv.terpakaiBaru === 'number' && inv.terpakaiBaru >= 0 ? Math.floor(inv.terpakaiBaru) : 0,
-        terpakaiBekas: typeof inv.terpakaiBekas === 'number' && inv.terpakaiBekas >= 0 ? Math.floor(inv.terpakaiBekas) : 0,
-        bekasLayakDidapat: typeof inv.bekasLayakDidapat === 'number' && inv.bekasLayakDidapat >= 0 ? Math.floor(inv.bekasLayakDidapat) : 0
+        stokAwalBekas: typeof inv.stokAwalBekas === 'number' && inv.stokAwalBekas >= 0 ? Math.floor(inv.stokAwalBekas) : 12
       };
+      // Q-2: Baca-tolerir counter lama jika ada di data lama (backward compatibility)
+      if (typeof inv.terpakaiBaru === 'number') {
+        clean.bShuttlecockInventory.terpakaiBaru = Math.max(0, Math.floor(inv.terpakaiBaru));
+      }
+      if (typeof inv.terpakaiBekas === 'number') {
+        clean.bShuttlecockInventory.terpakaiBekas = Math.max(0, Math.floor(inv.terpakaiBekas));
+      }
+      if (typeof inv.bekasLayakDidapat === 'number') {
+        clean.bShuttlecockInventory.bekasLayakDidapat = Math.max(0, Math.floor(inv.bekasLayakDidapat));
+      }
     }
 
     if (Array.isArray(data.bAuditLog)) {
