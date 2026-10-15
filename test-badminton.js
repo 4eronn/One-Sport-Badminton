@@ -1145,9 +1145,34 @@ it('validateAndNormalizeState memvalidasi tipe, membatasi panjang nama, membuang
   const manyPlayers = Array.from({ length: 201 }, (_, i) => ({ id: i, name: `P${i}` }));
   assert.strictEqual(validateAndNormalizeState({ bPlayers: manyPlayers }), null);
 
-  // Menolak non-objek
+  // Q-6: Menolak jika total match > 2000
+  const hugeSchedule = Array.from({ length: 21 }, () => ({
+    courts: Array.from({ length: 100 }, (_, i) => ({ courtNumber: i }))
+  })); // 2100 matches
+  assert.strictEqual(validateAndNormalizeState({ bSchedule: hugeSchedule }), null);
+
+  // Q-6: Menolak pemain tanpa id atau id null
+  assert.strictEqual(validateAndNormalizeState({ bPlayers: [{ name: 'Tanpa ID' }] }), null);
+  assert.strictEqual(validateAndNormalizeState({ bPlayers: [{ id: null, name: 'ID Null' }] }), null);
+
+  // Q-6: Menolak pemain yang bukan objek
+  assert.strictEqual(validateAndNormalizeState({ bPlayers: ['stringBukanObjek'] }), null);
+
+  // Q-6: Prototype pollution / injection diabaikan
+  const malicious = {
+    __proto__: { isAdmin: true },
+    constructor: { prototype: { poll: true } },
+    bPlayers: [{ id: 'player_alpha', name: 'Valid Alpha', role: 'Pemula' }]
+  };
+  const safeNormalized = validateAndNormalizeState(malicious);
+  assert.ok(safeNormalized);
+  assert.strictEqual(safeNormalized.isAdmin, undefined);
+  assert.strictEqual(safeNormalized.bPlayers[0].id, 'player_alpha');
+
+  // Menolak non-objek atau array di root
   assert.strictEqual(validateAndNormalizeState(null), null);
   assert.strictEqual(validateAndNormalizeState('invalid'), null);
+  assert.strictEqual(validateAndNormalizeState([1, 2, 3]), null);
 });
 
 (async () => {
