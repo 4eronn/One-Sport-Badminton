@@ -2451,8 +2451,8 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
         Buka Mode Online & Siaran Live
       </button>
-      <button class="btn-court-action" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan (v1.1.0)
+      <button class="btn-court-action" id="btnCheckAppUpdateSettings" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan APK (v1.1.0)
       </button>
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
@@ -3012,6 +3012,13 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span>Unduh Update (Buka GitHub Release)</span>
       </a>
+      <button class="btn-court-action" style="width: 100%; padding: 10px; font-weight: 700; background: #F1F5F9; color: var(--text-secondary);" onclick="closeUpdateModal()">
+        <span>Nanti Saja</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL: INPUT SKOR LANGSUNG & KOK PER LAPANGAN (FITUR 4 & 6) ── -->
 <div class="modal-overlay" id="directCourtScoreModalOverlay" style="z-index: 99997;">
   <div class="modal-box" style="max-width: 440px;">
@@ -3441,10 +3448,16 @@ window.addEventListener('DOMContentLoaded', () => {
     if (splash) splash.classList.add('hide');
   }, 750);
 
-  // Auto detect updates in background
-  setTimeout(() => {
-    checkAppUpdates(false);
-  }, 2200);
+  // Auto detect updates in background (Hanya untuk aplikasi Android APK, Web tidak pakai)
+  if (typeof isAndroidApk === 'function' && isAndroidApk()) {
+    setTimeout(() => {
+      checkAppUpdates(false);
+    }, 2500);
+  }
+  const btnUp = document.getElementById('btnCheckAppUpdateSettings');
+  if (btnUp) {
+    btnUp.style.display = (typeof isAndroidApk === 'function' && isAndroidApk()) ? 'flex' : 'none';
+  }
 });
 
 // ── SPORT SWITCHER ──
@@ -7759,6 +7772,10 @@ function applyRoleUI() {
   if (btnSettings) {
     btnSettings.style.display = isHost ? 'inline-flex' : 'none';
   }
+  const btnUpdateSetting = document.getElementById('btnCheckAppUpdateSettings');
+  if (btnUpdateSetting) {
+    btnUpdateSetting.style.display = (typeof isAndroidApk === 'function' && isAndroidApk()) ? 'flex' : 'none';
+  }
 
   // 3. Spectator Live Room Banner
   const spectatorBanner = document.getElementById('spectatorLiveBanner');
@@ -9623,7 +9640,7 @@ function triggerPwaInstall() {
   }
 }
 
-// ── AUTO UPDATE CHECKER VIA GITHUB RELEASES ──
+// ── AUTO UPDATE CHECKER VIA GITHUB RELEASES (HANYA APK ANDROID) ──
 const CURRENT_APP_VERSION = 'v1.1.0';
 const GITHUB_REPO = '4eronn/One-Sport-Badminton';
 const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
@@ -9631,8 +9648,65 @@ const GITHUB_API_LATEST = `https://api.github.com/repos/${GITHUB_REPO}/releases/
 
 let targetReleaseUrl = GITHUB_RELEASES_URL;
 
+function isAndroidApk() {
+  if (typeof window === 'undefined') return false;
+  // 1. Virtual domain dari WebViewAssetLoader di Android APK
+  if (window.location.hostname === 'appassets.androidplatform.net') return true;
+  // 2. Protocol file:// saat dijalankan lokal WebView
+  if (window.location.protocol === 'file:') return true;
+  // 3. User agent kustom dari Android MainActivity
+  if (navigator.userAgent && navigator.userAgent.includes('ONESPORT_APK')) return true;
+  return false;
+}
+
+function parseSemVer(vStr) {
+  if (!vStr) return { major: 0, minor: 0, patch: 0, build: 0 };
+  const str = String(vStr).trim().replace(/^v/i, '');
+  const parts = str.split(/[-+._]/);
+  const major = parseInt(parts[0], 10) || 0;
+  const minor = parseInt(parts[1], 10) || 0;
+  const patch = parseInt(parts[2], 10) || 0;
+  let build = 0;
+  if (parts.length > 3) {
+    const bMatch = parts[3].match(/\d+/);
+    if (bMatch) build = parseInt(bMatch[0], 10) || 0;
+  }
+  return { major, minor, patch, build };
+}
+
+function isNewerVersion(latestTag, currentVersion) {
+  if (!latestTag || !currentVersion) return false;
+  const lat = parseSemVer(latestTag);
+  const cur = parseSemVer(currentVersion);
+
+  // Bandingkan Major
+  if (lat.major > cur.major) return true;
+  if (lat.major < cur.major) return false;
+
+  // Bandingkan Minor
+  if (lat.minor > cur.minor) return true;
+  if (lat.minor < cur.minor) return false;
+
+  // Bandingkan Patch
+  if (lat.patch > cur.patch) return true;
+  if (lat.patch < cur.patch) return false;
+
+  // Jika major, minor, dan patch sama (misal 1.1.0 vs 1.1.0-b24):
+  // Versinya sudah sama, JANGAN munculkan notifikasi update!
+  if (cur.build > 0 && lat.build > cur.build) return true;
+  return false;
+}
+
 async function checkAppUpdates(isManual = false) {
-  if (isManual) showToast('Memeriksa pembaruan di GitHub...');
+  // Untuk versi Web: tidak usah pakai pembaruan/notifikasi update
+  if (!isAndroidApk()) {
+    if (isManual) {
+      showToast('Aplikasi Web selalu berjalan pada versi terbaru secara otomatis.', 'info');
+    }
+    return;
+  }
+
+  if (isManual) showToast('Memeriksa pembaruan APK di GitHub...');
   try {
     const res = await fetch(GITHUB_API_LATEST, {
       headers: { 'Accept': 'application/vnd.github.v3+json' }
@@ -9649,11 +9723,12 @@ async function checkAppUpdates(isManual = false) {
     targetReleaseUrl = data.html_url || GITHUB_RELEASES_URL;
     const bodyText = (data.body || '').trim();
 
+    // Jika versi sudah sama atau lebih lama, modal update TIDAK AKAN MUNCUL
     if (isNewerVersion(latestTag, CURRENT_APP_VERSION)) {
       showUpdateModal(latestTag, targetReleaseUrl, bodyText);
     } else {
       if (isManual) {
-        showToast(`ONESPORT sudah dalam versi terbaru (${CURRENT_APP_VERSION})!`);
+        showToast(`ONESPORT sudah dalam versi terbaru (${CURRENT_APP_VERSION})!`, 'success');
       }
     }
   } catch (e) {
@@ -9662,25 +9737,6 @@ async function checkAppUpdates(isManual = false) {
       window.open(GITHUB_RELEASES_URL, '_blank');
     }
   }
-}
-
-function isNewerVersion(latest, current) {
-  if (!latest) return false;
-  const cleanL = latest.replace(/^v/i, '').trim();
-  const cleanC = current.replace(/^v/i, '').trim();
-  if (cleanL === cleanC) return false;
-
-  const partsL = cleanL.split(/[-.]/).map(n => parseInt(n.replace(/\D/g, '')) || 0);
-  const partsC = cleanC.split(/[-.]/).map(n => parseInt(n.replace(/\D/g, '')) || 0);
-  const maxLen = Math.max(partsL.length, partsC.length);
-
-  for (let i = 0; i < maxLen; i++) {
-    const vL = partsL[i] || 0;
-    const vC = partsC[i] || 0;
-    if (vL > vC) return true;
-    if (vL < vC) return false;
-  }
-  return cleanL !== cleanC;
 }
 
 function showUpdateModal(latestTag, url, notes) {
