@@ -113,8 +113,15 @@
     --gender-female-bg: #FCE7F3;
     --gender-female-border: #FBCFE8;
 
-    --shadow-subtle: 0 2px 10px rgba(7, 26, 51, 0.04);
-    --shadow-card: 0 8px 24px -4px rgba(7, 26, 51, 0.08), 0 2px 6px -1px rgba(7, 26, 51, 0.04);
+    --accent-flame: #FF5B14;
+    --accent-flame-hover: #EA4C05;
+    --accent-flame-soft: #FFF2EB;
+
+    --shadow-subtle: 0 1px 3px rgba(7, 26, 51, 0.05), 0 1px 2px rgba(7, 26, 51, 0.03);
+    --shadow-card: 0 4px 16px -2px rgba(7, 26, 51, 0.06), 0 2px 6px -1px rgba(7, 26, 51, 0.03);
+    --shadow-card-hover: 0 10px 24px -4px rgba(7, 26, 51, 0.1), 0 4px 8px -2px rgba(7, 26, 51, 0.04);
+    --shadow-modal: 0 20px 48px -10px rgba(7, 26, 51, 0.35);
+    --shadow-pill: 0 2px 8px rgba(11, 116, 222, 0.16);
     
     --radius-full: 9999px;
     --radius-xl: 20px;
@@ -128,6 +135,19 @@
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  button, input, select, textarea, a, .clickable {
+    touch-action: manipulation;
+  }
+
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--brand-blue);
+    outline-offset: 2px;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
   
   body {
@@ -496,12 +516,16 @@
   /* ── ONESPORT CARDS ── */
   .os-card {
     background: var(--bg-card);
-    border: 1.5px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     padding: 16px;
     margin-bottom: 14px;
     box-shadow: var(--shadow-card);
     position: relative;
+    transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .os-card:hover {
+    box-shadow: var(--shadow-card-hover);
   }
   .os-card.dashed {
     border: 1.5px dashed #CBD5E1;
@@ -599,16 +623,22 @@
     flex-direction: column;
     gap: 3px;
     cursor: pointer;
-    transition: all 0.2s;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   }
   .player-cell-pill:hover {
-    border-color: var(--brand-orange);
+    border-color: var(--brand-blue);
     background: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(255, 91, 20, 0.15);
+    box-shadow: 0 2px 10px rgba(11, 116, 222, 0.12);
+    transform: translateY(-1px);
+  }
+  .player-cell-pill:active {
+    transform: scale(0.97);
   }
   .player-cell-pill.is-winner {
     border: 1.5px solid #10B981;
     background: #ECFDF5;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
   }
   .resting-chip {
     display: inline-flex;
@@ -862,6 +892,7 @@
     font-size: 0.78rem;
     font-weight: 800;
     cursor: pointer;
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -872,6 +903,9 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
   }
+  .btn-court-acc:active {
+    transform: scale(0.96);
+  }
   .btn-court-reject {
     background: #FFF;
     color: #DC2626;
@@ -881,6 +915,7 @@
     font-size: 0.78rem;
     font-weight: 800;
     cursor: pointer;
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -889,6 +924,9 @@
   .btn-court-reject:hover {
     background: #FEF2F2;
     border-color: #EF4444;
+  }
+  .btn-court-reject:active {
+    transform: scale(0.96);
   }
 
   .partner-repeated-pill {
@@ -954,13 +992,14 @@
   /* ── CUSTOM COURT / LAPANGAN PILIHAN STYLES ── */
   .btn-court-quick-action {
     font-size: 0.7rem;
-    padding: 3px 8px;
+    padding: 4px 8px;
     background: #F1F5F9;
     border: 1px solid var(--border-color);
     color: var(--brand-navy-dark);
     border-radius: 6px;
     font-weight: 800;
     cursor: pointer;
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     gap: 3px;
@@ -969,6 +1008,9 @@
   .btn-court-quick-action:hover {
     background: #E2E8F0;
     border-color: #94A3B8;
+  }
+  .btn-court-quick-action:active {
+    transform: scale(0.96);
   }
   .btn-court-quick-action:disabled {
     opacity: 0.45;
@@ -1161,6 +1203,7 @@
   .lb-table td {
     padding: 10px 8px;
     vertical-align: middle;
+    font-variant-numeric: tabular-nums;
   }
   .lb-table td.col-left { text-align: left; padding-left: 14px; }
   .lb-table td.col-center { text-align: center; }
@@ -1262,6 +1305,62 @@
     border-color: var(--brand-orange);
     box-shadow: 0 0 0 3px var(--brand-orange-light);
   }
+
+  /* ── SCORE STEPPER CONTROLS (UI/UX PRO MAX) ── */
+  .score-stepper-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #F8FAFC;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 6px 8px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+  .btn-score-stepper {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid #CBD5E1;
+    background: #FFFFFF;
+    color: var(--brand-navy-dark);
+    font-size: 1.3rem;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-score-stepper:active {
+    transform: scale(0.9);
+    background: var(--brand-blue-soft);
+    border-color: var(--brand-blue);
+    color: var(--brand-blue);
+  }
+  .btn-score-stepper.plus {
+    background: var(--brand-blue-soft);
+    border-color: #BFDBFE;
+    color: var(--brand-blue);
+  }
+  .score-digit-input {
+    width: 58px;
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--brand-navy-dark);
+    border: none;
+    background: transparent;
+    font-variant-numeric: tabular-nums;
+    outline: none;
+    padding: 0;
+    margin: 0;
+  }
   /* ── MOBILE FORM & QUICK ACTIONS ── */
   .add-player-form-box {
     display: flex;
@@ -1304,19 +1403,24 @@
     color: var(--brand-navy-dark);
     font-size: 0.72rem;
     font-weight: 800;
-    padding: 7px 4px;
+    padding: 8px 4px;
+    min-height: 38px;
     border-radius: var(--radius-md);
     cursor: pointer;
+    touch-action: manipulation;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    transition: all 0.2s;
+    transition: all 0.15s ease;
     white-space: nowrap;
   }
   .btn-quick-pill:hover {
-    border-color: var(--brand-orange);
+    border-color: var(--brand-blue);
     background: #FFFFFF;
+  }
+  .btn-quick-pill:active {
+    transform: scale(0.96);
   }
   .btn-quick-pill.btn-quick-danger {
     background: #FEF2F2;
@@ -1325,6 +1429,9 @@
   }
   .btn-quick-pill.btn-quick-danger:hover {
     background: #FEE2E2;
+  }
+  .btn-quick-pill.btn-quick-danger:active {
+    transform: scale(0.96);
   }
 
   .player-roster-list {
@@ -1405,16 +1512,17 @@
     transform: translateX(-50%);
     width: 100%;
     max-width: 440px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(16px);
-    border-top: 1.5px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 6px 4px;
+    padding: 6px 6px;
     padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
     z-index: 1000;
-    box-shadow: 0 -4px 20px rgba(15, 30, 54, 0.08);
+    box-shadow: 0 -4px 20px rgba(15, 30, 54, 0.06);
   }
   .nav-item-btn {
     background: transparent;
@@ -1423,28 +1531,39 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    font-size: 0.67rem;
+    justify-content: center;
+    gap: 3px;
+    font-size: 0.68rem;
     font-weight: 700;
     cursor: pointer;
-    padding: 4px 2px;
-    border-radius: var(--radius-sm);
-    transition: all 0.2s;
-    min-width: 40px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    min-width: 48px;
+    min-height: 44px;
+    touch-action: manipulation;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .nav-item-btn:active {
+    transform: scale(0.92);
   }
   .nav-item-btn .nav-icon {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;
   }
   .nav-item-btn.active {
-    color: var(--brand-orange);
+    background: var(--brand-blue-soft);
+    color: var(--brand-blue);
   }
   .nav-item-btn.active .nav-icon {
-    transform: translateY(-2px);
+    transform: translateY(-1px) scale(1.08);
+    color: var(--brand-blue);
+  }
+  .nav-item-btn.active span:last-child {
+    font-weight: 800;
   }
 
   /* ── MODALS (BOTTOM SHEET ON MOBILE) ── */
@@ -1474,9 +1593,19 @@
     max-width: 440px;
     max-height: 88vh;
     overflow-y: auto;
-    padding: 20px 16px;
-    box-shadow: 0 -10px 40px rgba(15, 30, 54, 0.25);
+    padding: 16px 16px 24px 16px;
+    box-shadow: var(--shadow-modal);
     animation: modalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+  }
+  .modal-box::before {
+    content: '';
+    display: block;
+    width: 38px;
+    height: 4px;
+    background: #CBD5E1;
+    border-radius: 999px;
+    margin: 0 auto 14px auto;
   }
   @media (min-width: 481px) {
     .modal-overlay {
@@ -1486,6 +1615,9 @@
     .modal-box {
       border-radius: var(--radius-xl);
       animation: modalFadeScale 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-box::before {
+      display: none;
     }
     .bottom-navbar {
       border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -3050,16 +3182,24 @@
       </div>
     </div>
 
-    <!-- Score Inputs -->
-    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:14px;">
+    <!-- Score Inputs with Steppers -->
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; margin-bottom:14px;">
       <div>
-        <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:3px;">Skor Tim A</label>
-        <input type="number" id="inputDirectScoreA" class="input-styled-os" min="0" max="99" value="21" style="text-align:center; font-weight:900; font-size:1.4rem;" oninput="syncDirectScoreWinner()">
+        <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:4px; text-align:center;">Skor Tim A</label>
+        <div class="score-stepper-box">
+          <button type="button" class="btn-score-stepper" onclick="stepDirectScore('A', -1)" aria-label="Kurang skor A">−</button>
+          <input type="number" id="inputDirectScoreA" class="score-digit-input" min="0" max="99" value="21" oninput="syncDirectScoreWinner()">
+          <button type="button" class="btn-score-stepper plus" onclick="stepDirectScore('A', 1)" aria-label="Tambah skor A">+</button>
+        </div>
       </div>
       <div style="font-weight:900; color:var(--text-muted); font-size:1.1rem; margin-top:16px;">VS</div>
       <div>
-        <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:3px;">Skor Tim B</label>
-        <input type="number" id="inputDirectScoreB" class="input-styled-os" min="0" max="99" value="18" style="text-align:center; font-weight:900; font-size:1.4rem;" oninput="syncDirectScoreWinner()">
+        <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:4px; text-align:center;">Skor Tim B</label>
+        <div class="score-stepper-box">
+          <button type="button" class="btn-score-stepper" onclick="stepDirectScore('B', -1)" aria-label="Kurang skor B">−</button>
+          <input type="number" id="inputDirectScoreB" class="score-digit-input" min="0" max="99" value="18" oninput="syncDirectScoreWinner()">
+          <button type="button" class="btn-score-stepper plus" onclick="stepDirectScore('B', 1)" aria-label="Tambah skor B">+</button>
+        </div>
       </div>
     </div>
 
@@ -3184,15 +3324,24 @@
       </label>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:14px;">
+    <!-- Score Inputs with Steppers -->
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; margin-bottom:14px;">
       <div>
-        <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:3px;">Skor Tim A</label>
-        <input type="number" id="inputEditScoreA" class="input-styled-os" min="0" max="99" style="text-align:center; font-weight:900; font-size:1.3rem;" oninput="syncEditScoreWinner()">
+        <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:4px; text-align:center;">Skor Tim A</label>
+        <div class="score-stepper-box">
+          <button type="button" class="btn-score-stepper" onclick="stepEditFinishedScore('A', -1)" aria-label="Kurang skor A">−</button>
+          <input type="number" id="inputEditScoreA" class="score-digit-input" min="0" max="99" oninput="syncEditScoreWinner()">
+          <button type="button" class="btn-score-stepper plus" onclick="stepEditFinishedScore('A', 1)" aria-label="Tambah skor A">+</button>
+        </div>
       </div>
       <div style="font-weight:900; color:var(--text-muted); margin-top:16px;">VS</div>
       <div>
-        <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:3px;">Skor Tim B</label>
-        <input type="number" id="inputEditScoreB" class="input-styled-os" min="0" max="99" style="text-align:center; font-weight:900; font-size:1.3rem;" oninput="syncEditScoreWinner()">
+        <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:4px; text-align:center;">Skor Tim B</label>
+        <div class="score-stepper-box">
+          <button type="button" class="btn-score-stepper" onclick="stepEditFinishedScore('B', -1)" aria-label="Kurang skor B">−</button>
+          <input type="number" id="inputEditScoreB" class="score-digit-input" min="0" max="99" oninput="syncEditScoreWinner()">
+          <button type="button" class="btn-score-stepper plus" onclick="stepEditFinishedScore('B', 1)" aria-label="Tambah skor B">+</button>
+        </div>
       </div>
     </div>
 
@@ -5754,6 +5903,16 @@ function handleDirectWinnerChange(winner) {
   }
 }
 
+function stepDirectScore(team, delta) {
+  const input = document.getElementById(team === 'A' ? 'inputDirectScoreA' : 'inputDirectScoreB');
+  if (!input) return;
+  let val = parseInt(input.value, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.min(99, val + delta));
+  input.value = val;
+  syncDirectScoreWinner();
+}
+
 function syncDirectScoreWinner() {
   const sA = Number(document.getElementById('inputDirectScoreA').value);
   const sB = Number(document.getElementById('inputDirectScoreB').value);
@@ -5768,6 +5927,16 @@ function syncDirectScoreWinner() {
       if (winA) winA.checked = false;
     }
   }
+}
+
+function stepEditFinishedScore(team, delta) {
+  const input = document.getElementById(team === 'A' ? 'inputEditScoreA' : 'inputEditScoreB');
+  if (!input) return;
+  let val = parseInt(input.value, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.min(99, val + delta));
+  input.value = val;
+  syncEditScoreWinner();
 }
 
 function syncEditScoreWinner() {
@@ -6079,6 +6248,26 @@ function setSoccerWinner(idx, outcome) {
   persistAndBroadcast();
 }
 
+function stepFinishScore(idx, team, delta) {
+  const input = document.getElementById(team === 'A' ? `inputScoreA_${idx}` : `inputScoreB_${idx}`);
+  if (!input) return;
+  let val = parseInt(input.value, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.min(99, val + delta));
+  input.value = val;
+  syncFinishModalWinner(idx);
+}
+
+function syncFinishModalWinner(idx) {
+  const sA = parseInt(document.getElementById(`inputScoreA_${idx}`)?.value, 10) || 0;
+  const sB = parseInt(document.getElementById(`inputScoreB_${idx}`)?.value, 10) || 0;
+  const radios = document.querySelectorAll(`input[name="modal_winner_${idx}"]`);
+  if (radios.length >= 2 && sA !== sB) {
+    if (sA > sB) radios[0].checked = true;
+    else radios[1].checked = true;
+  }
+}
+
 // ── SCORE INPUT MODAL ──
 function openFinishScoreModal() {
   const container = document.getElementById('scoreModalContent');
@@ -6104,9 +6293,17 @@ function openFinishScoreModal() {
           </label>
         </div>
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;">
-          <input type="number" id="inputScoreA_${idx}" class="input-styled-os" value="${court.scoreA ?? 21}" style="text-align:center; font-weight:900; font-size:1.2rem;">
-          <strong style="color:var(--text-muted);">VS</strong>
-          <input type="number" id="inputScoreB_${idx}" class="input-styled-os" value="${court.scoreB ?? 18}" style="text-align:center; font-weight:900; font-size:1.2rem;">
+          <div class="score-stepper-box">
+            <button type="button" class="btn-score-stepper" onclick="stepFinishScore(${idx}, 'A', -1)" aria-label="Kurang skor A">−</button>
+            <input type="number" id="inputScoreA_${idx}" class="score-digit-input" value="${court.scoreA ?? 21}" oninput="syncFinishModalWinner(${idx})">
+            <button type="button" class="btn-score-stepper plus" onclick="stepFinishScore(${idx}, 'A', 1)" aria-label="Tambah skor A">+</button>
+          </div>
+          <strong style="color:var(--text-muted); font-size:1rem;">VS</strong>
+          <div class="score-stepper-box">
+            <button type="button" class="btn-score-stepper" onclick="stepFinishScore(${idx}, 'B', -1)" aria-label="Kurang skor B">−</button>
+            <input type="number" id="inputScoreB_${idx}" class="score-digit-input" value="${court.scoreB ?? 18}" oninput="syncFinishModalWinner(${idx})">
+            <button type="button" class="btn-score-stepper plus" onclick="stepFinishScore(${idx}, 'B', 1)" aria-label="Tambah skor B">+</button>
+          </div>
         </div>
       </div>
     `).join('');
