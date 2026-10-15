@@ -2636,9 +2636,14 @@
             <span class="live-pulse-badge">LIVE</span>
             <span>Sedang Live: <strong id="onlineLiveCountBadge">0 Room</strong></span>
           </div>
-          <button class="btn-court-action" onclick="refreshLiveRoomsList()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px;">
-            <span>🔄 Segarkan</span>
-          </button>
+          <div style="display:flex; gap:4px;">
+            <button class="btn-court-action" onclick="refreshLiveRoomsList()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px;">
+              <span>🔄 Segarkan</span>
+            </button>
+            <button class="btn-court-action" onclick="clearAllLiveRoomsFromLobby()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px; color:#DC2626; border-color:#FECACA; background:#FFF;" title="Bersihkan semua daftar siaran">
+              <span>🗑️ Bersihkan Semua</span>
+            </button>
+          </div>
         </div>
         <div id="onlineLiveRoomsList" style="max-height:160px; overflow-y:auto;">
           <div style="text-align:center; padding:10px; font-size:0.74rem; color:var(--text-muted);">
@@ -2760,6 +2765,10 @@
           <button class="btn-os-orange" style="width:100%; background:#DC2626; border-color:#DC2626; color:#FFF; font-weight:800; padding:11px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="confirmFinishLiveBroadcast()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
             <span>Selesai Siaran Live (Simpan Histori)</span>
+          </button>
+          <button class="btn-court-action" style="width:100%; background:#FFF1F2; border:1px solid #FECDD3; color:#E11D48; font-weight:800; padding:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="deleteActiveLiveBroadcast()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            <span>Hapus & Hentikan Siaran Live</span>
           </button>
           <button class="btn-court-action" style="width:100%; background:#F1F5F9; color:var(--text-secondary); font-weight:700; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="leaveOnlineRoom(false)">
             <span>Tinggalkan Room (Kembali ke Lokal)</span>
@@ -3369,10 +3378,24 @@ const VercelDbSync = {
 
 // ── INITIALIZATION ──
 window.addEventListener('DOMContentLoaded', () => {
-  // Jika ini pertama kali pembaruan versi bersih, hapus cache lokal lama agar murni kosong untuk input manual
-  if (!localStorage.getItem('onesport_v3_clean_start')) {
+  // Pembaruan versi bersih: hapus cache lokal lama dan sesi live usang agar murni kosong untuk input manual
+  if (!localStorage.getItem('onesport_v3_clean_start_v3')) {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.setItem('onesport_v3_clean_start', 'true');
+    localStorage.removeItem(STORAGE_ACTIVE_LIVE_SESSION);
+    localStorage.removeItem(STORAGE_OFFLINE_BACKUP);
+    localStorage.removeItem('onesport_user_role');
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith('onesport_room_cache_') || k.startsWith('onesport_host_pin_')) {
+        localStorage.removeItem(k);
+      }
+    });
+    if (window.history && window.history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('room');
+      url.searchParams.delete('role');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+    localStorage.setItem('onesport_v3_clean_start_v3', 'true');
   }
 
   const hasSaved = loadFromLocalStorage();
@@ -3397,16 +3420,16 @@ window.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('settingMinPlays')) document.getElementById('settingMinPlays').value = bMinPlays;
   if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
 
-  userRole = localStorage.getItem('onesport_user_role') || 'spectator';
+  // Default peran adalah host lokal agar dapat langsung mengelola pemain & lapangan
+  userRole = localStorage.getItem('onesport_user_role') || 'host';
   switchSport(currentSport);
-  // Default masuk wajib langsung ke siaran langsung (tab Lapangan)
   switchTab('tab-match');
   applyRoleUI();
   initMqttDiscovery();
   renderLiveHistoryList();
   updateLiveHistoryBadges();
 
-  // Restore live session if active before refresh/reload (persists room & server)
+  // Restore live session hanya jika aktif tersimpan sebelumnya
   const isRestoredLive = restoreActiveLiveSessionIfAny();
   if (!isRestoredLive) {
     checkUrlParamsAndAutoJoin();
@@ -3416,10 +3439,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const splash = document.getElementById('splashScreen');
     if (splash) splash.classList.add('hide');
-    // Jika belum masuk room, langsung wajib diarahkan ke fitur Sesi Online & Siaran Live (Modal)
-    if (!isOnlineActive || !currentRoomId) {
-      openOnlineModal('create');
-    }
   }, 750);
 
   // Auto detect updates in background
@@ -3501,15 +3520,8 @@ function switchSport(sport) {
 
 // ── TAB SWITCHING ──
 function switchTab(tabId) {
-  if (!isOnlineActive || !currentRoomId) {
-    if (tabId !== 'tab-match') {
-      showToast('⚠️ Anda harus masuk ke room siaran atau buat room terlebih dahulu!', 'info');
-      openOnlineModal();
-      return;
-    }
-  }
-
-  if (userRole !== 'host' && tabId === 'tab-pemain') {
+  // Hanya kunci tab Pemain untuk penonton siaran online
+  if (isOnlineActive && userRole !== 'host' && tabId === 'tab-pemain') {
     tabId = 'tab-match';
     showToast('🔒 Tab Pemain hanya dapat diakses oleh Host.', 'info');
   }
@@ -4975,30 +4987,6 @@ function renderCourtsView() {
     if (benchTitle) benchTitle.textContent = 'Antrian, Istirahat & Status Pemain';
     const nextMatchContainer = document.getElementById('nextMatchGridContainer');
 
-    // ── GERBANG MASUK ROOM (GATEWAY) ──
-    if (!isOnlineActive || !currentRoomId) {
-      activeCourtsContainer.innerHTML = `
-        <div class="os-card" style="text-align:center; padding:36px 16px; border:2px dashed var(--brand-orange); background:linear-gradient(180deg, #FFFFFF 0%, #FFF8F5 100%);">
-          <div style="font-size:2.8rem; margin-bottom:8px;">🏸</div>
-          <div style="font-weight:900; font-size:1.15rem; color:var(--brand-navy-dark); margin-bottom:6px;">Selamat Datang di ONESPORT Live</div>
-          <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:20px; max-width:320px; margin-left:auto; margin-right:auto; line-height:1.5;">
-            Untuk menggunakan aplikasi, silakan masuk ke siaran langsung yang sedang aktif atau buat room baru terlebih dahulu.
-          </div>
-          <div style="display:flex; flex-direction:column; gap:10px; max-width:280px; margin:0 auto;">
-            <button class="btn-os-orange" style="width:100%; padding:11px 16px; font-size:0.86rem; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px;" onclick="openOnlineModal('create')">
-              ➕ Buat Siaran Baru (Host)
-            </button>
-            <button class="btn-court-action" style="width:100%; padding:11px 16px; font-size:0.86rem; font-weight:800; background:#FFF; border-color:var(--brand-navy-mid); color:var(--brand-navy-dark); display:inline-flex; align-items:center; justify-content:center; gap:8px;" onclick="openOnlineModal('join')">
-              🔗 Gabung Siaran Live (Penonton)
-            </button>
-          </div>
-        </div>
-      `;
-      if (nextMatchContainer) nextMatchContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.78rem; padding:10px;">Silakan masuk ke room untuk melihat jadwal pertandingan.</div>`;
-      if (restingWrap) restingWrap.innerHTML = ``;
-      return;
-    }
-
     if (bPlayers.length === 0) {
       if (!isHost) {
         activeCourtsContainer.innerHTML = `
@@ -5309,12 +5297,15 @@ function renderCourtsView() {
               <button class="btn-court-action finish" onclick="openDirectCourtScoreModal(${cIdx})" style="font-size:0.82rem; padding:9px 16px;">
                 📝 Input Skor & Selesai Match
               </button>
-              <div style="display:flex; gap:6px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="btn-court-quick-action" onclick="openCustomCourtModal(${cIdx})" title="Tukar Pemain Lapangan Ini">
                   ⇄ Ganti Pemain
                 </button>
                 <button class="btn-court-quick-action" onclick="shuffleCourtTeams(${cIdx})" title="Acak Tim">
                   🔀 Acak Tim
+                </button>
+                <button class="btn-court-quick-action" onclick="cancelOngoingCourt(${cIdx})" title="Batalkan Match & Kosongkan Lapangan Ini" style="color:#DC2626; border-color:#FECACA; background:#FFF1F2;">
+                  ✕ Batalkan Match
                 </button>
               </div>
             </div>
@@ -5637,6 +5628,29 @@ function clearCourt(cIdx) {
   renderPlayersList();
   persistAndBroadcast();
   showToast(`${court.courtName} dikosongkan.`);
+}
+
+function cancelOngoingCourt(cIdx) {
+  if (!checkEditPermission()) return;
+  const round = ensureBadmintonCourtsInitialized();
+  const court = round.courts[cIdx];
+  if (!court) return;
+
+  const cName = court.courtName || ('Lapangan ' + (cIdx + 1));
+  if (!confirm(`Batalkan pertandingan di ${cName}? Pemain akan dikembalikan ke status antrian.`)) {
+    return;
+  }
+
+  BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
+  court.status = BadmintonService.COURT_STATUS.KOSONG;
+  court.scoreA = 0;
+  court.scoreB = 0;
+  court.winner = null;
+  BadmintonService.logHostAction(bAuditLog, 'CANCEL_MATCH', { courtNumber: cIdx + 1, courtName: cName });
+  renderCourtsView();
+  renderPlayersList();
+  persistAndBroadcast();
+  showToast(`Match di ${cName} dibatalkan. Lapangan kembali kosong.`, 'info');
 }
 
 function freeFinishedCourt(cIdx) {
@@ -7716,16 +7730,16 @@ function closeJoinChoiceModal() {
 // ── ROLE & UI ACCESS MANAGEMENT (PENONTON VS HOST) ──
 function applyRoleUI() {
   const inRoom = !!(isOnlineActive && currentRoomId);
-  const isHost = inRoom && (userRole === 'host');
+  const isHost = !inRoom || (userRole === 'host');
 
   // 1. Header Role Switch Button & Label
   const btnRole = document.getElementById('btnHeaderRoleSwitch');
   const roleLabel = document.getElementById('headerRoleLabel');
   if (btnRole && roleLabel) {
     if (!inRoom) {
-      btnRole.className = 'btn-role-badge is-spectator';
-      btnRole.title = 'Buka Sesi Room Siaran';
-      roleLabel.textContent = 'Pilih Room';
+      btnRole.className = 'btn-role-badge is-host';
+      btnRole.title = 'Mulai atau Buka Sesi Siaran Live';
+      roleLabel.textContent = '📡 Siaran Live';
       btnRole.onclick = () => openOnlineModal();
     } else if (isHost) {
       btnRole.className = 'btn-role-badge is-host';
@@ -7768,13 +7782,12 @@ function applyRoleUI() {
 
   // 5. Bottom Navigation Tabs:
   // Untuk Penonton dalam Room: Lapangan, Skor, History, Selesai (4 tab)
-  // Untuk Host: Semua tab terbuka (Pemain, Lapangan, Skor, Siaran, History, Selesai)
-  // Jika belum masuk room: Pemain & Siaran disembunyikan
+  // Untuk Host & Mode Lokal: Semua tab terbuka (Pemain, Lapangan, Skor, Siaran, History, Selesai)
   const navPemain = document.getElementById('nav-tab-pemain');
   if (navPemain) navPemain.style.display = isHost ? 'flex' : 'none';
 
   const navOnline = document.getElementById('nav-tab-online');
-  if (navOnline) navOnline.style.display = isHost ? 'flex' : 'none';
+  if (navOnline) navOnline.style.display = 'flex';
 
   // 6. Tab Lapangan (Match) Host Controls vs Spectator View
   const actionGridTop = document.querySelector('#tab-match .action-grid-2');
@@ -7794,9 +7807,7 @@ function applyRoleUI() {
 
   // Sinkronkan tab aktif
   const activeTab = document.querySelector('.app-tab-pane.active')?.id;
-  if (!inRoom && activeTab !== 'tab-match') {
-    switchTab('tab-match');
-  } else if (!isHost && activeTab === 'tab-pemain') {
+  if (!isHost && activeTab === 'tab-pemain') {
     switchTab('tab-match');
   } else if (activeTab === 'tab-match') {
     renderCourtsView();
@@ -8059,6 +8070,17 @@ async function broadcastStateUpdate() {
 
 async function handleIncomingMessage(topic, rawText) {
   try {
+    if (!rawText || !rawText.trim()) {
+      if (typeof LOBBY_ROOMS_PREFIX !== 'undefined' && topic.startsWith(LOBBY_ROOMS_PREFIX)) {
+        const deletedRoomId = topic.substring(LOBBY_ROOMS_PREFIX.length);
+        if (deletedRoomId && activeLiveRooms[deletedRoomId]) {
+          delete activeLiveRooms[deletedRoomId];
+          updateLiveRoomsDirectoryUI();
+        }
+      }
+      return;
+    }
+
     const msg = JSON.parse(rawText);
     if (!msg) return;
 
@@ -8232,6 +8254,12 @@ async function handleIncomingMessage(topic, rawText) {
         saveToLiveHistory(viewerRecord);
       }
       showLiveEndedNoticeModal(msg.roomId, msg.summary);
+      return;
+    }
+
+    if (msg.type === 'LIVE_ENDED') {
+      showToast('Siaran live telah ditutup / dihentikan oleh Host.', 'info');
+      leaveOnlineRoom(false);
       return;
     }
   } catch (e) {
@@ -8712,12 +8740,15 @@ function updateLiveRoomsDirectoryUI() {
         <div style="font-size:0.78rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;" title="${escapeHtml(rawTitle)}">
           ${escapeHtml(safeTitle)}
         </div>
-        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:6px;">
+        <div style="display:grid; grid-template-columns:1.2fr 1fr auto; gap:6px;">
           <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" data-room-id="${escapeHtml(r.roomId)}" onclick="joinRoomAsSpectator(this.getAttribute('data-room-id'))">
             <span>👁️ Nonton Live</span>
           </button>
           <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" data-room-id="${escapeHtml(r.roomId)}" data-room-title="${escapeHtml(r.title || '')}" onclick="showJoinChoiceModal(this.getAttribute('data-room-id'), this.getAttribute('data-room-title'))">
             <span>👑 Wasit/Host</span>
+          </button>
+          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 9px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:800; background:#FFF1F2; border-color:#FECDD3; color:#E11D48;" data-room-id="${escapeHtml(r.roomId)}" onclick="deleteLiveRoomFromLobby(this.getAttribute('data-room-id'))" title="Hapus siaran ini dari daftar">
+            <span>🗑️</span>
           </button>
         </div>
       </div>
@@ -8808,17 +8839,126 @@ async function executeFinishLiveBroadcast() {
         roomId: finishedRoomId,
         timestamp: Date.now()
       }));
-      mqttClient.publish(LOBBY_ROOMS_PREFIX + finishedRoomId, JSON.stringify({
-        type: 'ROOM_ENDED',
-        roomId: finishedRoomId
-      }), { qos: 1, retain: true });
+      mqttClient.publish(LOBBY_ROOMS_PREFIX + finishedRoomId, '', { qos: 1, retain: true });
     } catch(e){}
   }
 
+  delete activeLiveRooms[finishedRoomId];
+  updateLiveRoomsDirectoryUI();
   leaveOnlineRoom(true);
   openOnlineModal();
   switchOnlineTab('history');
   showToast('Siaran Live Selesai & Berhasil Diarsipkan ke Histori (APK & Web)!');
+}
+
+function deleteActiveLiveBroadcast() {
+  if (userRole !== 'host') {
+    alert('Hanya Host yang dapat menghentikan dan menghapus siaran live.');
+    return;
+  }
+  if (!confirm('Hentikan dan hapus siaran live ini sekarang? Room akan ditutup dan dihapus dari daftar siaran publik.')) {
+    return;
+  }
+
+  const endingRoomId = currentRoomId;
+  if (endingRoomId && mqttClient) {
+    try {
+      mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
+        type: 'ROOM_ENDED',
+        roomId: endingRoomId,
+        timestamp: Date.now()
+      }));
+      mqttClient.publish(LOBBY_ROOMS_PREFIX + endingRoomId, '', { qos: 1, retain: true });
+      mqttClient.publish(`onesport/v3/room/${endingRoomId}/state`, '', { qos: 1, retain: true });
+      mqttClient.publish(`onesport/v3/room/${endingRoomId}`, JSON.stringify({
+        type: 'LIVE_ENDED',
+        reason: 'deleted_by_host',
+        roomId: endingRoomId
+      }));
+    } catch(e) {
+      console.warn('Error deleting live broadcast:', e);
+    }
+  }
+
+  if (endingRoomId) {
+    delete activeLiveRooms[endingRoomId];
+    try {
+      localStorage.removeItem('onesport_room_cache_' + endingRoomId);
+    } catch(e){}
+  }
+
+  leaveOnlineRoom(false);
+  closeOnlineModal();
+  updateLiveRoomsDirectoryUI();
+  showToast('Siaran live berhasil dihentikan & dihapus dari publik.', 'success');
+}
+
+function deleteLiveRoomFromLobby(roomId) {
+  if (!roomId) return;
+  if (!confirm(`Hapus siaran "${roomId}" dari daftar live?`)) return;
+
+  if (mqttClient) {
+    try {
+      mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
+        type: 'ROOM_ENDED',
+        roomId: roomId,
+        timestamp: Date.now()
+      }));
+      mqttClient.publish(LOBBY_ROOMS_PREFIX + roomId, '', { qos: 1, retain: true });
+      mqttClient.publish(`onesport/v3/room/${roomId}/state`, '', { qos: 1, retain: true });
+      mqttClient.publish(`onesport/v3/room/${roomId}`, JSON.stringify({
+        type: 'LIVE_ENDED',
+        reason: 'deleted_from_lobby',
+        roomId: roomId
+      }));
+    } catch(e){}
+  }
+
+  delete activeLiveRooms[roomId];
+  try {
+    localStorage.removeItem('onesport_room_cache_' + roomId);
+  } catch(e){}
+
+  if (isOnlineActive && currentRoomId === roomId) {
+    leaveOnlineRoom(false);
+  } else {
+    updateLiveRoomsDirectoryUI();
+  }
+  showToast(`Siaran "${roomId}" berhasil dihapus dari daftar.`);
+}
+
+function clearAllLiveRoomsFromLobby() {
+  const roomIds = Object.keys(activeLiveRooms);
+  if (roomIds.length === 0) {
+    showToast('Daftar siaran live sudah kosong.');
+    return;
+  }
+  if (!confirm(`Hapus dan bersihkan semua (${roomIds.length}) siaran live dari daftar?`)) return;
+
+  roomIds.forEach(rid => {
+    if (mqttClient) {
+      try {
+        mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
+          type: 'ROOM_ENDED',
+          roomId: rid,
+          timestamp: Date.now()
+        }));
+        mqttClient.publish(LOBBY_ROOMS_PREFIX + rid, '', { qos: 1, retain: true });
+        mqttClient.publish(`onesport/v3/room/${rid}/state`, '', { qos: 1, retain: true });
+      } catch(e){}
+    }
+    delete activeLiveRooms[rid];
+    try {
+      localStorage.removeItem('onesport_room_cache_' + rid);
+    } catch(e){}
+  });
+
+  if (isOnlineActive && currentRoomId) {
+    leaveOnlineRoom(false);
+  } else {
+    updateLiveRoomsDirectoryUI();
+  }
+  showToast('Semua daftar siaran live telah dibersihkan.');
 }
 
 function showLiveEndedNoticeModal(roomId, summary) {
@@ -8867,16 +9007,14 @@ function leaveOnlineRoom(keepRoomData = false) {
           roomId: leftRoom,
           timestamp: Date.now()
         }));
-        mqttClient.publish(LOBBY_ROOMS_PREFIX + leftRoom, JSON.stringify({
-          type: 'ROOM_ENDED',
-          roomId: leftRoom
-        }), { qos: 1, retain: true });
+        mqttClient.publish(LOBBY_ROOMS_PREFIX + leftRoom, '', { qos: 1, retain: true });
       } catch(e){}
     }
     try {
       mqttClient.unsubscribe(`onesport/v3/room/${leftRoom}`);
       mqttClient.unsubscribe(`onesport/v3/room/${leftRoom}/state`);
     } catch(e){}
+    delete activeLiveRooms[leftRoom];
   }
 
   isOnlineActive = false;
@@ -8884,7 +9022,7 @@ function leaveOnlineRoom(keepRoomData = false) {
   currentRoomId = null;
   currentRoomPinHash = '';
   pendingHostCandidatePin = null;
-  userRole = localStorage.getItem('onesport_user_role') || 'spectator';
+  userRole = localStorage.getItem('onesport_user_role') || 'host';
   isHostCreator = false;
 
   if (!keepRoomData) {
@@ -8900,13 +9038,11 @@ function leaveOnlineRoom(keepRoomData = false) {
   }
 
   updateOnlineUI('offline');
+  updateLiveRoomsDirectoryUI();
   applyRoleUI();
   if (leftRoomId) {
     showToast(`Keluar dari Room ${leftRoomId}.`);
   }
-  setTimeout(() => {
-    openOnlineModal('create');
-  }, 250);
 }
 
 // ── LIVE HISTORY STORAGE & UI (PERSISTENT IN APK & WEB) ──
