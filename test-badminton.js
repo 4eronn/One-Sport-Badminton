@@ -499,6 +499,47 @@ it('Validasi skor bulu tangkis menolak seri atau angka negatif', () => {
   assert.strictEqual(v3.valid, true);
 });
 
+it('Q-1: Validasi skor menolak non-integer, input kosong, dan skor di atas batas (99)', () => {
+  // Input kosong
+  assert.strictEqual(validateBadmintonScore(null, 21).valid, false);
+  assert.strictEqual(validateBadmintonScore(21, '').valid, false);
+  assert.strictEqual(validateBadmintonScore('  ', 21).valid, false);
+  assert.strictEqual(validateBadmintonScore(undefined, 21).valid, false);
+
+  // Non-integer
+  assert.strictEqual(validateBadmintonScore(21.5, 18).valid, false);
+  assert.strictEqual(validateBadmintonScore('abc', 21).valid, false);
+
+  // Di atas batas default (99)
+  assert.strictEqual(validateBadmintonScore(100, 21).valid, false);
+  assert.strictEqual(validateBadmintonScore(21, 105).valid, false);
+  assert.strictEqual(validateBadmintonScore(99, 97).valid, true);
+});
+
+it('Q-1: Mode Aturan Skor Resmi (officialRules) menegakkan pemenang >= 21, selisih >= 2, dan maks 30', () => {
+  const opts = { officialRules: true };
+
+  // Valid official scores
+  assert.strictEqual(validateBadmintonScore(21, 19, null, opts).valid, true);
+  assert.strictEqual(validateBadmintonScore(21, 0, null, opts).valid, true);
+  assert.strictEqual(validateBadmintonScore(24, 22, null, opts).valid, true);
+  assert.strictEqual(validateBadmintonScore(30, 29, null, opts).valid, true, '30-29 sudden death harus valid');
+
+  // Pemenang < 21
+  assert.strictEqual(validateBadmintonScore(15, 10, null, opts).valid, false, 'Skor 15-10 ditolak di aturan resmi');
+  assert.strictEqual(validateBadmintonScore(20, 18, null, opts).valid, false, 'Pemenang 20 ditolak');
+
+  // Selisih < 2 (belum deuce selesai)
+  assert.strictEqual(validateBadmintonScore(21, 20, null, opts).valid, false, '21-20 belum selisih 2');
+  assert.strictEqual(validateBadmintonScore(25, 24, null, opts).valid, false, '25-24 belum selisih 2');
+
+  // Melebihi batas maksimal 30
+  assert.strictEqual(validateBadmintonScore(31, 29, null, opts).valid, false, 'Skor > 30 ditolak');
+
+  // Mode casual (default / tanpa officialRules) tetap fleksibel
+  assert.strictEqual(validateBadmintonScore(15, 10).valid, true, 'Skor 15-10 valid di mabar santai');
+});
+
 it('Menyimpan skor match langsung menghitung klasemen secara inkremental', () => {
   const p1 = { id: 1, name: 'Andi', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };
   const p2 = { id: 2, name: 'Budi', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 0 };

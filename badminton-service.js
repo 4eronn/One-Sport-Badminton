@@ -824,18 +824,51 @@
   /**
    * Validasi skor pertandingan bulutangkis.
    */
-  function validateBadmintonScore(scoreA, scoreB, winner) {
+  function validateBadmintonScore(scoreA, scoreB, winner, options = {}) {
+    if (scoreA === null || scoreA === undefined || (typeof scoreA === 'string' && scoreA.trim() === '')) {
+      return { valid: false, message: 'Skor Tim A tidak boleh kosong.' };
+    }
+    if (scoreB === null || scoreB === undefined || (typeof scoreB === 'string' && scoreB.trim() === '')) {
+      return { valid: false, message: 'Skor Tim B tidak boleh kosong.' };
+    }
+
     const sA = Number(scoreA);
     const sB = Number(scoreB);
 
     if (isNaN(sA) || isNaN(sB)) {
       return { valid: false, message: 'Skor harus berupa angka valid.' };
     }
+    if (!Number.isInteger(sA) || !Number.isInteger(sB)) {
+      return { valid: false, message: 'Skor harus berupa bilangan bulat.' };
+    }
     if (sA < 0 || sB < 0) {
       return { valid: false, message: 'Skor tidak boleh negatif.' };
     }
+
+    const maxScore = (typeof options.maxScore === 'number' && options.maxScore > 0) ? options.maxScore : 99;
+    if (sA > maxScore || sB > maxScore) {
+      return { valid: false, message: `Skor tidak boleh melebihi batas maksimal (${maxScore}).` };
+    }
+
     if (sA === sB) {
       return { valid: false, message: 'Pertandingan bulu tangkis tidak boleh berakhir seri (skor sama).' };
+    }
+
+    // Aturan Skor Resmi (BWF Official Rules - Opsional)
+    if (options.officialRules) {
+      const winScore = Math.max(sA, sB);
+      const loseScore = Math.min(sA, sB);
+
+      if (winScore < 21) {
+        return { valid: false, message: 'Aturan resmi: Skor pemenang minimal 21 poin.' };
+      }
+      if (winScore > 30) {
+        return { valid: false, message: 'Aturan resmi: Skor maksimal adalah 30 poin.' };
+      }
+      // Selisih minimal 2 poin, kecuali mencapai skor sudden death 30 (yaitu 30-29)
+      if (winScore < 30 && (winScore - loseScore) < 2) {
+        return { valid: false, message: 'Aturan resmi: Pemenang harus unggul minimal 2 poin (deuce).' };
+      }
     }
 
     // Dalam bulutangkis, pemenang selalu tim dengan perolehan skor yang lebih tinggi
@@ -864,9 +897,10 @@
     partnerRequests = [],
     shuttlecocks = null,
     defaultCooldown = 1,
-    inventory = null
+    inventory = null,
+    options = {}
   }) {
-    const validation = validateBadmintonScore(scoreA, scoreB, winner);
+    const validation = validateBadmintonScore(scoreA, scoreB, winner, options);
     if (!validation.valid) {
       return { success: false, message: validation.message };
     }
@@ -956,9 +990,10 @@
     court,
     newScoreA,
     newScoreB,
-    newWinner
+    newWinner,
+    options = {}
   }) {
-    const validation = validateBadmintonScore(newScoreA, newScoreB, newWinner);
+    const validation = validateBadmintonScore(newScoreA, newScoreB, newWinner, options);
     if (!validation.valid) {
       return { success: false, message: validation.message };
     }
@@ -1445,6 +1480,7 @@
     clean.bAwardedSessionIds = Array.isArray(data.bAwardedSessionIds)
       ? data.bAwardedSessionIds.filter(id => typeof id === 'string').slice(0, 100)
       : [];
+    clean.bOfficialScoring = Boolean(data.bOfficialScoring);
 
     if (Array.isArray(data.bPlayers)) {
       if (data.bPlayers.length > 200) return null;
