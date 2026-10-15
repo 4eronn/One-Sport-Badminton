@@ -187,6 +187,60 @@
       max-width: 100%;
       box-shadow: none;
     }
+    .app-header {
+      padding: 9px 12px;
+    }
+    .header-logo-img {
+      height: 30px;
+    }
+    .header-title-text .app-name {
+      font-size: 1.05rem;
+    }
+    .header-actions {
+      gap: 5px;
+    }
+    .btn-login-header {
+      padding: 5px 10px;
+      font-size: 0.72rem;
+    }
+    .btn-online-pill {
+      padding: 5px 9px;
+      font-size: 0.72rem;
+    }
+    .btn-header-icon {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  @media (max-width: 375px) {
+    .header-inner {
+      gap: 4px;
+    }
+    .header-logo-img {
+      height: 26px;
+    }
+    .header-title-text .app-name {
+      font-size: 0.95rem;
+    }
+    .header-title-text .app-sub {
+      display: none;
+    }
+    .header-actions {
+      gap: 4px;
+    }
+    .btn-login-header {
+      padding: 4px 8px;
+      font-size: 0.68rem;
+    }
+    .btn-online-pill {
+      padding: 4px 7px;
+      font-size: 0.68rem;
+    }
+    .btn-header-icon {
+      width: 30px;
+      height: 30px;
+    }
   }
 
   /* ── SPLASH / LOADING SCREEN (onesport.id Hero Asset & Glassmorphism) ── */
@@ -305,29 +359,9 @@
     100% { left: 100%; width: 30%; }
   }
 
-  /* ── ONESPORT.ID OFFICIAL TOP ANNOUNCEMENT BAR ── */
-  .topbar-onesport {
-    background: #040E1C;
-    color: #93C5FD;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    padding: 6px 12px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .topbar-onesport strong {
-    color: #FFFFFF;
-    letter-spacing: 0.6px;
-  }
-
   /* ── TOP MULTISPORT SWITCHER BAR ── */
   .top-sport-bar {
-    background: #071A33;
+    background: #0B192C;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding: 8px 14px;
     display: flex;
@@ -336,12 +370,11 @@
     font-size: 0.78rem;
     color: #94A3B8;
   }
-  .top-sport-brand {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 900;
-    font-size: 0.8rem;
-    letter-spacing: 0.8px;
-    color: #FFFFFF;
+  .top-sport-tagline {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #93C5FD;
   }
   .sport-toggle-pills {
     display: flex;
@@ -350,14 +383,15 @@
   }
   .sport-switch-btn {
     border: none;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     font-weight: 800;
     font-size: 0.74rem;
     color: #CBD5E1;
     background: rgba(255, 255, 255, 0.08);
     cursor: pointer;
-    transition: all 0.2s;
+    touch-action: manipulation;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -390,15 +424,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
   }
   .header-brand {
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
   }
   .header-logo-img {
-    height: 32px;
+    height: 34px;
     width: auto;
     object-fit: contain;
     filter: drop-shadow(0 1px 3px rgba(7, 26, 51, 0.08));
@@ -434,17 +471,25 @@
     color: var(--brand-navy-dark);
     font-weight: 700;
     font-size: 0.78rem;
-    padding: 6px 9px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
     border-radius: var(--radius-full);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    flex-shrink: 0;
+    touch-action: manipulation;
   }
   .btn-header-icon:hover {
     border-color: var(--brand-orange);
     color: var(--brand-orange);
+    transform: translateY(-1px);
+  }
+  .btn-header-icon:active {
+    transform: scale(0.95);
   }
 
   /* ── SUB-HEADER / CONFIG SELECTOR ── */
@@ -2047,14 +2092,9 @@
 <!-- ── MOBILE APP CONTAINER / SHELL ── -->
 <div class="mobile-app-shell">
 
-<!-- ── ONESPORT.ID OFFICIAL TOP ANNOUNCEMENT BAR ── -->
-<div class="topbar-onesport">
-  <span><strong>ONESPORT.ID</strong> — Teman Main Lebih Dekat · #WaktunyaMainLagi</span>
-</div>
-
 <!-- ── TOP SPORT SWITCHER (Badminton & Mini Soccer) ── -->
 <div class="top-sport-bar">
-  <div class="top-sport-brand">ONESPORT<span style="color:#38BDF8;">.ID</span></div>
+  <div class="top-sport-tagline">Teman Main Lebih Dekat</div>
   <div class="sport-toggle-pills">
     <button class="sport-switch-btn active" id="sportBtnBadminton" onclick="switchSport('badminton')">
       Badminton
@@ -2076,7 +2116,6 @@
       </div>
     </div>
     <div class="header-actions">
-      <span id="vercelDbStatusBadge" style="font-size:0.7rem; font-weight:800; padding:4px 9px; border-radius:999px; background:#0284C7; color:#FFF; display:inline-flex; align-items:center; gap:4px; cursor:default;" title="Status Sinkronisasi Database Vercel">Vercel DB</span>
       <div id="headerAuthContainer" style="display:inline-flex; align-items:center;">
         <!-- Injected by renderAuthUI() -->
       </div>
@@ -2620,6 +2659,9 @@
       <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
       </button>
+      <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding-top:4px;">
+        Database Cloud: <span id="settingDbStatusText" style="font-weight:700; color:var(--brand-blue);">Ready</span>
+      </div>
     </div>
   </div>
 </div>
@@ -3554,28 +3596,20 @@ const VercelDbSync = {
   },
 
   updateIndicator(status) {
-    const el = document.getElementById('vercelDbStatusBadge');
+    const el = document.getElementById('settingDbStatusText');
     if (!el) return;
     if (status === 'postgres') {
       el.textContent = 'Postgres Connected';
-      el.style.display = 'inline-flex';
-      el.style.background = '#059669';
-      el.style.color = '#FFF';
+      el.style.color = '#059669';
     } else if (status === 'kv') {
       el.textContent = 'KV Connected';
-      el.style.display = 'inline-flex';
-      el.style.background = '#7C3AED';
-      el.style.color = '#FFF';
+      el.style.color = '#7C3AED';
     } else if (status === 'memory' || status === 'connected') {
-      el.textContent = 'Database Ready';
-      el.style.display = 'inline-flex';
-      el.style.background = '#0284C7';
-      el.style.color = '#FFF';
+      el.textContent = 'Ready';
+      el.style.color = '#0284C7';
     } else {
-      el.textContent = 'Vercel DB';
-      el.style.display = 'inline-flex';
-      el.style.background = '#64748B';
-      el.style.color = '#FFF';
+      el.textContent = 'Offline';
+      el.style.color = '#64748B';
     }
   }
 };
