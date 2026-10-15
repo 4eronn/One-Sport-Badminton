@@ -3948,135 +3948,32 @@ function cancelPartnerRequestByHost(reqId) {
 //  BADMINTON ENGINE
 // ============================================================================
 
-// ── BADMINTON TEAM & ROLE RULES ENGINE ──
+// ── BADMINTON TEAM & ROLE RULES ENGINE (Delegasi ke BadmintonService) ──
 function isIntermadiateRole(player) {
-  if (!player || !player.role) return false;
-  const r = String(player.role).toLowerCase();
-  return r.includes('inter');
+  return BadmintonService.isIntermediateRole(player);
 }
 
 function isAdvanceRole(player) {
-  if (!player || !player.role) return false;
-  const r = String(player.role).toLowerCase();
-  return r.includes('adv');
+  return BadmintonService.isAdvanceRole(player);
 }
 
 function hasInterAndAdvanceTogether(team) {
-  if (!Array.isArray(team)) return false;
-  const validPlayers = team.filter(Boolean);
-  const hasInter = validPlayers.some(isIntermadiateRole);
-  const hasAdv = validPlayers.some(isAdvanceRole);
-  return hasInter && hasAdv;
+  return BadmintonService.hasInterAndAdvanceTogether(team);
 }
 
-/**
- * Membagi 4 pemain menjadi 2 tim ganda (Tim A dan Tim B):
- * 1. Tim SELALU DIACAK (randomized).
- * 2. Role Intermadiate dan Advance TIDAK BOLEH berada dalam 1 tim yang sama.
- * 3. Jika ada 2 pemain Advance, diprioritaskan berada di tim yang berlawanan.
- * 4. Meminimalkan frekuensi berpasangan yang sama (pairHistory) jika tersedia.
- */
 function splitFourPlayersIntoTeams(fourPlayers, pairHistory = {}) {
-  if (!Array.isArray(fourPlayers) || fourPlayers.length < 4) {
-    return {
-      teamA: fourPlayers ? fourPlayers.slice(0, 2) : [],
-      teamB: fourPlayers ? fourPlayers.slice(2, 4) : []
-    };
-  }
-
-  const p = [...fourPlayers];
-
-  // 3 kemungkinan kombinasi ganda dari 4 pemain
-  const pairings = [
-    { t1: [p[0], p[1]], t2: [p[2], p[3]] },
-    { t1: [p[0], p[2]], t2: [p[1], p[3]] },
-    { t1: [p[0], p[3]], t2: [p[1], p[2]] }
-  ];
-
-  // Aturan Wajib: Role Intermadiate dan Advance TIDAK BOLEH 1 tim
-  let validPairings = pairings.filter(pair => 
-    !hasInterAndAdvanceTogether(pair.t1) && !hasInterAndAdvanceTogether(pair.t2)
-  );
-
-  // Jika kondisi darurat (misal 3 Adv + 1 Inter secara paksa), fallback ke semua kemungkinan
-  if (validPairings.length === 0) {
-    validPairings = pairings;
-  }
-
-  // Jika terdapat 2 pemain Advance, prioritaskan memisahkan keduanya di tim berlawanan
-  const advCount = p.filter(isAdvanceRole).length;
-  if (advCount === 2) {
-    const separatedAdv = validPairings.filter(pair => 
-      pair.t1.filter(isAdvanceRole).length === 1 && pair.t2.filter(isAdvanceRole).length === 1
-    );
-    if (separatedAdv.length > 0) {
-      validPairings = separatedAdv;
-    }
-  }
-
-  // Jika terdapat 2 pemain Intermadiate dan tidak ada Advance, prioritaskan dipisah agar berimbang
-  const interCount = p.filter(isIntermadiateRole).length;
-  if (interCount === 2 && advCount === 0) {
-    const separatedInter = validPairings.filter(pair => 
-      pair.t1.filter(isIntermadiateRole).length === 1 && pair.t2.filter(isIntermadiateRole).length === 1
-    );
-    if (separatedInter.length > 0) {
-      validPairings = separatedInter;
-    }
-  }
-
-  // Hitung riwayat berpasangan untuk meminimalkan pasangan yang berulang
-  const scoredPairings = validPairings.map(pair => {
-    let score = 0;
-    if (pair.t1[0] && pair.t1[1]) {
-      const k1 = [pair.t1[0].id, pair.t1[1].id].sort((a,b)=>a-b).join('-');
-      score += (pairHistory[k1] || 0);
-    }
-    if (pair.t2[0] && pair.t2[1]) {
-      const k2 = [pair.t2[0].id, pair.t2[1].id].sort((a,b)=>a-b).join('-');
-      score += (pairHistory[k2] || 0);
-    }
-    return { pair, score };
-  });
-
-  const minScore = Math.min(...scoredPairings.map(sp => sp.score));
-  const bestPairings = scoredPairings.filter(sp => sp.score === minScore).map(sp => sp.pair);
-
-  // Acak di antara pilihan terbaik ("selalu diacak")
-  const chosen = bestPairings[Math.floor(Math.random() * bestPairings.length)];
-
-  // Acak tim mana yang menjadi Tim A dan Tim B (50% probabilitas)
-  let teamA = (Math.random() < 0.5) ? [...chosen.t1] : [...chosen.t2];
-  let teamB = (teamA[0].id === chosen.t1[0].id) ? [...chosen.t2] : [...chosen.t1];
-
-  // Acak posisi pemain di dalam tim
-  if (Math.random() < 0.5) teamA.reverse();
-  if (Math.random() < 0.5) teamB.reverse();
-
-  return { teamA, teamB };
+  const res = BadmintonService.splitFourIntoTeamsSmart(fourPlayers, pairHistory, {}, []);
+  return { teamA: res.teamA, teamB: res.teamB };
 }
 
 function pickCompatibleFourPlayers(availablePlayers) {
-  if (!availablePlayers || availablePlayers.length <= 4) return availablePlayers ? availablePlayers.slice(0, 4) : [];
-
-  const first4 = availablePlayers.slice(0, 4);
-  const advCount = first4.filter(isAdvanceRole).length;
-  const interCount = first4.filter(isIntermadiateRole).length;
-
-  // Jika kombinasi 1 Adv + 3 Inter (atau 3 Adv + 1 Inter), coba swap salah satu dengan pemain Pemula/Amatir dari pool sisa
-  if ((advCount === 1 && interCount === 3) || (advCount === 3 && interCount === 1)) {
-    const candidateIdx = availablePlayers.slice(4).findIndex(p => !isIntermadiateRole(p) && !isAdvanceRole(p));
-    if (candidateIdx !== -1) {
-      const swapTargetIndex = advCount === 1 ? first4.findIndex(isIntermadiateRole) : first4.findIndex(isAdvanceRole);
-      const chosen = [...first4];
-      chosen[swapTargetIndex] = availablePlayers[4 + candidateIdx];
-      return chosen;
-    }
-  }
-
-  return first4;
+  const picked = BadmintonService.pickNextFourPlayersForMatch(availablePlayers, [], {}, availablePlayers);
+  return picked || (availablePlayers ? availablePlayers.slice(0, 4) : []);
 }
 
+/**
+ * @deprecated [LEGACY] Jalur penjadwalan aktif utama adalah alur ACC Host (proposeNextCourtMatch / createCourtProposal).
+ */
 function generateInitialBadminton() {
   if (bPlayers.length < 4) {
     bSchedule = [];
@@ -4131,6 +4028,9 @@ function generateInitialBadminton() {
   bCurrentRoundIndex = 0;
 }
 
+/**
+ * @deprecated [LEGACY]
+ */
 function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap, restCountMap, currentRoundNumber = 1, lastPlayedRoundMap = {}) {
   const femaleOnly = roster.filter(p => p.gender === 'P');
   let femaleMatchesCount = Math.floor(femaleOnly.length / 4);
@@ -4307,6 +4207,9 @@ function renderSoccerTeams() {
 }
 
 // ── SMART REBALANCE / GENERATE ──
+/**
+ * @deprecated [LEGACY] Dipertahankan untuk kompatibilitas tombol UI "Susun Ulang" / "Smart Match".
+ */
 function smartRebalanceUpcoming(showToast = true) {
   if (!checkEditPermission()) return;
   if (currentSport === 'badminton') {
@@ -4321,6 +4224,9 @@ function smartRebalanceUpcoming(showToast = true) {
   persistAndBroadcast();
 }
 
+/**
+ * @deprecated [LEGACY]
+ */
 function regenerateUpcomingRoundsFrom(fromRoundIdx) {
   if (bPlayers.length < 4) return;
   const maxPossibleCourts = Math.max(1, Math.floor(bPlayers.length / 4));
@@ -5057,7 +4963,13 @@ function renderCourtsView() {
     `;
 
     const courtsHtml = currentRound.courts.map((court, cIdx) => {
-      const cStatus = court.status || BadmintonService.COURT_STATUS.KOSONG;
+      let cStatus = court.status || BadmintonService.COURT_STATUS.KOSONG;
+      // Q-5: Petakan 'pending' ke status yang dikenal renderCourtsView
+      if (cStatus === 'pending') {
+        cStatus = (court.teamA && court.teamA.length > 0)
+          ? BadmintonService.COURT_STATUS.MENUNGGU_ACC
+          : BadmintonService.COURT_STATUS.KOSONG;
+      }
       const isKosong = cStatus === BadmintonService.COURT_STATUS.KOSONG;
       const isMenungguAcc = cStatus === BadmintonService.COURT_STATUS.MENUNGGU_ACC;
       const isOngoing = cStatus === BadmintonService.COURT_STATUS.SEDANG_MAIN || cStatus === 'ongoing';
