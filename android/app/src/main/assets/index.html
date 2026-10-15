@@ -1688,37 +1688,72 @@
     border-color: #F59E0B;
     color: #92400E;
   }
-  .btn-role-badge {
-    border: none;
+  .btn-login-header {
+    background: var(--brand-blue-soft);
+    border: 1px solid #BFDBFE;
+    color: var(--brand-blue);
+    font-size: 0.74rem;
     font-weight: 800;
-    font-size: 0.72rem;
-    padding: 6px 11px;
+    padding: 5px 12px;
     border-radius: var(--radius-full);
     cursor: pointer;
+    touch-action: manipulation;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-login-header:hover {
+    background: var(--brand-blue);
+    color: #FFFFFF;
+  }
+  .btn-login-header:active {
+    transform: scale(0.96);
+  }
+  .user-auth-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    background: #F1F5F9;
+    border: 1px solid var(--border-color);
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
     white-space: nowrap;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .btn-role-badge.is-spectator {
-    background: linear-gradient(135deg, #FF6B00, #EA580C);
+  .user-auth-badge.is-host {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+  }
+  .auth-role-tag {
+    background: var(--brand-blue);
     color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  .btn-role-badge.is-spectator:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+  .auth-user-name {
+    font-weight: 800;
+    color: var(--brand-navy-dark);
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .btn-role-badge.is-host {
-    background: #0F1E36;
-    color: #38BDF8;
-    border: 1px solid rgba(56, 189, 248, 0.35);
-    box-shadow: 0 2px 6px rgba(15, 30, 54, 0.25);
+  .btn-logout-header {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.15s;
   }
-  .btn-role-badge.is-host:hover {
-    background: #1B355E;
-    transform: translateY(-1px);
+  .btn-logout-header:hover {
+    color: #DC2626;
   }
   #headerOnlineText {
     display: inline-block;
@@ -1998,7 +2033,7 @@
 <!-- ── SPLASH / LOADING SCREEN (onesport.id Hero Asset & Glassmorphism) ── -->
 <div id="splashScreen">
   <div class="splash-content">
-    <div class="splash-kicker">⚡ ONESPORT.ID · KOMUNITAS OLAHRAGA</div>
+    <div class="splash-kicker">ONESPORT.ID · KOMUNITAS OLAHRAGA</div>
     <img src="logo.png" alt="ONESPORT" class="splash-logo" onerror="this.src='https://one-sport-badminton.vercel.app/logo.png'">
     <div class="splash-brand-title">one<span>sport</span><span class="splash-brand-dot">.id</span></div>
     <div class="splash-tagline">Teman Main Lebih Dekat · #WaktunyaMainLagi</div>
@@ -2014,7 +2049,7 @@
 
 <!-- ── ONESPORT.ID OFFICIAL TOP ANNOUNCEMENT BAR ── -->
 <div class="topbar-onesport">
-  <span>⚡ <strong>ONESPORT.ID</strong> — Teman Main Lebih Dekat · #WaktunyaMainLagi</span>
+  <span><strong>ONESPORT.ID</strong> — Teman Main Lebih Dekat · #WaktunyaMainLagi</span>
 </div>
 
 <!-- ── TOP SPORT SWITCHER (Badminton & Mini Soccer) ── -->
@@ -2041,12 +2076,11 @@
       </div>
     </div>
     <div class="header-actions">
-      <span id="vercelDbStatusBadge" style="font-size:0.7rem; font-weight:800; padding:4px 9px; border-radius:999px; background:#0284C7; color:#FFF; display:inline-flex; align-items:center; gap:4px; cursor:default;" title="Status Sinkronisasi Database Vercel">⚡ Vercel DB</span>
-      <button class="btn-role-badge is-spectator" id="btnHeaderRoleSwitch" onclick="handleRoleSwitchClick()" title="Beralih Peran">
-        <span>👑</span>
-        <span id="headerRoleLabel">Masuk Host</span>
-      </button>
-      <button class="btn-online-pill" id="btnHeaderOnlinePill" onclick="openOnlineModal()" title="Buka Mode Online & Live Sync">
+      <span id="vercelDbStatusBadge" style="font-size:0.7rem; font-weight:800; padding:4px 9px; border-radius:999px; background:#0284C7; color:#FFF; display:inline-flex; align-items:center; gap:4px; cursor:default;" title="Status Sinkronisasi Database Vercel">Vercel DB</span>
+      <div id="headerAuthContainer" style="display:inline-flex; align-items:center;">
+        <!-- Injected by renderAuthUI() -->
+      </div>
+      <button class="btn-online-pill" id="btnHeaderOnlinePill" onclick="openOnlineModal()" title="Mode Online & Live Sync">
         <span class="online-status-dot" id="headerOnlineDot"></span>
         <span id="headerOnlineText">Siaran Live</span>
         <span id="headerLiveBadge" class="header-live-count-badge" style="display:none;">0 Live</span>
@@ -2065,10 +2099,7 @@
 <div class="spectator-live-banner" id="spectatorLiveBanner">
   <div class="spectator-banner-left">
     <span class="online-status-dot" style="background:#10B981; flex-shrink:0;"></span>
-    <span class="spectator-banner-label">🔴 LIVE: <strong id="spectatorBannerRoomCode" title="-">SIARAN LANGSUNG</strong> <span id="spectatorBannerBadge" style="font-size:0.68rem; opacity:0.9; background:rgba(255,255,255,0.2); padding:1px 6px; border-radius:4px;">(Penonton)</span></span>
-  </div>
-  <div class="spectator-banner-actions">
-    <button class="btn-court-action" style="font-size:0.72rem; padding:4px 11px; background:#FF5B14; color:#FFF; border:none; border-radius:999px; font-weight:800; display:inline-flex; align-items:center; gap:4px;" onclick="openSwitchToHostModal()">👑 Beralih ke Host</button>
+    <span class="spectator-banner-label">LIVE: <strong id="spectatorBannerRoomCode" title="-">SIARAN LANGSUNG</strong></span>
   </div>
 </div>
 
@@ -2242,7 +2273,7 @@
       </button>
       <button class="btn-os-purple" id="btnCustomCourtTrigger" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color:#FFFFFF; font-weight:800; font-size:0.85rem; padding:11px 14px; border:none; border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(109,40,217,0.3); grid-column:span 2; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openCustomCourtModal()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        <span>🎯 Buat Lapangan Pilihan (Pilih Pemain)</span>
+        <span>Buat Lapangan Pilihan (Pilih Pemain)</span>
       </button>
     </div>
 
@@ -2263,7 +2294,7 @@
     <!-- Spotlight Champion Banner -->
     <div class="champion-spotlight-box" id="championSpotlight">
       <div class="champion-pill-wrap">
-        <span class="champion-trophy-accent" style="margin-right:2px;">🏆</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#D97706; margin-right:3px; vertical-align:middle;"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 3h12a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V5a2 2 0 0 1 2-2z"/></svg>
         <span id="spotlightPlayerName">—</span>
       </div>
       <div class="champion-sub-label" id="spotlightSubtitle">Peringkat 1 Saat Ini</div>
@@ -2275,7 +2306,7 @@
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="card-title-text" style="font-size:1rem;" id="leaderboardTitleText">Leaderboard</span>
           <button class="btn-rules-pill" onclick="openRulesModal()" title="Lihat Aturan Penentuan Juara">
-            <span>📜 Aturan Juara</span>
+            <span>Aturan Juara</span>
           </button>
         </div>
         <select class="filter-select-styled" id="lbSortSelect" onchange="renderLeaderboard()">
@@ -2331,7 +2362,7 @@
     <!-- Official Rules Banner -->
     <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 0.76rem;">
       <div style="display: flex; align-items: center; gap: 6px; color: #92400E; font-weight: 700;">
-        <span style="font-size: 1rem;">⚖️</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#D97706; flex-shrink:0;"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="M2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
         <span>Aturan: <strong>Menang ➔ Skor Selisih Poin (+/-) ➔ Total Poin</strong></span>
       </div>
       <button class="btn-rules-pill" style="font-size: 0.7rem; padding: 2px 8px;" onclick="openRulesModal()">Lihat Regulasi</button>
@@ -2452,7 +2483,7 @@
   <div class="modal-box" style="max-width: 480px;">
     <div class="modal-header">
       <div>
-        <div class="modal-title" id="customCourtModalTitle">🎯 Buat Lapangan Pilihan</div>
+        <div class="modal-title" id="customCourtModalTitle">Buat Lapangan Pilihan</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;" id="customCourtModalSubtitle">
           Pilih 4 pemain untuk bermain di lapangan ini
         </div>
@@ -2478,7 +2509,7 @@
           </span>
         </div>
         <button id="btnCustomCourtShuffleTeams" class="btn-court-quick-action" style="background: #EEF2F6; border: 1.5px solid #CBD5E1; color: var(--brand-navy-dark);" onclick="shuffleCustomCourtPreviewTeams()" disabled>
-          🔀 Acak Tim
+          Acak Tim
         </button>
       </div>
 
@@ -2512,7 +2543,7 @@
 
       <!-- Search & Filter Row -->
       <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-        <input type="text" id="inputCustomCourtSearch" class="input-styled-os" placeholder="🔍 Cari nama pemain..." style="padding: 6px 10px; font-size: 0.78rem;" oninput="renderCustomCourtPlayersList()">
+        <input type="text" id="inputCustomCourtSearch" class="input-styled-os" placeholder="Cari nama pemain..." style="padding: 6px 10px; font-size: 0.78rem;" oninput="renderCustomCourtPlayersList()">
       </div>
 
       <div class="custom-court-filter-tabs" style="display: flex; gap: 4px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px;">
@@ -2532,7 +2563,7 @@
         Batal
       </button>
       <button id="btnSaveCustomCourt" class="btn-os-orange" style="background: var(--gradient-orange); width: 100%;" onclick="saveCustomCourt()" disabled>
-        ✅ Simpan Lapangan
+        Simpan Lapangan
       </button>
     </div>
   </div>
@@ -2598,7 +2629,7 @@
   <div class="modal-box" style="max-width: 500px;">
     <div class="modal-header">
       <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:1.3rem;">📜</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-navy-dark);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span>Peraturan Penentuan Juara</span>
       </div>
       <button class="btn-del-player" onclick="closeRulesModal()">✕</button>
@@ -2606,7 +2637,7 @@
 
     <!-- Official Badge -->
     <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
-      <span style="font-size: 1.4rem;">🏆</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:#D97706; flex-shrink:0;"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 3h12a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V5a2 2 0 0 1 2-2z"/></svg>
       <div>
         <div style="font-size: 0.72rem; font-weight: 800; color: #92400E; text-transform: uppercase; letter-spacing: 0.6px;">Standar Sistem Klasemen Resmi</div>
         <div style="font-size: 0.82rem; font-weight: 700; color: #78350F;">Regulasi Hierarkis & Recursive Tie-Break</div>
@@ -2680,7 +2711,7 @@
 
       <!-- Simulasi Contoh Kasus -->
       <div style="background: #FFF7ED; border: 1px solid #FED7AA; border-radius: var(--radius-md); padding: 12px;">
-        <div style="font-weight: 800; color: #9A3412; font-size: 0.84rem; margin-bottom: 6px;">💡 Contoh Kasus Penerapan:</div>
+        <div style="font-weight: 800; color: #9A3412; font-size: 0.84rem; margin-bottom: 6px;">Contoh Kasus Penerapan:</div>
         <div style="overflow-x: auto; margin-bottom: 6px;">
           <table style="width: 100%; border-collapse: collapse; font-size: 0.76rem; background: #FFF; border-radius: 6px; overflow: hidden;">
             <tr style="background: #FED7AA; font-weight: 800; text-align: center;">
@@ -2770,10 +2801,10 @@
           </div>
           <div style="display:flex; gap:4px;">
             <button class="btn-court-action" onclick="refreshLiveRoomsList()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px;">
-              <span>🔄 Segarkan</span>
+              <span>Segarkan</span>
             </button>
             <button class="btn-court-action" onclick="clearAllLiveRoomsFromLobby()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px; color:#DC2626; border-color:#FECACA; background:#FFF;" title="Bersihkan semua daftar siaran">
-              <span>🗑️ Bersihkan Semua</span>
+              <span>Bersihkan Semua</span>
             </button>
           </div>
         </div>
@@ -2788,8 +2819,8 @@
       <div id="onlineSetupForm">
         <!-- Sub-Tabs: Buat Baru vs Gabung Room -->
         <div class="role-toggle-group">
-          <button class="role-toggle-btn active" id="btnSubSetupCreate" onclick="switchSetupSubTab('create')">➕ Buat Siaran Baru (Host)</button>
-          <button class="role-toggle-btn" id="btnSubSetupJoin" onclick="switchSetupSubTab('join')">🔗 Gabung Siaran Live</button>
+          <button class="role-toggle-btn active" id="btnSubSetupCreate" onclick="switchSetupSubTab('create')">Buat Siaran Baru (Host)</button>
+          <button class="role-toggle-btn" id="btnSubSetupJoin" onclick="switchSetupSubTab('join')">Gabung Siaran Live</button>
         </div>
 
         <!-- Sub-Pane A: Buat Siaran Baru (Host) -->
@@ -2821,43 +2852,21 @@
           </button>
         </div>
 
-        <!-- Sub-Pane B: Gabung Siaran Live (2 Pilihan: Penonton vs Host) -->
+        <!-- Sub-Pane B: Gabung Siaran Live -->
         <div id="subPaneSetupJoin" style="display:none;">
           <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
             <div>
               <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">Kode Room yang Dituju</label>
               <input type="text" id="inputJoinRoomCode" class="input-styled-os" placeholder="Contoh: MABAR-88" style="text-transform:uppercase; font-weight:800; margin-top:4px;">
             </div>
-
-            <!-- Role Choice -->
-            <div>
-              <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">Pilih Peran Masuk:</label>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:4px;">
-                <label style="display:flex; align-items:center; gap:6px; background:#FFF; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:8px; cursor:pointer;" id="labelJoinRoleSpectator">
-                  <input type="radio" name="radioJoinRole" value="spectator" checked onchange="toggleJoinRoleUI('spectator')">
-                  <span style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);">👁️ Penonton</span>
-                </label>
-                <label style="display:flex; align-items:center; gap:6px; background:#FFF; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:8px; cursor:pointer;" id="labelJoinRoleHost">
-                  <input type="radio" name="radioJoinRole" value="host" onchange="toggleJoinRoleUI('host')">
-                  <span style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);">👑 Wasit / Host</span>
-                </label>
-              </div>
-              <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;" id="roleDescriptionHint">
-                Mode Penonton hanya melihat skor live realtime tanpa memasukkan PIN.
-              </div>
-            </div>
-
-            <!-- PIN Host input if Role == Host -->
-            <div id="joinHostPinBox" style="display:none;">
-              <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">PIN Host (Dibuat Host Awal)</label>
-              <input type="password" id="inputJoinHostPin" class="input-styled-os" placeholder="Masukkan PIN Host" maxlength="6" style="margin-top:4px;">
-              <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Wajib memasukkan PIN Host awal untuk mendapatkan akses wasit/kontrol skor.</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 10px;">
+              Akses kontrol skor dan rotasi disesuaikan dengan status login akun Anda (Host: admin@onesport.co.id).
             </div>
           </div>
 
           <button class="btn-os-cyan" style="width:100%; font-size:0.85rem; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px;" onclick="submitJoinRoomForm()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-            <span>Masuk ke Siaran Live</span>
+            <span>Gabung Siaran Live</span>
           </button>
         </div>
       </div>
@@ -2866,7 +2875,7 @@
       <div id="onlineActiveControls" style="display:none;">
         <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:14px;">
           <div>
-            <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-soft);">Tautan Bagikan ke Penonton / Wasit</label>
+            <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-soft);">Tautan Bagikan Siaran Live</label>
             <div style="display:flex; gap:6px; margin-top:4px;">
               <input type="text" id="shareRoomUrlInput" class="input-styled-os" readonly style="font-size:0.75rem; background:#F8FAFC;">
               <button class="btn-os-cyan" onclick="copyShareUrl()" style="white-space:nowrap; padding:0 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;">
@@ -2908,8 +2917,8 @@
         </div>
 
         <div id="spectatorActiveActionButtons" style="display:none; flex-direction:column; gap:8px;">
-          <button class="btn-os-orange" style="width:100%; font-size:0.82rem; padding:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="promptUpgradeToHost()">
-            <span>🔑 Masukkan PIN Host untuk Jadi Wasit</span>
+          <button class="btn-os-orange" style="width:100%; font-size:0.82rem; padding:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="openLoginModal()">
+            <span>Masuk Akun Host untuk Kelola Skor</span>
           </button>
           <button class="btn-court-action" style="width:100%; background:#FEE2E2; border-color:#FECACA; color:#DC2626; font-weight:800; padding:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="leaveOnlineRoom(false)">
             <span>Keluar dari Siaran Live</span>
@@ -2925,7 +2934,7 @@
           Tersimpan: <strong id="historyCountBadge">0</strong> Siaran (APK & Web)
         </div>
         <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; color:#DC2626; border-color:#FECACA; background:#FFF;" onclick="clearAllLiveHistory()">
-          🗑️ Bersihkan Semua
+          Bersihkan Semua
         </button>
       </div>
 
@@ -3004,7 +3013,7 @@
     <div class="join-choice-card selected" onclick="selectJoinRoleChoice('spectator')" id="choiceCardSpectator">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-size:1.1rem;">👁️</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-navy-mid);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <strong style="font-size:0.85rem; color:var(--brand-navy-dark);">Hanya Nonton (Penonton)</strong>
         </div>
         <span style="font-size:0.7rem; font-weight:800; color:#059669; background:#ECFDF5; padding:2px 7px; border-radius:999px;">Gratis / Tanpa PIN</span>
@@ -3018,7 +3027,7 @@
     <div class="join-choice-card" onclick="selectJoinRoleChoice('host')" id="choiceCardHost">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-size:1.1rem;">👑</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-orange);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           <strong style="font-size:0.85rem; color:var(--brand-navy-dark);">Masuk sebagai Host / Wasit</strong>
         </div>
         <span style="font-size:0.7rem; font-weight:800; color:#B45309; background:#FFFBEB; padding:2px 7px; border-radius:999px;">Perlu PIN Host</span>
@@ -3042,7 +3051,9 @@
 <!-- ── MODAL: KONFIRMASI SELESAI SIARAN LIVE ── -->
 <div class="modal-overlay" id="endLiveConfirmModalOverlay" style="z-index: 99992;">
   <div class="modal-box" style="max-width: 400px; text-align: center;">
-    <div style="font-size: 2.4rem; margin-bottom: 6px;">🏁</div>
+    <div style="margin-bottom: 8px; display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:50%; background:#FEF3C7; color:#D97706;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    </div>
     <div style="font-weight: 900; font-size: 1.15rem; color: var(--brand-navy-dark); margin-bottom: 4px;">
       Akhiri Siaran Live Ini?
     </div>
@@ -3063,10 +3074,12 @@
   </div>
 </div>
 
-<!-- ── MODAL: NOTIFIKASI SIARAN SELESAI (UNTUK PENONTON) ── -->
+<!-- ── MODAL: NOTIFIKASI SIARAN SELESAI ── -->
 <div class="modal-overlay" id="liveEndedNoticeModalOverlay" style="z-index: 99994;">
   <div class="modal-box" style="max-width: 400px; text-align: center;">
-    <div style="font-size: 2.6rem; margin-bottom: 6px;">🏆</div>
+    <div style="margin-bottom: 8px;">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706; margin:0 auto;"><path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/><path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/><path d="M6 3h12a2 2 0 0 1 2 2v4a6 6 0 0 1-12 0V5a2 2 0 0 1 2-2z"/></svg>
+    </div>
     <div style="font-weight: 900; font-size: 1.2rem; color: var(--brand-navy-dark); margin-bottom: 4px;">
       Siaran Live Telah Selesai!
     </div>
@@ -3080,7 +3093,7 @@
 
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn-os-orange" style="width:100%; padding:10px; font-weight:800;" onclick="openHistoryFromEndedNotice()">
-        📋 Buka Histori Pertandingan
+        Buka Histori Pertandingan
       </button>
       <button class="btn-court-action" style="width:100%; padding:9px;" onclick="closeLiveEndedNoticeModal()">
         Tutup
@@ -3094,7 +3107,7 @@
   <div class="modal-box" style="max-width: 480px; text-align: left; max-height:88vh; display:flex; flex-direction:column;">
     <div class="modal-header">
       <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:1.1rem;">📋</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-navy-dark);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <span id="histDetailTitle">Rekap Detail Siaran Live</span>
       </div>
       <button class="btn-del-player" onclick="closeHistoryDetailModal()">✕</button>
@@ -3106,10 +3119,10 @@
 
     <div style="display:flex; gap:8px; border-top:1px solid var(--border-color); padding-top:10px;">
       <button class="btn-os-cyan" style="flex:1; padding:9px; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="shareCurrentViewingHistoryWA()">
-        <span>📤 Salin WhatsApp</span>
+        <span>Salin WhatsApp</span>
       </button>
       <button class="btn-os-orange" style="flex:1; padding:9px; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="loadCurrentViewingHistoryToApp()">
-        <span>📥 Buka ke Papan Skor</span>
+        <span>Buka ke Papan Skor</span>
       </button>
     </div>
   </div>
@@ -3118,7 +3131,9 @@
 <!-- ── MODAL: AUTO UPDATE NOTIFICATION ── -->
 <div class="modal-overlay" id="updateModalOverlay" style="z-index: 99999;">
   <div class="modal-box" style="max-width: 420px; text-align: center;">
-    <div style="font-size: 2.6rem; margin-bottom: 6px;">🚀</div>
+    <div style="margin-bottom: 8px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-blue); margin:0 auto;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
     <div style="font-weight: 900; font-size: 1.22rem; color: var(--brand-navy-dark); margin-bottom: 4px;">
       Pembaruan Baru Tersedia!
     </div>
@@ -3155,7 +3170,7 @@
 <div class="modal-overlay" id="directCourtScoreModalOverlay" style="z-index: 99997;">
   <div class="modal-box" style="max-width: 440px;">
     <div class="modal-header">
-      <div class="modal-title" id="directScoreModalTitle">🏸 Input Skor Pertandingan</div>
+      <div class="modal-title" id="directScoreModalTitle">Input Skor Pertandingan</div>
       <button class="btn-del-player" onclick="closeDirectScoreModal()">✕</button>
     </div>
     <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
@@ -3206,7 +3221,7 @@
     <!-- Shuttlecock Usage (Poin 6: Opsional) -->
     <div style="background:#F1F5F9; border:1px solid #CBD5E1; border-radius:var(--radius-md); padding:10px; margin-bottom:14px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);">🏸 Monitoring Kok (Opsional, Default 0)</span>
+        <span style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);">Monitoring Kok (Opsional, Default 0)</span>
         <span style="font-size:0.68rem; color:var(--brand-orange); font-weight:700;">Tidak wajib diisi</span>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
@@ -3238,7 +3253,7 @@
 <div class="modal-overlay" id="partnerRequestModalOverlay" style="z-index: 99997;">
   <div class="modal-box" style="max-width: 420px;">
     <div class="modal-header">
-      <div class="modal-title">🤝 Request Rekan Tim</div>
+      <div class="modal-title">Request Rekan Tim</div>
       <button class="btn-del-player" onclick="closePartnerRequestModal()">✕</button>
     </div>
     <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">
@@ -3258,7 +3273,7 @@
     </div>
 
     <div id="partnerReqWarningAlert" style="display:none; background:#FFFBEB; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:8px 10px; font-size:0.74rem; color:#92400E; margin-bottom:12px;">
-      ⚠️ <strong>Perhatian:</strong> Anda sudah pernah berpasangan dengan pemain ini sebelumnya!
+      <strong>Perhatian:</strong> Anda sudah pernah berpasangan dengan pemain ini sebelumnya!
     </div>
 
     <input type="hidden" id="partnerReqSourcePlayerId" value="">
@@ -3274,7 +3289,7 @@
 <div class="modal-overlay" id="partnerRequestsListModalOverlay" style="z-index: 99996;">
   <div class="modal-box" style="max-width: 450px;">
     <div class="modal-header">
-      <div class="modal-title">📋 Daftar Request Pasangan Host</div>
+      <div class="modal-title">Daftar Request Pasangan</div>
       <button class="btn-del-player" onclick="closePartnerRequestsListModal()">✕</button>
     </div>
     <div id="partnerRequestsListContainer" style="max-height:60vh; overflow-y:auto; margin-bottom:12px;">
@@ -3288,7 +3303,7 @@
 <div class="modal-overlay" id="shuttlecockModalOverlay" style="z-index: 99997;">
   <div class="modal-box" style="max-width: 440px;">
     <div class="modal-header">
-      <div class="modal-title">🏸 Rekap & Manajemen Kok</div>
+      <div class="modal-title">Rekap & Manajemen Kok</div>
       <button class="btn-del-player" onclick="closeShuttlecockModal()">✕</button>
     </div>
     <div id="shuttlecockModalContent" style="margin-bottom:14px;">
@@ -3302,7 +3317,7 @@
 <div class="modal-overlay" id="editFinishedScoreModalOverlay" style="z-index: 99997;">
   <div class="modal-box" style="max-width: 420px;">
     <div class="modal-header">
-      <div class="modal-title">✏️ Edit Skor Pertandingan</div>
+      <div class="modal-title">Edit Skor Pertandingan</div>
       <button class="btn-del-player" onclick="closeEditFinishedScoreModal()">✕</button>
     </div>
     <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
@@ -3356,24 +3371,38 @@
   </div>
 </div>
 
-<!-- ── MODAL: BERALIH KE HOST ── -->
-<div class="modal-overlay" id="switchRoleModalOverlay" style="z-index: 99998;">
-  <div class="modal-box" style="max-width: 400px; text-align: center;">
-    <div style="font-size: 2.6rem; margin-bottom: 6px;">👑</div>
-    <div class="modal-title" style="margin-bottom: 4px;">Beralih ke Mode Host</div>
-    <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">
-      Masukkan PIN Host untuk membuka kontrol penuh: kelola pemain, susun & ACC jadwal lapangan, input skor & kok, serta pengaturan sesi.
+<!-- ── MODAL: LOGIN PENGGUNA & HOST ── -->
+<div class="modal-overlay" id="loginModalOverlay" style="z-index: 99998;">
+  <div class="modal-box" style="max-width: 380px;">
+    <div class="modal-header">
+      <div class="modal-title">Masuk ke ONESPORT</div>
+      <button class="btn-del-player" onclick="closeLoginModal()">✕</button>
+    </div>
+    <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
+      Masuk dengan akun Host untuk mengelola turnamen, jadwal lapangan, dan skor. Akun selain Host akan masuk sebagai penonton.
     </div>
 
-    <div style="margin-bottom: 14px; text-align: left;">
-      <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">PIN Host</label>
-      <input type="password" id="inputSwitchHostPin" class="input-styled-os" placeholder="Ketik PIN (Default: 1234)" style="text-align: center; font-size: 1.2rem; font-weight: 900; letter-spacing: 4px;" onkeypress="if(event.key==='Enter')submitSwitchToHost()">
-    </div>
+    <form onsubmit="event.preventDefault(); submitLoginForm();" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;">
+      <div>
+        <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username / Email</label>
+        <input type="text" id="loginInputEmail" class="input-styled-os" placeholder="contoh: admin@onesport.co.id" autocomplete="username" required>
+      </div>
 
-    <div style="display: flex; gap: 8px;">
-      <button class="btn-court-action" style="flex: 1; padding: 10px;" onclick="closeSwitchRoleModal()">Batal</button>
-      <button class="btn-os-orange" style="flex: 2; padding: 10px; font-weight: 800;" onclick="submitSwitchToHost()">Buka Akses Host</button>
-    </div>
+      <div>
+        <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Password</label>
+        <input type="password" id="loginInputPassword" class="input-styled-os" placeholder="Masukkan password" autocomplete="current-password" required>
+      </div>
+
+      <div style="background: #F8FAFC; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px; font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">
+        Akun Host: <strong>admin@onesport.co.id</strong><br>
+        <span style="font-size:0.68rem; color:var(--text-muted);">Akun selain di atas akan masuk sebagai penonton biasa.</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 4px;">
+        <button type="button" class="btn-court-action" style="flex: 1; padding: 10px;" onclick="closeLoginModal()">Batal</button>
+        <button type="submit" class="btn-os-orange" style="flex: 2; padding: 10px; font-weight: 800;">Masuk</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -3394,7 +3423,26 @@ function escapeHtml(str) {
 }
 
 let currentSport = 'badminton'; // 'badminton' | 'minisoccer'
-let userRole = localStorage.getItem('onesport_user_role') || 'spectator'; // 'host' | 'spectator' (Default: Penonton)
+
+// ── AUTHENTICATION & ROLE MANAGEMENT ──
+const HOST_EMAIL = 'admin@onesport.co.id';
+const HOST_PASSWORD = 'temanmainlebihdekat';
+
+let currentUser = null;
+try {
+  const savedUser = localStorage.getItem('onesport_auth_user');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+  }
+} catch (e) {
+  currentUser = null;
+}
+
+function isHostUser() {
+  return !!(currentUser && currentUser.email && currentUser.email.toLowerCase() === HOST_EMAIL.toLowerCase());
+}
+
+let userRole = isHostUser() ? 'host' : 'spectator';
 
 // ── BADMINTON STATE ──
 let bPlayers = [];
@@ -3509,22 +3557,22 @@ const VercelDbSync = {
     const el = document.getElementById('vercelDbStatusBadge');
     if (!el) return;
     if (status === 'postgres') {
-      el.textContent = '⚡ Vercel Postgres';
+      el.textContent = 'Postgres Connected';
       el.style.display = 'inline-flex';
       el.style.background = '#059669';
       el.style.color = '#FFF';
     } else if (status === 'kv') {
-      el.textContent = '⚡ Vercel KV';
+      el.textContent = 'KV Connected';
       el.style.display = 'inline-flex';
       el.style.background = '#7C3AED';
       el.style.color = '#FFF';
     } else if (status === 'memory' || status === 'connected') {
-      el.textContent = '⚡ Vercel DB Ready';
+      el.textContent = 'Database Ready';
       el.style.display = 'inline-flex';
       el.style.background = '#0284C7';
       el.style.color = '#FFF';
     } else {
-      el.textContent = '⚡ Vercel DB';
+      el.textContent = 'Vercel DB';
       el.style.display = 'inline-flex';
       el.style.background = '#64748B';
       el.style.color = '#FFF';
@@ -3576,8 +3624,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('settingMinPlays')) document.getElementById('settingMinPlays').value = bMinPlays;
   if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
 
-  // Default peran adalah host lokal agar dapat langsung mengelola pemain & lapangan
-  userRole = localStorage.getItem('onesport_user_role') || 'host';
+  // Peran ditentukan oleh status login (Host: admin@onesport.co.id, lainnya spectator)
+  userRole = isHostUser() ? 'host' : 'spectator';
   switchSport(currentSport);
   switchTab('tab-match');
   applyRoleUI();
@@ -3685,7 +3733,7 @@ function switchTab(tabId) {
   // Hanya kunci tab Pemain untuk penonton siaran online
   if (isOnlineActive && userRole !== 'host' && tabId === 'tab-pemain') {
     tabId = 'tab-match';
-    showToast('🔒 Tab Pemain hanya dapat diakses oleh Host.', 'info');
+    showToast('Tab Pemain hanya dapat diakses oleh Host.', 'info');
   }
 
   document.querySelectorAll('.app-tab-pane').forEach(el => el.classList.remove('active'));
@@ -3798,9 +3846,9 @@ function addNewPlayer() {
     });
     VercelDbSync.savePlayer(currentRoomId, newP);
     if (newP.warning) {
-      showToast(`⚠️ Peringatan: ${newP.warning} Pemain tetap ditambahkan.`, 'warning');
+      showToast(`Peringatan: ${newP.warning} Pemain tetap ditambahkan.`, 'warning');
     } else {
-      showToast(`✅ ${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
+      showToast(`${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
     }
   } else {
     const newP = {
@@ -3881,7 +3929,7 @@ function restorePlayer(id) {
     renderPlayersList();
     renderCourtsView();
     persistAndBroadcast();
-    showToast(`✅ ${p.name} diaktifkan kembali ke antrian!`, 'success');
+    showToast(`${p.name} diaktifkan kembali ke antrian!`, 'success');
   }
 }
 
@@ -3894,7 +3942,7 @@ function endCooldownEarly(id) {
     renderPlayersList();
     renderCourtsView();
     persistAndBroadcast();
-    showToast(`⚡ ${p.name} selesai istirahat dan siap main di antrian!`, 'success');
+    showToast(`${p.name} selesai istirahat dan siap main di antrian!`, 'success');
   }
 }
 
@@ -3907,7 +3955,7 @@ function renderPlayersList() {
   if (list.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:32px 16px; color:var(--text-muted); font-size:0.85rem; background:#FFFFFF; border:1.5px dashed var(--border-color); border-radius:var(--radius-lg); margin:10px 0;">
-        <div style="font-size:2.2rem; margin-bottom:8px;">🏸</div>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--text-muted); margin:0 auto 8px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <strong style="color:var(--brand-navy-dark); font-size:0.95rem; display:block; margin-bottom:4px;">Daftar Pemain Kosong</strong>
         <span>Belum ada pemain. Tambahkan nama pemain secara manual di atas untuk memulai sesi mabar. Data akan otomatis tersimpan ke Database Vercel.</span>
       </div>
@@ -3924,7 +3972,7 @@ function renderPlayersList() {
       warningQuotaHtml = `
         <div class="quota-warning-banner">
           <div>
-            <strong>⚠️ Notifikasi Kuota (${belowQuota.length} Pemain < ${bMinPlays}x Main):</strong>
+            <strong>Notifikasi Kuota (${belowQuota.length} Pemain < ${bMinPlays}x Main):</strong>
             <div style="font-size:0.7rem; font-weight:600; margin-top:2px;">
               ${belowQuota.map(p => `${escapeHtml(p.name)} (${p.jumlah_main || 0}/${bMinPlays}x)`).join(', ')}
             </div>
@@ -3953,13 +4001,13 @@ function renderPlayersList() {
       let statusBadge = '';
       const st = p.status || BadmintonService.PLAYER_STATUS.MENUNGGU;
       if (p.is_deleted || st === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
-        statusBadge = `<span class="player-status-badge status-tidak_aktif">⚪ Non-Aktif</span>`;
+        statusBadge = `<span class="player-status-badge status-tidak_aktif">Non-Aktif</span>`;
       } else if (st === BadmintonService.PLAYER_STATUS.DI_LAPANGAN) {
-        statusBadge = `<span class="player-status-badge status-di_lapangan">🔵 Di Lapangan</span>`;
+        statusBadge = `<span class="player-status-badge status-di_lapangan">Di Lapangan</span>`;
       } else if (st === BadmintonService.PLAYER_STATUS.ISTIRAHAT) {
-        statusBadge = `<span class="player-status-badge status-istirahat" title="Klik untuk akhiri istirahat" onclick="endCooldownEarly(${p.id})" style="cursor:pointer;">🟡 Istirahat (${p.cooldown_remaining || 1} match) ⚡</span>`;
+        statusBadge = `<span class="player-status-badge status-istirahat" title="Klik untuk akhiri istirahat" onclick="endCooldownEarly(${p.id})" style="cursor:pointer;">Istirahat (${p.cooldown_remaining || 1} match)</span>`;
       } else {
-        statusBadge = `<span class="player-status-badge status-menunggu">🟢 Menunggu</span>`;
+        statusBadge = `<span class="player-status-badge status-menunggu">Menunggu</span>`;
       }
 
       // Quota Counter Badge (Poin 7)
@@ -3980,13 +4028,13 @@ function renderPlayersList() {
         if (activeReq) {
           const isRequester = activeReq.requesterId === p.id;
           const otherName = isRequester ? activeReq.targetName : activeReq.requesterName;
-          partnerReqHtml = `<span style="font-size:0.65rem; color:#065F46; font-weight:700; background:#D1FAE5; padding:2px 6px; border-radius:4px; border:1px solid #A7F3D0;" title="Menunggu jadwal match bersama ${escapeHtml(otherName)}">🤝 Request: ${escapeHtml(otherName)}</span>`;
+          partnerReqHtml = `<span style="font-size:0.65rem; color:#065F46; font-weight:700; background:#D1FAE5; padding:2px 6px; border-radius:4px; border:1px solid #A7F3D0;" title="Menunggu jadwal match bersama ${escapeHtml(otherName)}">Request: ${escapeHtml(otherName)}</span>`;
         } else if (p.request_used) {
-          partnerReqHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:700; background:#F1F5F9; padding:2px 6px; border-radius:4px;">🤝 Kuota Request Habis</span>`;
+          partnerReqHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:700; background:#F1F5F9; padding:2px 6px; border-radius:4px;">Kuota Request Habis</span>`;
         } else if (st === BadmintonService.PLAYER_STATUS.MENUNGGU) {
-          partnerReqHtml = `<button class="btn-court-quick-action" onclick="openPartnerRequestModal(${p.id})" title="Ajukan request rekan tim (Maks. 1x)">🤝 Request Rekan</button>`;
+          partnerReqHtml = `<button class="btn-court-quick-action" onclick="openPartnerRequestModal(${p.id})" title="Ajukan request rekan tim (Maks. 1x)">Request Rekan</button>`;
         } else {
-          partnerReqHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:600;" title="Pemain harus berstatus menunggu untuk request">🤝 Request (Menunggu)</span>`;
+          partnerReqHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:600;" title="Pemain harus berstatus menunggu untuk request">Request (Menunggu)</span>`;
         }
       }
 
@@ -4121,14 +4169,14 @@ function checkPartnerTargetWarning() {
 
   if (p1 && p2 && BadmintonService.hasInterAndAdvanceTogether([p1, p2])) {
     alertEl.style.display = 'block';
-    alertEl.innerHTML = `❌ <strong>Regulasi Terlarang:</strong> Pemain level <strong>Intermediate</strong> dan <strong>Advance</strong> tidak boleh berada dalam satu tim!`;
+    alertEl.innerHTML = `<strong>Regulasi Terlarang:</strong> Pemain level <strong>Intermediate</strong> dan <strong>Advance</strong> tidak boleh berada dalam satu tim!`;
     return;
   }
 
   const busyReq = bPartnerRequests.find(r => (r.status === 'pending' || r.status === 'approved') && (r.requesterId === targetId || r.targetId === targetId));
   if (busyReq) {
     alertEl.style.display = 'block';
-    alertEl.innerHTML = `⚠️ <strong>Perhatian:</strong> Rekan yang dipilih sudah memiliki jadwal request aktif lain.`;
+    alertEl.innerHTML = `<strong>Perhatian:</strong> Rekan yang dipilih sudah memiliki jadwal request aktif lain.`;
     return;
   }
 
@@ -4136,7 +4184,7 @@ function checkPartnerTargetWarning() {
   const times = bPartnerHistory[k] || 0;
   if (times > 0) {
     alertEl.style.display = 'block';
-    alertEl.innerHTML = `⚠️ <strong>Perhatian:</strong> Pemain ini sudah pernah berpasangan sebanyak <strong>${times}x</strong> sebelumnya! Tetap boleh diajukan namun akan diberi tanda kepada Host.`;
+    alertEl.innerHTML = `<strong>Perhatian:</strong> Pemain ini sudah pernah berpasangan sebanyak <strong>${times}x</strong> sebelumnya! Tetap boleh diajukan namun akan diberi tanda kepada Host.`;
   } else {
     alertEl.style.display = 'none';
   }
@@ -4172,7 +4220,7 @@ function submitPartnerRequestAction() {
   if (res.warning) {
     showToast(`Request berhasil dicatat! (${res.warning})`, 'warning');
   } else {
-    showToast('🤝 Request rekan tim berhasil diajukan dan akan dipasangkan di match berikutnya!', 'success');
+    showToast('Request rekan tim berhasil diajukan dan akan dipasangkan di match berikutnya!', 'success');
   }
 }
 
@@ -4209,11 +4257,11 @@ function openPartnerRequestsListModal() {
         <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <div style="font-weight:800; font-size:0.85rem; color:var(--brand-navy-dark);">
-              ${escapeHtml(r.requesterName)} 🤝 ${escapeHtml(r.targetName)}
+              ${escapeHtml(r.requesterName)} &amp; ${escapeHtml(r.targetName)}
             </div>
             <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
               Status: <strong style="color:${statusColor};">${statusLabel}</strong>
-              ${r.hasPartneredBefore ? ` • <span style="color:#DC2626; font-weight:700;">⚠️ Pernah berpasangan ${r.timesPartnered}x</span>` : ' • Pasangan Baru'}
+              ${r.hasPartneredBefore ? ` • <span style="color:#DC2626; font-weight:700;">Pernah berpasangan ${r.timesPartnered}x</span>` : ' • Pasangan Baru'}
             </div>
           </div>
           ${isPending ? `
@@ -4684,7 +4732,7 @@ function shuffleCourtTeams(cIdx) {
   refreshCourtCategory(court);
   renderCourtsView();
   persistAndBroadcast();
-  showToast(`🔀 Tim di ${court.courtName || ('Lapangan ' + (cIdx + 1))} berhasil diacak! (Intermadiate & Advance dipisah)`, 'success');
+  showToast(`Tim di ${court.courtName || ('Lapangan ' + (cIdx + 1))} berhasil diacak! (Intermediate & Advance dipisah)`, 'success');
 }
 
 function removeCourt(cIdx) {
@@ -4761,7 +4809,7 @@ function openCustomCourtModal(targetCourtIdx = null) {
     customCourtState.selectedPlayerIds = [...court.teamA, ...court.teamB].filter(Boolean).map(p => p.id);
     customCourtState.teamA = [...court.teamA];
     customCourtState.teamB = [...court.teamB];
-    if (titleEl) titleEl.textContent = `🎯 Atur Pemain ${court.courtName || ('Lapangan ' + (targetCourtIdx + 1))}`;
+    if (titleEl) titleEl.textContent = `Atur Pemain ${court.courtName || ('Lapangan ' + (targetCourtIdx + 1))}`;
     if (subEl) subEl.textContent = 'Pilih 4 pemain untuk bertanding di lapangan ini';
     if (nameInput) nameInput.value = court.courtName || `Lapangan ${targetCourtIdx + 1}`;
   } else {
@@ -4769,7 +4817,7 @@ function openCustomCourtModal(targetCourtIdx = null) {
     customCourtState.teamA = [];
     customCourtState.teamB = [];
     const nextNum = (round && round.courts ? round.courts.length : 0) + 1;
-    if (titleEl) titleEl.textContent = '🎯 Buat Lapangan Pilihan';
+    if (titleEl) titleEl.textContent = 'Buat Lapangan Pilihan';
     if (subEl) subEl.textContent = 'Pilih 4 pemain khusus untuk bermain di lapangan ini';
     if (nameInput) nameInput.value = `Lapangan ${nextNum}`;
 
@@ -4837,7 +4885,7 @@ function shuffleCustomCourtPreviewTeams() {
   customCourtState.teamA = split.teamA;
   customCourtState.teamB = split.teamB;
   updateCustomCourtUI();
-  showToast('🔀 Tim diacak otomatis! Role Intermadiate & Advance dipisah.', 'success');
+  showToast('Tim diacak otomatis! Role Intermediate & Advance dipisah.', 'success');
 }
 
 function updateCustomCourtUI() {
@@ -4861,7 +4909,7 @@ function updateCustomCourtUI() {
   if (btnShuffle) btnShuffle.disabled = (count !== 4);
   if (btnSave) btnSave.disabled = (count !== 4);
 
-  // Validasi aturan: Intermadiate & Advance tidak boleh 1 tim
+  // Validasi aturan: Intermediate & Advance tidak boleh 1 tim
   if (count === 4 && ruleNotice) {
     const hasViolation = hasInterAndAdvanceTogether(customCourtState.teamA) || hasInterAndAdvanceTogether(customCourtState.teamB);
     ruleNotice.style.display = 'block';
@@ -4869,12 +4917,12 @@ function updateCustomCourtUI() {
       ruleNotice.style.background = '#FEF2F2';
       ruleNotice.style.color = '#B91C1C';
       ruleNotice.style.border = '1px solid #FECACA';
-      ruleNotice.innerHTML = '⚠️ <strong>Perhatian:</strong> Role Intermadiate & Advance tidak boleh 1 tim! Klik tombol <strong>Acak Tim</strong> untuk memisahkan.';
+      ruleNotice.innerHTML = '<strong>Perhatian:</strong> Role Intermediate & Advance tidak boleh 1 tim! Klik tombol <strong>Acak Tim</strong> untuk memisahkan.';
     } else {
       ruleNotice.style.background = '#ECFDF5';
       ruleNotice.style.color = '#047857';
       ruleNotice.style.border = '1px solid #A7F3D0';
-      ruleNotice.innerHTML = '✅ <strong>Aturan Terpenuhi:</strong> Role Intermadiate & Advance berada di tim berbeda.';
+      ruleNotice.innerHTML = '<strong>Aturan Terpenuhi:</strong> Role Intermediate & Advance berada di tim berbeda.';
     }
   } else if (ruleNotice) {
     ruleNotice.style.display = 'none';
@@ -5029,7 +5077,7 @@ function saveCustomCourt() {
     court.teamA = customCourtState.teamA;
     court.teamB = customCourtState.teamB;
     refreshCourtCategory(court);
-    showToast(`✅ Lapangan ${court.courtName} berhasil diperbarui!`, 'success');
+    showToast(`Lapangan ${court.courtName} berhasil diperbarui!`, 'success');
   } else {
     // Mode TAMBAH LAPANGAN PILIHAN BARU
     const newCourtIdx = round.courts.length + 1;
@@ -5061,7 +5109,7 @@ function saveCustomCourt() {
 
     bNumCourts = Math.max(bNumCourts, round.courts.length);
     updateSessionLabels();
-    showToast(`✅ ${newCourt.courtName} berhasil dibuat dengan 4 pemain pilihan!`, 'success');
+    showToast(`${newCourt.courtName} berhasil dibuat dengan 4 pemain pilihan!`, 'success');
   }
 
   closeCustomCourtModal();
@@ -5153,13 +5201,12 @@ function renderCourtsView() {
       if (!isHost) {
         activeCourtsContainer.innerHTML = `
           <div class="os-card" style="text-align:center; padding:36px 16px; color:var(--text-muted);">
-            <div style="font-size:2.4rem; margin-bottom:8px;">🔴</div>
             <div style="font-weight:800; font-size:1.05rem; color:var(--brand-navy-dark); margin-bottom:6px;">Siaran Langsung Pertandingan</div>
             <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:18px; max-width:320px; margin-left:auto; margin-right:auto;">
-              Host belum memulai sesi pertandingan. Silakan tunggu atau beralih ke Host untuk mengelola pemain dan lapangan.
+              Host belum memulai sesi pertandingan. Silakan tunggu atau masuk sebagai Host untuk mengelola pemain dan lapangan.
             </div>
-            <button class="btn-os-orange" style="display:inline-flex; width:auto; padding:9px 20px; margin:0 auto; font-size:0.84rem; font-weight:800;" onclick="openSwitchToHostModal()">
-              👑 Beralih ke Host (Kelola Sesi)
+            <button class="btn-os-orange" style="display:inline-flex; width:auto; padding:9px 20px; margin:0 auto; font-size:0.84rem; font-weight:800;" onclick="openLoginModal()">
+              Masuk sebagai Host (Admin)
             </button>
           </div>
         `;
@@ -5170,7 +5217,6 @@ function renderCourtsView() {
 
       activeCourtsContainer.innerHTML = `
         <div class="os-card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
-          <div style="font-size:2.2rem; margin-bottom:8px;">🏸</div>
           <div style="font-weight:800; font-size:1rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Pemain Terdaftar</div>
           <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Tambahkan pemain di menu <strong>Pemain</strong> untuk mulai pertandingan.</div>
           <button class="btn-os-cyan" style="display:inline-flex; width:auto; padding:8px 18px; margin:0 auto; font-size:0.82rem;" onclick="switchTab('tab-pemain')">
@@ -5217,22 +5263,22 @@ function renderCourtsView() {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; margin-bottom:6px; padding:0 4px;">
         <div style="font-size:0.82rem; font-weight:900; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px;">
           <span style="background:${isHost ? 'var(--brand-orange)' : '#EF4444'}; color:#fff; font-size:0.68rem; padding:2px 8px; border-radius:999px; font-weight:800;">
-            ${isHost ? 'Sesi Aktif (Host)' : '🔴 LIVE ARENA'}
+            ${isHost ? 'Sesi Aktif (Host)' : 'LIVE ARENA'}
           </span>
           <span>Daftar Lapangan (${courtsCount} Lapangan)</span>
         </div>
         ${isHost ? `
         <div style="display:flex; align-items:center; gap:6px;">
           <button class="btn-court-quick-action" onclick="openPartnerRequestsListModal()" title="Lihat Daftar Request Rekan Tim">
-            🤝 Request (${bPartnerRequests.filter(r => r.status === 'approved' || r.status === 'pending').length})
+            Request (${bPartnerRequests.filter(r => r.status === 'approved' || r.status === 'pending').length})
           </button>
           <button class="btn-court-quick-action" onclick="openShuttlecockModal()" title="Monitoring & Stok Kok">
-            🏸 Kok
+            Kok
           </button>
         </div>` : `
         <div>
-          <button class="btn-role-badge is-spectator" onclick="openSwitchToHostModal()" style="font-size:0.72rem; padding:3px 10px;" title="Beralih ke Kontrol Host">
-            👑 Masuk Host
+          <button class="btn-login-header" onclick="openLoginModal()" style="font-size:0.72rem; padding:3px 10px;" title="Masuk Akun Host">
+            Masuk Host
           </button>
         </div>`}
       </div>
@@ -5258,9 +5304,8 @@ function renderCourtsView() {
             <div class="os-card dashed" style="margin-top:8px; border:2px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
               <div class="card-top-title" style="margin-bottom:6px;">
                 <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
-                <span class="court-status-chip pending">⚪ Kosong</span>
+                <span class="court-status-chip pending">Kosong</span>
               </div>
-              <div style="font-size:1.4rem; margin-bottom:4px;">🏸</div>
               <div style="font-weight:700; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:2px;">Lapangan Sedang Kosong</div>
               <div style="font-size:0.74rem; color:var(--text-muted);">Menunggu jadwal pertandingan berikutnya dari Host.</div>
             </div>
@@ -5271,10 +5316,9 @@ function renderCourtsView() {
           <div class="os-card dashed" style="margin-top:8px; border:2px dashed #CBD5E1; background:#F8FAFC;">
             <div class="card-top-title">
               <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
-              <span class="court-status-chip pending">⚪ Kosong</span>
+              <span class="court-status-chip pending">Kosong</span>
             </div>
             <div style="text-align:center; padding:18px 12px;">
-              <div style="font-size:1.6rem; margin-bottom:4px;">🏸</div>
               <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:2px;">Lapangan Siap Digunakan</div>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Tidak ada auto-masuk. Usulkan pemain dari antrian atau pilih secara manual.</div>
               <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
@@ -5282,7 +5326,7 @@ function renderCourtsView() {
                   + Usulkan Jadwal (Smart Match)
                 </button>
                 <button class="btn-court-quick-action" style="font-size:0.78rem; padding:7px 12px;" onclick="openCustomCourtModal(${cIdx})">
-                  👥 Pilih 4 Pemain
+                  Pilih Pemain
                 </button>
               </div>
             </div>
@@ -5303,12 +5347,12 @@ function renderCourtsView() {
               <div class="card-top-title">
                 <div style="display:flex; align-items:center; gap:6px;">
                   <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
-                  <span class="court-status-chip menunggu_acc">⏳ Menunggu Mulai</span>
+                  <span class="court-status-chip menunggu_acc">Menunggu Mulai</span>
                 </div>
                 <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
               <div style="background:#FEF3C7; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:6px 10px; margin-bottom:8px; font-size:0.72rem; color:#92400E; text-align:center; font-weight:700;">
-                ⏳ Jadwal pertandingan sedang dipersiapkan dan menunggu konfirmasi Host.
+                Jadwal pertandingan sedang dipersiapkan dan menunggu konfirmasi Host.
               </div>
               <div class="match-versus-grid">
                 <div class="team-column">
@@ -5332,18 +5376,18 @@ function renderCourtsView() {
             <div class="card-top-title">
               <div style="display:flex; align-items:center; gap:6px;">
                 <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
-                <span class="court-status-chip menunggu_acc">⏳ Menunggu ACC Host</span>
+                <span class="court-status-chip menunggu_acc">Menunggu ACC Host</span>
               </div>
               <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
                 <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
-                ${court.isRepeatedPartner ? `<span class="partner-repeated-pill">⚠️ Pasangan Berulang</span>` : ''}
-                ${court.usedRequest ? `<span style="font-size:0.68rem; background:#DCFCE7; color:#15803D; padding:2px 6px; border-radius:4px; font-weight:800;">🤝 Sesuai Request</span>` : ''}
+                ${court.isRepeatedPartner ? `<span class="partner-repeated-pill">Pasangan Berulang</span>` : ''}
+                ${court.usedRequest ? `<span style="font-size:0.68rem; background:#DCFCE7; color:#15803D; padding:2px 6px; border-radius:4px; font-weight:800;">Sesuai Request</span>` : ''}
               </div>
             </div>
 
             <!-- Notice for Host -->
             <div style="background:#FEF3C7; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:6px 10px; margin-bottom:8px; font-size:0.72rem; color:#92400E; display:flex; align-items:center; justify-content:space-between;">
-              <span>⚠️ Periksa susunan pemain & riwayat sebelum memberi persetujuan (ACC).</span>
+              <span>Periksa susunan pemain & riwayat sebelum memberi persetujuan (ACC).</span>
               <span style="font-weight:800;">Host Approval Required</span>
             </div>
 
@@ -5379,16 +5423,16 @@ function renderCourtsView() {
             <div class="court-control-bar" style="background:#F8FAFC; padding:8px 10px; border-radius:var(--radius-md); margin-top:10px;">
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; width:100%;">
                 <button class="btn-court-acc" onclick="hostAccCourt(${cIdx})" title="ACC dan masukkan pemain ke lapangan">
-                  ✓ ACC (Mulai Masuk Lapangan)
+                  ACC (Mulai Masuk Lapangan)
                 </button>
                 <button class="btn-court-reject" onclick="hostRejectCourt(${cIdx})" title="Tolak usulan dan kembalikan pemain ke antrian">
-                  ✕ Tolak Usulan
+                  Tolak Usulan
                 </button>
                 <button class="btn-court-quick-action" onclick="openCustomCourtModal(${cIdx})" title="Ganti pemain di lapangan ini">
-                  👥 Ganti Pemain
+                  Ganti Pemain
                 </button>
                 <button class="btn-court-quick-action" onclick="shuffleCourtTeams(${cIdx})" title="Acak pasangan tim">
-                  🔀 Acak Tim
+                  Acak Tim
                 </button>
                 <button class="btn-del-player" style="margin-left:auto; font-size:0.75rem; width:auto; padding:4px 8px;" onclick="clearCourt(${cIdx})" title="Kosongkan Lapangan">
                   Kosongkan
@@ -5407,7 +5451,7 @@ function renderCourtsView() {
               <div class="card-top-title">
                 <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-                  <span class="court-status-chip ongoing">🟢 Sedang Main</span>
+                  <span class="court-status-chip ongoing">Sedang Main</span>
                   <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
                 </div>
               </div>
@@ -5425,7 +5469,7 @@ function renderCourtsView() {
                 </div>
               </div>
               <div style="text-align:center; padding:8px 4px 4px; font-size:0.75rem; color:#2563EB; font-weight:800;">
-                🏸 Pertandingan sedang berlangsung di lapangan
+                Pertandingan sedang berlangsung di lapangan
               </div>
             </div>
           `;
@@ -5436,7 +5480,7 @@ function renderCourtsView() {
             <div class="card-top-title">
               <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-                <span class="court-status-chip ongoing">🟢 Sedang Main</span>
+                <span class="court-status-chip ongoing">Sedang Main</span>
                 <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
             </div>
@@ -5457,17 +5501,17 @@ function renderCourtsView() {
 
             <div class="court-control-bar">
               <button class="btn-court-action finish" onclick="openDirectCourtScoreModal(${cIdx})" style="font-size:0.82rem; padding:9px 16px;">
-                📝 Input Skor & Selesai Match
+                Input Skor & Selesai Match
               </button>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="btn-court-quick-action" onclick="openCustomCourtModal(${cIdx})" title="Tukar Pemain Lapangan Ini">
-                  ⇄ Ganti Pemain
+                  Ganti Pemain
                 </button>
                 <button class="btn-court-quick-action" onclick="shuffleCourtTeams(${cIdx})" title="Acak Tim">
-                  🔀 Acak Tim
+                  Acak Tim
                 </button>
                 <button class="btn-court-quick-action" onclick="cancelOngoingCourt(${cIdx})" title="Batalkan Match & Kosongkan Lapangan Ini" style="color:#DC2626; border-color:#FECACA; background:#FFF1F2;">
-                  ✕ Batalkan Match
+                  Batalkan Match
                 </button>
               </div>
             </div>
@@ -5482,7 +5526,7 @@ function renderCourtsView() {
             <div class="card-top-title">
               <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <div style="display:flex; align-items:center; gap:5px;">
-                <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
+                <span class="court-status-chip finished">Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
                 <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
             </div>
@@ -5490,7 +5534,7 @@ function renderCourtsView() {
             <div class="match-versus-grid">
               <div class="team-column">
                 <div class="team-label-top" style="color:${court.winner === 'A' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
-                  ${court.winner === 'A' ? 'Tim A (Menang 🏆)' : 'Tim A'}
+                  ${court.winner === 'A' ? 'Tim A (Menang)' : 'Tim A'}
                 </div>
                 ${renderPlayerPillButton(court.teamA[0], bCurrentRoundIndex, cIdx, 'A', 0, true, court.winner === 'A')}
                 ${renderPlayerPillButton(court.teamA[1], bCurrentRoundIndex, cIdx, 'A', 1, true, court.winner === 'A')}
@@ -5498,7 +5542,7 @@ function renderCourtsView() {
               <div class="vs-badge" style="font-size:1.15rem; color:var(--brand-orange); font-weight:900;">${court.scoreA || 0} - ${court.scoreB || 0}</div>
               <div class="team-column">
                 <div class="team-label-top" style="color:${court.winner === 'B' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
-                  ${court.winner === 'B' ? 'Tim B (Menang 🏆)' : 'Tim B'}
+                  ${court.winner === 'B' ? 'Tim B (Menang)' : 'Tim B'}
                 </div>
                 ${renderPlayerPillButton(court.teamB[0], bCurrentRoundIndex, cIdx, 'B', 0, true, court.winner === 'B')}
                 ${renderPlayerPillButton(court.teamB[1], bCurrentRoundIndex, cIdx, 'B', 1, true, court.winner === 'B')}
@@ -5513,7 +5557,7 @@ function renderCourtsView() {
           <div class="card-top-title">
             <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
             <div style="display:flex; align-items:center; gap:5px;">
-              <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
+              <span class="court-status-chip finished">Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
               <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
             </div>
           </div>
@@ -5521,7 +5565,7 @@ function renderCourtsView() {
           <div class="match-versus-grid">
             <div class="team-column">
               <div class="team-label-top" style="color:${court.winner === 'A' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
-                ${court.winner === 'A' ? 'Tim A (Menang 🏆)' : 'Tim A'}
+                ${court.winner === 'A' ? 'Tim A (Menang)' : 'Tim A'}
               </div>
               ${renderPlayerPillButton(court.teamA[0], bCurrentRoundIndex, cIdx, 'A', 0, true, court.winner === 'A')}
               ${renderPlayerPillButton(court.teamA[1], bCurrentRoundIndex, cIdx, 'A', 1, true, court.winner === 'A')}
@@ -5529,7 +5573,7 @@ function renderCourtsView() {
             <div class="vs-badge" style="font-size:1.1rem; color:var(--brand-orange);">${court.scoreA || 0} - ${court.scoreB || 0}</div>
             <div class="team-column">
               <div class="team-label-top" style="color:${court.winner === 'B' ? '#059669' : 'var(--text-muted)'}; font-weight:800;">
-                ${court.winner === 'B' ? 'Tim B (Menang 🏆)' : 'Tim B'}
+                ${court.winner === 'B' ? 'Tim B (Menang)' : 'Tim B'}
               </div>
               ${renderPlayerPillButton(court.teamB[0], bCurrentRoundIndex, cIdx, 'B', 0, true, court.winner === 'B')}
               ${renderPlayerPillButton(court.teamB[1], bCurrentRoundIndex, cIdx, 'B', 1, true, court.winner === 'B')}
@@ -5538,16 +5582,16 @@ function renderCourtsView() {
 
           ${court.shuttlecocks && (court.shuttlecocks.baru > 0 || court.shuttlecocks.bekas_layak > 0) ? `
             <div style="font-size:0.7rem; color:var(--text-muted); margin-top:6px; font-weight:700;">
-              🏸 Kok Terpakai: ${court.shuttlecocks.baru} baru · ${court.shuttlecocks.bekas_layak} bekas layak
+              Kok Terpakai: ${court.shuttlecocks.baru} baru · ${court.shuttlecocks.bekas_layak} bekas layak
             </div>
           ` : ''}
 
           <div class="court-control-bar">
             <button class="btn-court-action" style="background:#0F1E36; color:#FFF; font-size:0.76rem;" onclick="openEditFinishedMatchModal(${bCurrentRoundIndex}, ${cIdx})">
-              ✏️ Edit Skor
+              Edit Skor
             </button>
             <button class="btn-os-cyan" style="font-size:0.76rem; padding:6px 14px; width:auto;" onclick="freeFinishedCourt(${cIdx})">
-              🔄 Bebaskan / Kosongkan Lapangan
+              Kosongkan Lapangan
             </button>
           </div>
         </div>
@@ -5562,10 +5606,9 @@ function renderCourtsView() {
         <div class="shuttlecock-summary-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="font-size:0.8rem; font-weight:900; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px;">
-              <span>🏸</span>
               <span>Monitoring & Rekap Kok Sesi</span>
             </div>
-            <button class="btn-court-quick-action" onclick="openShuttlecockModal()">⚙️ Kelola Stok</button>
+            <button class="btn-court-quick-action" onclick="openShuttlecockModal()">Kelola Stok</button>
           </div>
           <div class="shuttlecock-grid">
             <div class="shuttlecock-stat-card">
@@ -5602,7 +5645,7 @@ function renderCourtsView() {
       // 1. Antrian Menunggu
       drawerHtml += `
         <div style="font-size:0.75rem; font-weight:800; color:#047857; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-          <span>🟢 Antrian Siap Main (${waitingPlayers.length} Pemain - Diprioritaskan Kuota Main Terendah)</span>
+          <span>Antrian Siap Main (${waitingPlayers.length} Pemain - Diprioritaskan Kuota Main Terendah)</span>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
       `;
@@ -5623,14 +5666,14 @@ function renderCourtsView() {
       if (restingPlayers.length > 0) {
         drawerHtml += `
           <div style="font-size:0.75rem; font-weight:800; color:#B45309; margin-bottom:4px;">
-            🟡 Istirahat / Cooldown (${restingPlayers.length} Pemain - Tidak Masuk Antrian)
+            Istirahat / Cooldown (${restingPlayers.length} Pemain - Tidak Masuk Antrian)
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
             ${restingPlayers.map(p => `
               <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Cooldown: ${p.cooldown_remaining || 1} match lagi">
                 <span>${escapeHtml(p.name)}</span>
                 <span style="font-size:0.65rem; font-weight:800; background:#FEF3C7; padding:1px 5px; border-radius:4px;">${p.cooldown_remaining || 1} match lagi</span>
-                <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly(${p.id})" title="Selesai istirahat sekarang">⚡ Siap</span>
+                <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly(${p.id})" title="Selesai istirahat sekarang">Siap</span>
               </span>
             `).join('')}
           </div>
@@ -5641,7 +5684,7 @@ function renderCourtsView() {
       if (onCourtPlayers.length > 0) {
         drawerHtml += `
           <div style="font-size:0.75rem; font-weight:800; color:#1D4ED8; margin-bottom:4px;">
-            🔵 Sedang di Lapangan (${onCourtPlayers.length} Pemain - Tidak Masuk Antrian)
+            Sedang Bermain di Lapangan (${onCourtPlayers.length} Pemain - Tidak Masuk Antrian)
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             ${onCourtPlayers.map(p => `
@@ -5666,7 +5709,6 @@ function renderCourtsView() {
     if (sPlayers.length === 0 || sMatches.length === 0) {
       activeCourtsContainer.innerHTML = `
         <div class="os-card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
-          <div style="font-size:2.2rem; margin-bottom:8px;">⚽</div>
           <div style="font-weight:800; font-size:1rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Pemain & Match Soccer</div>
           <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Tambahkan pemain di menu <strong>Pemain</strong> untuk pembagian tim dan jadwal match otomatis.</div>
           <button class="btn-os-cyan" style="display:inline-flex; width:auto; padding:8px 18px; margin:0 auto; font-size:0.82rem;" onclick="switchTab('tab-pemain')">
@@ -5760,7 +5802,7 @@ function hostAccCourt(cIdx) {
   renderCourtsView();
   renderPlayersList();
   persistAndBroadcast();
-  showToast(`✅ ${court.courtName} disetujui (ACC)! Pemain resmi masuk ke lapangan.`, 'success');
+  showToast(`${court.courtName} disetujui (ACC). Pemain resmi masuk ke lapangan.`, 'success');
 }
 
 function hostRejectCourt(cIdx) {
@@ -5860,7 +5902,7 @@ function openDirectCourtScoreModal(cIdx) {
   const targetInput = document.getElementById('directScoreTargetCourtIdx');
 
   targetInput.value = cIdx;
-  titleEl.textContent = `🏸 Input Skor: ${court.courtName}`;
+  titleEl.textContent = `Input Skor: ${court.courtName}`;
 
   const tA = (court.teamA || []).map(p => escapeHtml(p.name)).join(' & ');
   const tB = (court.teamB || []).map(p => escapeHtml(p.name)).join(' & ');
@@ -6030,7 +6072,7 @@ function submitDirectScore() {
   renderHistory();
   renderFinalPodium();
   persistAndBroadcast();
-  showToast(`✅ Skor disimpan! Klasemen otomatis terhitung real-time dan ${court.courtName} bebas kembali!`, 'success');
+  showToast(`Skor disimpan. Klasemen terhitung otomatis dan ${court.courtName} siap digunakan.`, 'success');
 }
 
 // ── EDIT SKOR PERTANDINGAN SELESAI (FITUR 4) ──
@@ -6148,7 +6190,7 @@ function submitEditFinishedScore() {
   renderCourtsView();
   renderPlayersList();
   persistAndBroadcast();
-  showToast('✅ Skor berhasil diperbarui dan klasemen telah dihitung ulang!', 'success');
+  showToast('Skor berhasil diperbarui dan klasemen telah dihitung ulang.', 'success');
 }
 
 // ── MONITORING KOK MODAL (FITUR 6) ──
@@ -6736,7 +6778,7 @@ function renderLeaderboard() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-right" style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-mid);">
-          ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (escapeHtml(s.tieBreakNote) || '-')))}
+          ${idx === 0 ? 'Juara 1' : (idx === 1 ? 'Juara 2' : (idx === 2 ? 'Juara 3' : (escapeHtml(s.tieBreakNote) || '-')))}
         </td>
       </tr>
     `).join('');
@@ -6814,7 +6856,7 @@ function renderHistory() {
           const isAWin = c.winner === 'A';
           const isBWin = c.winner === 'B';
           const kokInfo = c.shuttlecocks && (c.shuttlecocks.baru > 0 || c.shuttlecocks.bekas_layak > 0)
-            ? `<div style="font-size:0.68rem; color:#475569; margin-top:4px;">🏸 Kok: ${c.shuttlecocks.baru + c.shuttlecocks.bekas_layak} (${c.shuttlecocks.baru} Baru, ${c.shuttlecocks.bekas_layak} Bekas)</div>`
+            ? `<div style="font-size:0.68rem; color:#475569; margin-top:4px;">Kok: ${c.shuttlecocks.baru + c.shuttlecocks.bekas_layak} (${c.shuttlecocks.baru} Baru, ${c.shuttlecocks.bekas_layak} Bekas)</div>`
             : '';
 
           return `
@@ -6823,18 +6865,18 @@ function renderHistory() {
                 <span style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-mid);">${escapeHtml(c.courtName || `Lapangan ${c.courtNumber}`)}</span>
                 ${userRole === 'host' ? `
                 <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; border-radius:4px; background:#0F1E36; color:#FFF;" onclick="openEditFinishedMatchModal(${group.rIdx}, ${item.index}, ${item.isArchive})">
-                  ✏️ Edit Skor
+                  Edit Skor
                 </button>` : ''}
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.83rem;">
                 <div style="flex:1; text-align:left; ${isAWin ? 'font-weight:800; color:#059669;' : ''}">
-                  ${tA} ${isAWin ? '👑' : ''}
+                  ${tA}
                 </div>
                 <div style="padding:0 12px; font-weight:900; color:var(--brand-orange); font-size:1.05rem;">
                   ${c.scoreA !== null && c.scoreA !== undefined ? c.scoreA : 0} - ${c.scoreB !== null && c.scoreB !== undefined ? c.scoreB : 0}
                 </div>
                 <div style="flex:1; text-align:right; ${isBWin ? 'font-weight:800; color:#059669;' : ''}">
-                  ${isBWin ? '👑' : ''} ${tB}
+                  ${tB}
                 </div>
               </div>
               ${kokInfo}
@@ -6950,7 +6992,6 @@ function renderFinalPodium() {
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
         <td class="col-left">
           <strong>${escapeHtml(s.name)}</strong>
-          ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
         </td>
         <td class="col-center"><strong>${s.wins}</strong></td>
         <td class="col-center">${s.losses}</td>
@@ -7010,7 +7051,6 @@ function renderFinalPodium() {
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
         <td class="col-left">
           <strong>${escapeHtml(s.name)}</strong>
-          ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
         </td>
         <td class="col-center"><strong>${s.w}</strong></td>
         <td class="col-center">${s.l}</td>
@@ -7033,24 +7073,24 @@ function shareFinalResults() {
     return;
   }
   const p1 = list[0], p2 = list[1], p3 = list[2];
-  let text = `🏸 *HASIL AKHIR & PENENTUAN JUARA* 🏆\n`;
-  text += `📌 ${sessionTitle.toUpperCase()} (${isBadm ? 'BADMINTON' : 'MINI SOCCER'})\n`;
-  text += `⚖️ *Regulasi: Menang Terbanyak ➔ Skor Selisih Poin (+/-) ➔ Total Poin*\n\n`;
+  let text = `*HASIL AKHIR & PENENTUAN JUARA*\n`;
+  text += `${sessionTitle.toUpperCase()} (${isBadm ? 'BADMINTON' : 'MINI SOCCER'})\n`;
+  text += `Regulasi: Menang Terbanyak -> Skor Selisih Poin (+/-) -> Total Poin\n\n`;
 
-  if (p1) text += `🥇 *JUARA 1:* ${p1.name} (${p1.wins !== undefined ? p1.wins : p1.w} Menang | Skor: ${p1.diff >= 0 ? '+' + p1.diff : p1.diff} | Poin: ${p1.totalScore})\n`;
-  if (p2) text += `🥈 *JUARA 2:* ${p2.name} (${p2.wins !== undefined ? p2.wins : p2.w} Menang | Skor: ${p2.diff >= 0 ? '+' + p2.diff : p2.diff} | Poin: ${p2.totalScore}${p2.tieBreakNote ? ' — ' + p2.tieBreakNote : ''})\n`;
-  if (p3) text += `🥉 *JUARA 3:* ${p3.name} (${p3.wins !== undefined ? p3.wins : p3.w} Menang | Skor: ${p3.diff >= 0 ? '+' + p3.diff : p3.diff} | Poin: ${p3.totalScore}${p3.tieBreakNote ? ' — ' + p3.tieBreakNote : ''})\n`;
+  if (p1) text += `*JUARA 1:* ${p1.name} (${p1.wins !== undefined ? p1.wins : p1.w} Menang | Skor: ${p1.diff >= 0 ? '+' + p1.diff : p1.diff} | Poin: ${p1.totalScore})\n`;
+  if (p2) text += `*JUARA 2:* ${p2.name} (${p2.wins !== undefined ? p2.wins : p2.w} Menang | Skor: ${p2.diff >= 0 ? '+' + p2.diff : p2.diff} | Poin: ${p2.totalScore}${p2.tieBreakNote ? ' — ' + p2.tieBreakNote : ''})\n`;
+  if (p3) text += `*JUARA 3:* ${p3.name} (${p3.wins !== undefined ? p3.wins : p3.w} Menang | Skor: ${p3.diff >= 0 ? '+' + p3.diff : p3.diff} | Poin: ${p3.totalScore}${p3.tieBreakNote ? ' — ' + p3.tieBreakNote : ''})\n`;
 
-  text += `\n📊 *KLASEMEN LENGKAP:*\n`;
+  text += `\n*KLASEMEN LENGKAP:*\n`;
   list.forEach((s, idx) => {
-    const medal = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : `${idx + 1}. `));
+    const medal = `${idx + 1}. `;
     const w = s.wins !== undefined ? s.wins : s.w;
     const l = s.losses !== undefined ? s.losses : s.l;
     const diffVal = s.diff !== undefined ? s.diff : s.gd;
     text += `${medal}${s.name} | ${w}M-${l}K | Skor (Diff): ${diffVal >= 0 ? '+' + diffVal : diffVal} | Poin: ${s.totalScore}${s.tieBreakNote ? ' (' + s.tieBreakNote + ')' : ''}\n`;
   });
 
-  text += `\n_Aturan: Menang Terbanyak ➔ Skor Selisih Poin (Poin Ronde - Poin Lawan) ➔ Total Poin_\n`;
+  text += `\nAturan: Menang Terbanyak -> Skor Selisih Poin (Poin Ronde - Poin Lawan) -> Total Poin\n`;
   text += `Generated with ONESPORT Platform`;
 
   if (navigator.share) {
@@ -7114,7 +7154,7 @@ function startNewMabarSession() {
   renderFinalPodium();
   persistAndBroadcast();
   switchTab('tab-match');
-  showToast('✅ Sesi mabar baru berhasil dimulai! Statistik dan riwayat telah direset.', 'success');
+  showToast('Sesi mabar baru berhasil dimulai. Statistik dan riwayat telah direset.', 'success');
 }
 
 // ── SETTINGS MODAL ──
@@ -7277,7 +7317,7 @@ function restoreActiveLiveSessionIfAny() {
     updateOnlineUI('connecting');
     connectOnlineRoom(session.roomId, userRole, hostPin, true /* isReconnecting */, isHostCreator);
 
-    showToast(`🔴 Sesi Live Room ${session.roomId} dipulihkan (Aktif di Perangkat)`, 'success');
+    showToast(`Sesi Live Room ${session.roomId} dipulihkan (Aktif di Perangkat)`, 'success');
     return true;
   } catch(e) {
     console.warn('Failed restoring active live session:', e);
@@ -7406,14 +7446,15 @@ function persistAndBroadcast(skipBroadcast = false) {
 
 // ── PERMISSIONS & ROLES ──
 function isEditAllowed() {
-  if (userRole === 'host') return true;
+  if (isHostUser()) return true;
   if (isCollabMode) return true;
   return false;
 }
 
 function checkEditPermission() {
   if (isEditAllowed()) return true;
-  openSwitchToHostModal();
+  showToast('Aksi ini memerlukan login Host (Admin).', 'warning');
+  openLoginModal();
   return false;
 }
 
@@ -7836,7 +7877,7 @@ function startHostRoom() {
   closeOnlineModal();
   switchTab('tab-match');
   applyRoleUI();
-  showToast(`👑 Siaran Live ${code} dimulai sebagai Host! Semua fitur terbuka.`, 'success');
+  showToast(`Siaran Live ${code} dimulai sebagai Host. Semua fitur terbuka.`, 'success');
 }
 
 function submitJoinRoomForm() {
@@ -7846,40 +7887,32 @@ function submitJoinRoomForm() {
     alert('Silakan masukkan Kode Room yang dituju!');
     return;
   }
-  const roleRadio = document.querySelector('input[name="radioJoinRole"]:checked');
-  const role = roleRadio ? roleRadio.value : 'spectator';
-
-  if (role === 'host') {
-    const pinInput = document.getElementById('inputJoinHostPin');
-    const pin = (pinInput ? pinInput.value : '').trim();
-    if (!pin) {
-      alert('Untuk bergabung sebagai Host / Wasit, silakan masukkan PIN Host!');
-      if (pinInput) pinInput.focus();
-      return;
-    }
-    joinRoomAsHost(code, pin);
-  } else {
-    joinRoomAsSpectator(code);
-  }
+  joinRoomAsSpectator(code);
 }
 
 function joinRoomAsSpectator(roomId) {
   closeJoinChoiceModal();
   closeOnlineModal();
-  userRole = 'spectator';
-  localStorage.setItem('onesport_user_role', 'spectator');
-  connectOnlineRoom(roomId.trim().toUpperCase(), 'spectator', '', false, false);
+  const cleanRoom = roomId.trim().toUpperCase();
+  const role = isHostUser() ? 'host' : 'spectator';
+  userRole = role;
+  localStorage.setItem('onesport_user_role', role);
+  connectOnlineRoom(cleanRoom, role, '', false, false);
   switchTab('tab-match');
   applyRoleUI();
-  showToast(`👁️ Masuk ke Siaran Live ${roomId.trim().toUpperCase()} sebagai Penonton!`, 'info');
+  showToast(isHostUser() ? `Siaran Live ${cleanRoom} terhubung sebagai Host.` : `Masuk ke Siaran Live ${cleanRoom}.`, 'info');
 }
 
 function joinRoomAsHost(roomId, pin) {
   closeJoinChoiceModal();
   closeOnlineModal();
-  connectOnlineRoom(roomId.trim().toUpperCase(), 'host', pin, false, false);
+  const cleanRoom = roomId.trim().toUpperCase();
+  userRole = 'host';
+  localStorage.setItem('onesport_user_role', 'host');
+  connectOnlineRoom(cleanRoom, 'host', pin, false, false);
   switchTab('tab-match');
   applyRoleUI();
+  showToast(`Siaran Live ${cleanRoom} terhubung sebagai Host.`, 'success');
 }
 
 // ── JOIN CHOICE MODAL (FOR LINK OR DIRECTORY CLICKS) ──
@@ -7887,15 +7920,7 @@ let pendingJoinRoomId = null;
 let selectedJoinChoiceRole = 'spectator';
 
 function showJoinChoiceModal(roomId, roomTitle = '') {
-  pendingJoinRoomId = roomId.trim().toUpperCase();
-  const modal = document.getElementById('joinChoiceModalOverlay');
-  const dispRoom = document.getElementById('joinChoiceDisplayRoom');
-  const dispTitle = document.getElementById('joinChoiceDisplayTitle');
-  if (dispRoom) dispRoom.textContent = pendingJoinRoomId;
-  if (dispTitle) dispTitle.textContent = roomTitle || `Pertandingan Live ${currentSport === 'badminton' ? 'Badminton' : 'Mini Soccer'}`;
-
-  selectJoinRoleChoice('spectator');
-  if (modal) modal.classList.add('open');
+  joinRoomAsSpectator(roomId);
 }
 
 function selectJoinRoleChoice(role) {
@@ -7937,32 +7962,14 @@ function closeJoinChoiceModal() {
   pendingJoinRoomId = null;
 }
 
-// ── ROLE & UI ACCESS MANAGEMENT (PENONTON VS HOST) ──
+// ── ROLE & UI ACCESS MANAGEMENT (LOGIN AUTHENTICATION) ──
 function applyRoleUI() {
+  const isHost = isHostUser();
+  userRole = isHost ? 'host' : 'spectator';
   const inRoom = !!(isOnlineActive && currentRoomId);
-  const isHost = !inRoom || (userRole === 'host');
 
-  // 1. Header Role Switch Button & Label
-  const btnRole = document.getElementById('btnHeaderRoleSwitch');
-  const roleLabel = document.getElementById('headerRoleLabel');
-  if (btnRole && roleLabel) {
-    if (!inRoom) {
-      btnRole.className = 'btn-role-badge is-host';
-      btnRole.title = 'Mulai atau Buka Sesi Siaran Live';
-      roleLabel.textContent = '📡 Siaran Live';
-      btnRole.onclick = () => openOnlineModal();
-    } else if (isHost) {
-      btnRole.className = 'btn-role-badge is-host';
-      btnRole.title = 'Beralih ke Tampilan Penonton';
-      roleLabel.textContent = 'Mode Penonton';
-      btnRole.onclick = () => handleRoleSwitchClick();
-    } else {
-      btnRole.className = 'btn-role-badge is-spectator';
-      btnRole.title = 'Beralih ke Mode Host (Buka Semua Fitur)';
-      roleLabel.textContent = 'Masuk Host';
-      btnRole.onclick = () => handleRoleSwitchClick();
-    }
-  }
+  // 1. Header Auth Container (Masuk / Host / Member)
+  renderAuthUI();
 
   // 2. Header Settings Button (Host only)
   const btnSettings = document.getElementById('btnHeaderSettings');
@@ -7995,8 +8002,8 @@ function applyRoleUI() {
   }
 
   // 5. Bottom Navigation Tabs:
-  // Untuk Penonton dalam Room: Lapangan, Skor, History, Selesai (4 tab)
-  // Untuk Host & Mode Lokal: Semua tab terbuka (Pemain, Lapangan, Skor, Siaran, History, Selesai)
+  // Non-host: Lapangan, Skor, History, Selesai (tab pemain hanya untuk Host)
+  // Host: Semua tab terbuka (Pemain, Lapangan, Skor, Siaran, History, Selesai)
   const navPemain = document.getElementById('nav-tab-pemain');
   if (navPemain) navPemain.style.display = isHost ? 'flex' : 'none';
 
@@ -8019,7 +8026,7 @@ function applyRoleUI() {
   const btnNewMabar = document.getElementById('btnNewMabarSession');
   if (btnNewMabar) btnNewMabar.style.display = isHost ? 'inline-flex' : 'none';
 
-  // Sinkronkan tab aktif
+  // Sinkronkan tab aktif jika non-host berada di tab pemain
   const activeTab = document.querySelector('.app-tab-pane.active')?.id;
   if (!isHost && activeTab === 'tab-pemain') {
     switchTab('tab-match');
@@ -8032,82 +8039,125 @@ function applyRoleUI() {
   }
 }
 
-function handleRoleSwitchClick() {
-  if (userRole === 'host') {
-    switchToSpectatorMode();
+function renderAuthUI() {
+  const container = document.getElementById('headerAuthContainer');
+  if (!container) return;
+
+  if (isHostUser()) {
+    container.innerHTML = `
+      <div class="user-auth-badge is-host" title="Masuk sebagai Host (Admin)">
+        <span class="auth-role-tag">Host</span>
+        <span class="auth-user-name">Admin</span>
+        <button class="btn-logout-header" onclick="logoutUser()" title="Keluar">Keluar</button>
+      </div>
+    `;
+  } else if (currentUser && currentUser.email) {
+    container.innerHTML = `
+      <div class="user-auth-badge" title="Masuk sebagai Penonton">
+        <span class="auth-user-name">${escapeHtml(currentUser.name || currentUser.email)}</span>
+        <button class="btn-logout-header" onclick="logoutUser()" title="Keluar">Keluar</button>
+      </div>
+    `;
   } else {
-    openSwitchToHostModal();
+    container.innerHTML = `
+      <button class="btn-login-header" onclick="openLoginModal()" title="Masuk ke Akun">
+        Masuk
+      </button>
+    `;
   }
 }
 
-function openSwitchToHostModal() {
-  const modal = document.getElementById('switchRoleModalOverlay');
-  const inputPin = document.getElementById('inputSwitchHostPin');
+function openLoginModal() {
+  const modal = document.getElementById('loginModalOverlay');
+  const inputEmail = document.getElementById('loginInputEmail');
+  const inputPass = document.getElementById('loginInputPassword');
   if (modal) {
     modal.classList.add('open');
-    if (inputPin) {
-      inputPin.value = '';
-      setTimeout(() => inputPin.focus(), 150);
+    if (inputEmail) {
+      inputEmail.value = (currentUser && currentUser.email) ? currentUser.email : '';
+      setTimeout(() => inputEmail.focus(), 150);
     }
+    if (inputPass) inputPass.value = '';
   }
 }
 
-function closeSwitchRoleModal() {
-  const modal = document.getElementById('switchRoleModalOverlay');
+function closeLoginModal() {
+  const modal = document.getElementById('loginModalOverlay');
   if (modal) modal.classList.remove('open');
 }
 
-function submitSwitchToHost() {
-  const inputPin = document.getElementById('inputSwitchHostPin');
-  const enteredPin = (inputPin ? inputPin.value.trim() : '');
+function submitLoginForm() {
+  const emailInput = document.getElementById('loginInputEmail');
+  const passInput = document.getElementById('loginInputPassword');
+  const email = emailInput ? emailInput.value.trim() : '';
+  const pass = passInput ? passInput.value.trim() : '';
 
-  if (!enteredPin) {
-    showToast('⚠️ Masukkan PIN Host terlebih dahulu!', 'error');
-    if (inputPin) inputPin.focus();
+  if (!email || !pass) {
+    showToast('Harap masukkan username/email dan password.', 'error');
     return;
   }
 
-  // Jika belum terkoneksi room online, ubah peran secara lokal
-  if (!isOnlineActive || !currentRoomId) {
-    userRole = 'host';
-    hostPin = enteredPin;
-    localStorage.setItem('onesport_user_role', 'host');
-    closeSwitchRoleModal();
+  loginUser(email, pass);
+}
+
+function loginUser(email, password) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanPass = (password || '').trim();
+
+  if (cleanEmail === HOST_EMAIL.toLowerCase()) {
+    if (cleanPass === HOST_PASSWORD) {
+      currentUser = {
+        email: HOST_EMAIL,
+        name: 'Admin OneSport',
+        role: 'host'
+      };
+      userRole = 'host';
+      localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+      localStorage.setItem('onesport_user_role', 'host');
+      closeLoginModal();
+      applyRoleUI();
+      showToast('Berhasil masuk sebagai Host (Admin).', 'success');
+      return true;
+    } else {
+      showToast('Password Host salah!', 'error');
+      return false;
+    }
+  } else {
+    currentUser = {
+      email: cleanEmail,
+      name: cleanEmail.includes('@') ? cleanEmail.split('@')[0] : cleanEmail,
+      role: 'spectator'
+    };
+    userRole = 'spectator';
+    localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+    localStorage.setItem('onesport_user_role', 'spectator');
+    closeLoginModal();
     applyRoleUI();
-    saveActiveLiveSession();
-    showToast('👑 Berhasil masuk sebagai Host! Semua kontrol & fitur terbuka penuh.', 'success');
-    return;
-  }
-
-  // Jika online di dalam room, verifikasi via challenge-response kriptografis
-  if (mqttClient && isOnlineActive && currentRoomId) {
-    pendingHostCandidatePin = enteredPin;
-    pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
-      ? BadmintonService.MqttAuth.generateNonce(16)
-      : String(Date.now());
-    mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
-      type: 'VERIFY_HOST_PIN_INIT',
-      roomId: currentRoomId,
-      senderId: myClientId,
-      reqNonce: pendingPinReqNonce
-    }));
-    closeSwitchRoleModal();
-    showToast('Memverifikasi PIN Host...');
+    showToast('Berhasil masuk sebagai ' + currentUser.name + '.', 'info');
+    return true;
   }
 }
 
-function switchToSpectatorMode() {
-  if (confirm('Beralih ke tampilan Penonton? Layar akan diatur ke Siaran Langsung (hanya Lapangan, Skor, History & Selesai). Anda dapat kembali menjadi Host kapan saja.')) {
+function logoutUser() {
+  if (confirm('Apakah Anda yakin ingin keluar dari akun?')) {
+    currentUser = null;
     userRole = 'spectator';
+    localStorage.removeItem('onesport_auth_user');
     localStorage.setItem('onesport_user_role', 'spectator');
     applyRoleUI();
-    switchTab('tab-match');
-    showToast('👀 Sekarang berada di Tampilan Penonton (Siaran Langsung).', 'info');
+    showToast('Anda telah keluar.', 'info');
   }
 }
 
-function promptUpgradeToHost() {
-  openSwitchToHostModal();
+// Backward compatibility helpers
+function openSwitchToHostModal() { openLoginModal(); }
+function closeSwitchRoleModal() { closeLoginModal(); }
+function submitSwitchToHost() { submitLoginForm(); }
+function switchToSpectatorMode() { logoutUser(); }
+function promptUpgradeToHost() { openLoginModal(); }
+function handleRoleSwitchClick() {
+  if (isHostUser()) logoutUser();
+  else openLoginModal();
 }
 
 // ── CONNECT TO ISOLATED ONLINE ROOM ──
@@ -8207,7 +8257,7 @@ function onMqttConnected() {
       broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
       startHeartbeatTimer();
       broadcastStateUpdate();
-      showToast(`🔴 Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
+      showToast(`Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
     } else if (pendingHostCandidatePin) {
       pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
         ? BadmintonService.MqttAuth.generateNonce(16)
@@ -8322,7 +8372,7 @@ async function handleIncomingMessage(topic, rawText) {
         const now = Date.now();
         if (now - lastHostConflictWarningTime > 20000) {
           lastHostConflictWarningTime = now;
-          showToast('⚠️ Konflik Host: Terdeteksi perangkat lain bertindak sebagai Host di room ini!', 'warning');
+          showToast('Konflik Host: Terdeteksi perangkat lain bertindak sebagai Host di room ini.', 'warning');
         }
       }
       return;
@@ -8400,7 +8450,7 @@ async function handleIncomingMessage(topic, rawText) {
           applyRoleUI();
           updateOnlineUI('connected');
           saveActiveLiveSession();
-          showToast('✅ PIN Terverifikasi! Akses Wasit / Host Diberikan.', 'success');
+          showToast('PIN Terverifikasi. Akses Host Diberikan.', 'success');
         } else {
           pendingHostCandidatePin = null;
           userRole = 'spectator';
@@ -8408,7 +8458,7 @@ async function handleIncomingMessage(topic, rawText) {
           applyRoleUI();
           updateOnlineUI('connected');
           saveActiveLiveSession();
-          showToast('❌ PIN Host salah! Akses wasit ditolak.', 'error');
+          showToast('PIN Host salah. Akses ditolak.', 'error');
           alert('PIN Host salah!\n\nPIN yang Anda masukkan salah. Hubungi host pembuat room untuk meminta PIN yang benar.');
         }
       }
@@ -8449,7 +8499,7 @@ async function handleIncomingMessage(topic, rawText) {
         const now = Date.now();
         if (now - lastHostConflictWarningTime > 20000) {
           lastHostConflictWarningTime = now;
-          showToast('⚠️ Konflik Host: Terdeteksi perangkat lain mengirim state update sebagai Host!', 'warning');
+          showToast('Konflik Host: Terdeteksi perangkat lain mengirim state update sebagai Host.', 'warning');
         }
       }
       if (userRole === 'spectator' || isCollabMode) {
@@ -8905,7 +8955,7 @@ function updateLiveRoomsDirectoryUI() {
       }
       if (matchCard) matchCard.classList.add('is-live');
       if (matchCardOnlineDot) matchCardOnlineDot.style.background = '#FF5B14';
-      if (matchCardLiveTitle) matchCardLiveTitle.textContent = `🔴 Ada ${count} Siaran Mabar Sedang Live!`;
+      if (matchCardLiveTitle) matchCardLiveTitle.textContent = `Ada ${count} Siaran Mabar Sedang Live!`;
       if (matchCardLiveSub) matchCardLiveSub.textContent = 'Tap untuk menonton siaran langsung publik secara realtime';
       if (matchCardActionBtn) matchCardActionBtn.textContent = 'Tonton';
     } else {
@@ -8922,10 +8972,9 @@ function updateLiveRoomsDirectoryUI() {
 
   if (count === 0) {
     listContainer.innerHTML = `
-      <div style="text-align:center; padding:16px 8px; font-size:0.75rem; color:var(--text-muted); line-height:1.5;">
-        <span style="font-size:1.4rem;">🏸</span><br>
-        Belum ada siaran langsung publik saat ini.<br>
-        <strong style="color:var(--brand-orange);">Buat room baru di bawah untuk memulai siaran!</strong>
+      <div style="text-align:center; padding:18px 8px; font-size:0.75rem; color:var(--text-muted); line-height:1.5;">
+        <div style="margin-bottom:6px; color:var(--brand-navy-soft); font-weight:800;">Belum ada siaran langsung publik saat ini.</div>
+        <div style="color:var(--brand-orange); font-weight:700;">Buat room baru di bawah untuk memulai siaran!</div>
       </div>
     `;
     return;
@@ -8934,7 +8983,6 @@ function updateLiveRoomsDirectoryUI() {
   listContainer.innerHTML = roomIds.map(rid => {
     const r = activeLiveRooms[rid];
     const isCurrent = isOnlineActive && currentRoomId === rid;
-    const sportIcon = r.sport === 'minisoccer' ? '⚽' : '🏸';
     const sportName = r.sport === 'minisoccer' ? 'Mini Soccer' : 'Badminton';
     const rawTitle = r.title || ('Pertandingan ' + r.roomId);
     const safeTitle = truncateBroadcastTitle(rawTitle, 28);
@@ -8948,21 +8996,18 @@ function updateLiveRoomsDirectoryUI() {
             <strong style="font-family:'Outfit',sans-serif; font-size:0.95rem; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.roomId)}">${escapeHtml(safeRoomId)}</strong>
           </div>
           <span style="font-size:0.68rem; font-weight:800; background:#EAF4FF; color:var(--brand-blue); padding:2px 8px; border-radius:999px; flex-shrink:0;">
-            ${sportIcon} ${sportName}
+            ${sportName}
           </span>
         </div>
         <div style="font-size:0.78rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;" title="${escapeHtml(rawTitle)}">
           ${escapeHtml(safeTitle)}
         </div>
-        <div style="display:grid; grid-template-columns:1.2fr 1fr auto; gap:6px;">
-          <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" data-room-id="${escapeHtml(r.roomId)}" onclick="joinRoomAsSpectator(this.getAttribute('data-room-id'))">
-            <span>👁️ Nonton Live</span>
+        <div style="display:grid; grid-template-columns:1fr auto; gap:6px;">
+          <button class="btn-os-orange" style="font-size:0.75rem; padding:8px 12px; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-weight:800;" data-room-id="${escapeHtml(r.roomId)}" onclick="joinRoomAsSpectator(this.getAttribute('data-room-id'))">
+            <span>Gabung Siaran</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" data-room-id="${escapeHtml(r.roomId)}" data-room-title="${escapeHtml(r.title || '')}" onclick="showJoinChoiceModal(this.getAttribute('data-room-id'), this.getAttribute('data-room-title'))">
-            <span>👑 Wasit/Host</span>
-          </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 9px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:800; background:#FFF1F2; border-color:#FECDD3; color:#E11D48;" data-room-id="${escapeHtml(r.roomId)}" onclick="deleteLiveRoomFromLobby(this.getAttribute('data-room-id'))" title="Hapus siaran ini dari daftar">
-            <span>🗑️</span>
+          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 12px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:800; background:#FFF1F2; border-color:#FECDD3; color:#E11D48;" data-room-id="${escapeHtml(r.roomId)}" onclick="deleteLiveRoomFromLobby(this.getAttribute('data-room-id'))" title="Hapus siaran ini dari daftar">
+            <span>Hapus</span>
           </button>
         </div>
       </div>
@@ -9306,7 +9351,9 @@ function renderLiveHistoryList() {
   if (list.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:32px 14px; color:var(--text-muted); font-size:0.8rem; line-height:1.6;">
-        <div style="font-size:2rem; margin-bottom:8px;">📜</div>
+        <div style="margin-bottom:8px; display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; background:#F1F5F9; color:var(--brand-navy-soft);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div><br>
         <strong style="color:var(--brand-navy-dark); font-size:0.9rem;">Belum Ada Histori Siaran Live</strong><br>
         Setiap kali siaran live selesai, rekapitulasi skor dan klasemen akan otomatis disimpan permanen di sini (tersimpan di APK maupun Web).
       </div>
@@ -9326,7 +9373,7 @@ function renderLiveHistoryList() {
           <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
             <span style="font-family:'Outfit',sans-serif; font-size:0.95rem; font-weight:900; color:var(--brand-navy-dark); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.roomId)}">${escapeHtml(truncateBroadcastTitle(item.roomId, 14))}</span>
             <span style="font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:999px; background:${item.role === 'Host' ? '#EAF4FF' : '#ECFDF5'}; color:${item.role === 'Host' ? '#075BB2' : '#047857'}; flex-shrink:0;">
-              ${item.role === 'Host' ? '👑 Host' : '👁️ Penonton'}
+              ${item.role === 'Host' ? 'Host' : 'Penonton'}
             </span>
           </div>
           <span style="font-size:0.68rem; font-weight:700; color:var(--text-muted); flex-shrink:0;">
@@ -9335,7 +9382,7 @@ function renderLiveHistoryList() {
         </div>
 
         <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.sessionTitle || '-')}">
-          ${escapeHtml(truncateBroadcastTitle(item.sessionTitle || '-', 28))} (${isBadm ? 'Badminton 🏸' : 'Mini Soccer ⚽'})
+          ${escapeHtml(truncateBroadcastTitle(item.sessionTitle || '-', 28))} (${isBadm ? 'Badminton' : 'Mini Soccer'})
         </div>
 
         <div style="font-size:0.72rem; color:var(--text-secondary); background:#F8FAFC; padding:6px 8px; border-radius:var(--radius-sm); margin-bottom:8px;">
@@ -9344,13 +9391,13 @@ function renderLiveHistoryList() {
 
         <div style="display:grid; grid-template-columns:1fr 1fr auto auto; gap:6px; align-items:center;">
           <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="openHistoryDetailModal(this.getAttribute('data-history-id'))">
-            <span>📋 Detail</span>
+            <span>Detail</span>
           </button>
           <button class="btn-court-action" style="font-size:0.72rem; padding:6px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="shareHistoryItemWA(this.getAttribute('data-history-id'))">
-            <span>📤 Salin WA</span>
+            <span>Salin WA</span>
           </button>
           <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" data-history-id="${escapeHtml(item.id)}" onclick="loadHistorySnapshotToApp(this.getAttribute('data-history-id'))">
-            📥 Muat
+            Muat
           </button>
           <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" data-history-id="${escapeHtml(item.id)}" onclick="deleteLiveHistoryItem(this.getAttribute('data-history-id'))">
             ✕
@@ -9406,13 +9453,13 @@ function shareHistoryItemWA(id) {
   const item = list.find(h => h.id === id);
   if (!item) return;
 
-  let text = `🏸 *REKAP HASIL SIARAN LIVE ONESPORT* 🏆\n`;
-  text += `📌 *Room:* ${item.roomId} | *Sesi:* ${item.sessionTitle || '-'}\n`;
-  text += `📅 *Waktu:* ${item.dateFormatted} (${item.timeFormatted || ''})\n`;
-  text += `🏅 *Olahraga:* ${item.sport === 'badminton' ? 'Badminton' : 'Mini Soccer'}\n\n`;
+  let text = `*REKAP HASIL SIARAN LIVE ONESPORT*\n`;
+  text += `Room: ${item.roomId} | Sesi: ${item.sessionTitle || '-'}\n`;
+  text += `Waktu: ${item.dateFormatted} (${item.timeFormatted || ''})\n`;
+  text += `Olahraga: ${item.sport === 'badminton' ? 'Badminton' : 'Mini Soccer'}\n\n`;
 
   if (item.podium && item.podium.length > 0) {
-    text += `👑 *PODIUM JUARA:*\n`;
+    text += `*PODIUM JUARA:*\n`;
     item.podium.forEach(p => {
       text += `${p.label}: *${p.name}* (${p.score || ''})\n`;
     });
@@ -9420,7 +9467,7 @@ function shareHistoryItemWA(id) {
   }
 
   if (item.leaderboard && item.leaderboard.length > 0) {
-    text += `📊 *KLASEMEN AKHIR:*\n`;
+    text += `*KLASEMEN AKHIR:*\n`;
     item.leaderboard.slice(0, 8).forEach((s, idx) => {
       text += `${idx + 1}. *${s.name}* | ${s.wins || 0}M-${s.losses || 0}K | Skor: ${s.totalScore || 0} | Diff: ${s.diff || 0}\n`;
     });
@@ -9428,12 +9475,12 @@ function shareHistoryItemWA(id) {
   }
 
   if (item.roundsSummary && item.roundsSummary.length > 0) {
-    text += `📋 *HASIL SKOR PERTANDINGAN:*\n`;
+    text += `*HASIL SKOR PERTANDINGAN:*\n`;
     item.roundsSummary.forEach(r => {
       text += `*${r.roundName}*:\n`;
       if (r.matches) {
         r.matches.forEach(m => {
-          text += `• ${m.court}: ${m.teamA} (${m.scoreA}) vs (${m.scoreB}) ${m.teamB} ➔ ${m.winner ? 'Pemenang: Tim ' + m.winner : ''}\n`;
+          text += `• ${m.court}: ${m.teamA} (${m.scoreA}) vs (${m.scoreB}) ${m.teamB} -> ${m.winner ? 'Pemenang: Tim ' + m.winner : ''}\n`;
         });
       }
     });
@@ -9478,7 +9525,7 @@ function openHistoryDetailModal(id) {
       </div>
       <div style="display:flex; justify-content:space-between;">
         <span style="color:var(--text-muted);">Olahraga / Peran:</span>
-        <strong>${item.sport === 'badminton' ? 'Badminton 🏸' : 'Mini Soccer ⚽'} (${escapeHtml(item.role || 'Peserta')})</strong>
+        <strong>${item.sport === 'badminton' ? 'Badminton' : 'Mini Soccer'} (${escapeHtml(item.role || 'Peserta')})</strong>
       </div>
     </div>
   `;
@@ -9486,7 +9533,7 @@ function openHistoryDetailModal(id) {
   if (item.podium && item.podium.length > 0) {
     html += `
       <div style="margin-bottom:12px;">
-        <div style="font-weight:800; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:6px;">🏆 Podium Juara</div>
+        <div style="font-weight:800; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:6px;">Podium Juara</div>
         <div style="display:grid; grid-template-columns:repeat(${Math.min(item.podium.length, 3)}, 1fr); gap:6px;">
           ${item.podium.map(p => `
             <div style="background:#FFF; border:1.5px solid ${p.rank === 1 ? '#F59E0B' : (p.rank === 2 ? '#94A3B8' : '#D97706')}; border-radius:var(--radius-md); padding:8px; text-align:center;">
@@ -9503,7 +9550,7 @@ function openHistoryDetailModal(id) {
   if (item.leaderboard && item.leaderboard.length > 0) {
     html += `
       <div style="margin-bottom:12px;">
-        <div style="font-weight:800; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:6px;">📊 Klasemen Akhir</div>
+        <div style="font-weight:800; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:6px;">Klasemen Akhir</div>
         <div style="background:#FFF; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; font-size:0.75rem; text-align:left;">
             <thead>
@@ -9535,7 +9582,7 @@ function openHistoryDetailModal(id) {
   if (item.roundsSummary && item.roundsSummary.length > 0) {
     html += `
       <div style="margin-bottom:12px;">
-        <div style="font-weight:800; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:6px;">🏸 Rekap Skor Tiap Babak & Lapangan</div>
+        <div style="font-weight:800; font-size:0.82rem; color:var(--brand-navy-dark); margin-bottom:6px;">Rekap Skor Tiap Babak & Lapangan</div>
         <div style="display:flex; flex-direction:column; gap:8px;">
           ${item.roundsSummary.map(r => `
             <div style="background:#FFF; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px;">
@@ -9591,7 +9638,7 @@ function getPodiumSummaryData() {
   if (!list || list.length === 0) return [];
   const res = [];
   list.slice(0, 3).forEach((item, idx) => {
-    const medal = idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : '🥉 Juara 3');
+    const medal = idx === 0 ? 'Juara 1' : (idx === 1 ? 'Juara 2' : 'Juara 3');
     const w = item.wins !== undefined ? item.wins : item.w;
     const diffVal = item.diff !== undefined ? item.diff : item.gd;
     const sign = diffVal >= 0 ? '+' : '';
@@ -9707,12 +9754,12 @@ function showToast(msg, type = 'info') {
   if (!toast) return;
   if (msgEl) msgEl.textContent = msg;
 
-  if (type === 'error' || msg.includes('salah') || msg.includes('❌') || msg.includes('ditolak')) {
+  if (type === 'error' || msg.includes('salah') || msg.includes('ditolak')) {
     toast.style.background = 'rgba(220, 38, 38, 0.95)';
     toast.style.border = '1.5px solid #FCA5A5';
     toast.style.boxShadow = '0 10px 25px rgba(220, 38, 38, 0.35)';
     if (iconEl) iconEl.style.background = '#FEE2E2';
-  } else if (type === 'success' || msg.includes('berhasil') || msg.includes('✅') || msg.includes('Terverifikasi') || msg.includes('dipulihkan')) {
+  } else if (type === 'success' || msg.includes('berhasil') || msg.includes('Terverifikasi') || msg.includes('dipulihkan')) {
     toast.style.background = 'rgba(5, 150, 105, 0.95)';
     toast.style.border = '1.5px solid #6EE7B7';
     toast.style.boxShadow = '0 10px 25px rgba(5, 150, 105, 0.35)';
@@ -9726,7 +9773,7 @@ function showToast(msg, type = 'info') {
 
   toast.classList.add('show');
   clearTimeout(window._toastTimeout);
-  const duration = (type === 'error' || msg.includes('salah') || msg.includes('❌')) ? 3800 : 2800;
+  const duration = (type === 'error' || msg.includes('salah') || msg.includes('ditolak')) ? 3800 : 2800;
   window._toastTimeout = setTimeout(() => {
     toast.classList.remove('show');
   }, duration);
@@ -9741,12 +9788,8 @@ function checkUrlParamsAndAutoJoin() {
     const room = params.get('room');
     if (room) {
       const cleanRoom = room.toUpperCase();
-      const role = params.get('role');
-      if (role === 'spectator') {
-        setTimeout(() => connectOnlineRoom(cleanRoom, 'spectator'), 600);
-      } else {
-        setTimeout(() => showJoinChoiceModal(cleanRoom), 600);
-      }
+      const role = isHostUser() ? 'host' : 'spectator';
+      setTimeout(() => connectOnlineRoom(cleanRoom, role), 600);
     }
   } catch (e) {
     console.warn('URL param error:', e);
