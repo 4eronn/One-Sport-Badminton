@@ -3504,7 +3504,11 @@ function addNewPlayer() {
       gender: genderInput.value,
       role: roleInput.value
     });
-    showToast(`✅ ${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
+    if (newP.warning) {
+      showToast(`⚠️ Peringatan: ${newP.warning} Pemain tetap ditambahkan.`, 'warning');
+    } else {
+      showToast(`✅ ${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
+    }
   } else {
     const newP = {
       id: Date.now() + Math.floor(Math.random() * 1000),

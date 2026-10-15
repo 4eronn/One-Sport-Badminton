@@ -1284,9 +1284,18 @@
    * Menambahkan pemain baru di tengah sesi tanpa mereset data.
    */
   function addPlayerIncremental(players = [], newPlayerData = {}) {
+    let rawName = typeof newPlayerData.name === 'string' ? newPlayerData.name : '';
+    // Q-7: Trim spasi berurutan dan batasi panjang nama maksimal 40 karakter
+    const cleanName = rawName.replace(/\s+/g, ' ').trim().slice(0, 40);
+
+    // Q-7: Cek apakah nama sudah ada (case-insensitive), beri peringatan (bukan blokir)
+    const normalizedNew = cleanName.toLowerCase();
+    const isDuplicate = Boolean(cleanName) && players.some(p => p && !p.is_deleted && p.name && p.name.trim().toLowerCase() === normalizedNew);
+    const warning = isDuplicate ? `Nama "${cleanName}" sudah terdaftar sebelumnya.` : null;
+
     const newPlayer = {
       id: newPlayerData.id || (Date.now() + Math.floor(Math.random() * 1000)),
-      name: (newPlayerData.name || '').trim(),
+      name: cleanName,
       gender: newPlayerData.gender || 'L',
       role: newPlayerData.role || 'Intermadiate',
       paid: true,
@@ -1299,6 +1308,11 @@
       waitingSince: typeof newPlayerData.waitingSince === 'number' ? newPlayerData.waitingSince : Date.now(),
       createdAt: Date.now()
     };
+
+    if (warning) {
+      newPlayer.warning = warning;
+      newPlayer.isDuplicate = true;
+    }
 
     players.push(newPlayer);
     return newPlayer;

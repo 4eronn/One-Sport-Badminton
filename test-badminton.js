@@ -455,6 +455,28 @@ it('Tambah pemain baru langsung berstatus menunggu tanpa mereset data', () => {
   assert.strictEqual(players[0].jumlah_main, 2); // Andi tidak ter-reset
 });
 
+it('Q-7: addPlayerIncremental membatasi nama 40 karakter, meratakan spasi ganda, dan memberi peringatan pada nama duplikat tanpa memblokir', () => {
+  const players = [
+    { id: 1, name: 'Budi Santoso', status: PLAYER_STATUS.MENUNGGU }
+  ];
+
+  // 1. Spasi ganda internal dan trim
+  const p1 = addPlayerIncremental(players, { name: '   Agus    Prabowo   Subianto   ' });
+  assert.strictEqual(p1.name, 'Agus Prabowo Subianto');
+
+  // 2. Batas 40 karakter
+  const longName = 'A'.repeat(55);
+  const p2 = addPlayerIncremental(players, { name: longName });
+  assert.strictEqual(p2.name.length, 40);
+
+  // 3. Nama duplikat: tidak memblokir (masuk antrian) tapi memberi peringatan
+  const pDup = addPlayerIncremental(players, { name: '  budi   santoso  ' });
+  assert.strictEqual(players.length, 4, 'pemain duplikat tetap ditambahkan (tidak diblokir)');
+  assert.strictEqual(pDup.name, 'budi santoso');
+  assert.strictEqual(pDup.isDuplicate, true);
+  assert.ok(pDup.warning && pDup.warning.includes('budi santoso'));
+});
+
 it('Pemain menunggu yang dihapus diubah statusnya menjadi tidak_aktif (soft delete)', () => {
   const players = [
     { id: 1, name: 'Andi', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 }
