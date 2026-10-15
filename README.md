@@ -148,8 +148,7 @@ The repository also includes an optional GitHub Pages workflow (`deploy.yml`) th
 To build locally you need JDK 17 and the Android SDK:
 
 ```bash
-cp index.html minisoccer.html badminton.html manifest.json sw.js logo*.png \
-   android/app/src/main/assets/
+bash scripts/sync-android-assets.sh
 cd android
 ./gradlew assembleRelease
 ```

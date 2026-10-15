@@ -21,8 +21,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <!-- Realtime WebSockets & QR Code Libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.5.0/mqtt.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="vendor/mqtt.min.js"></script>
+<script>
+  if (typeof mqtt === 'undefined') {
+    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.5.0/mqtt.min.js" integrity="sha384-GLyCRwP9wS/3t9rdDG04aQg9t7VDXSfsn/ydplydbJREUD0LbPjKHxoIV+s7rsyt" crossorigin="anonymous"><\/script>');
+  }
+</script>
+<script src="vendor/qrcode.min.js"></script>
+<script>
+  if (typeof QRCode === 'undefined') {
+    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"><\/script>');
+  }
+</script>
 <script src="badminton-service.js"></script>
 
 <style>
@@ -2420,6 +2430,15 @@
         <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Total Ronde Direncanakan</label>
         <input type="number" id="settingTotalRounds" class="input-styled-os" value="8" min="1" max="25">
       </div>
+      <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px;">
+        <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="settingOfficialScoring" style="margin-top:2px;">
+          <div>
+            <span style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-soft); display:block;">Aturan Skor Resmi (BWF)</span>
+            <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Pemenang minimal 21 poin, selisih minimal 2 poin (deuce), dan maksimal 30 poin. (Default: Nonaktif untuk mabar santai).</span>
+          </div>
+        </label>
+      </div>
     </div>
 
     <button class="btn-os-cyan" style="width: 100%; margin-top: 16px;" onclick="saveSettings()">
@@ -3018,12 +3037,12 @@
     <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:14px;">
       <div>
         <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:3px;">Skor Tim A</label>
-        <input type="number" id="inputDirectScoreA" class="input-styled-os" min="0" max="99" value="21" style="text-align:center; font-weight:900; font-size:1.4rem;">
+        <input type="number" id="inputDirectScoreA" class="input-styled-os" min="0" max="99" value="21" style="text-align:center; font-weight:900; font-size:1.4rem;" oninput="syncDirectScoreWinner()">
       </div>
       <div style="font-weight:900; color:var(--text-muted); font-size:1.1rem; margin-top:16px;">VS</div>
       <div>
         <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:3px;">Skor Tim B</label>
-        <input type="number" id="inputDirectScoreB" class="input-styled-os" min="0" max="99" value="18" style="text-align:center; font-weight:900; font-size:1.4rem;">
+        <input type="number" id="inputDirectScoreB" class="input-styled-os" min="0" max="99" value="18" style="text-align:center; font-weight:900; font-size:1.4rem;" oninput="syncDirectScoreWinner()">
       </div>
     </div>
 
@@ -3139,24 +3158,24 @@
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
       <label style="display:flex; align-items:center; gap:6px; background:#FFF; padding:8px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.76rem; font-weight:800; cursor:pointer;">
-        <input type="radio" name="edit_finished_winner" id="editWinA" value="A">
-        <span>Tim A Menang</span>
+        <input type="radio" name="edit_finished_winner" id="editWinA" value="A" onchange="handleEditWinnerChange('A')">
+        <span id="editWinnerLabelA">Tim A Menang</span>
       </label>
       <label style="display:flex; align-items:center; gap:6px; background:#FFF; padding:8px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.76rem; font-weight:800; cursor:pointer;">
-        <input type="radio" name="edit_finished_winner" id="editWinB" value="B">
-        <span>Tim B Menang</span>
+        <input type="radio" name="edit_finished_winner" id="editWinB" value="B" onchange="handleEditWinnerChange('B')">
+        <span id="editWinnerLabelB">Tim B Menang</span>
       </label>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:14px;">
       <div>
         <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:3px;">Skor Tim A</label>
-        <input type="number" id="inputEditScoreA" class="input-styled-os" min="0" style="text-align:center; font-weight:900; font-size:1.3rem;">
+        <input type="number" id="inputEditScoreA" class="input-styled-os" min="0" max="99" style="text-align:center; font-weight:900; font-size:1.3rem;" oninput="syncEditScoreWinner()">
       </div>
       <div style="font-weight:900; color:var(--text-muted); margin-top:16px;">VS</div>
       <div>
         <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:3px;">Skor Tim B</label>
-        <input type="number" id="inputEditScoreB" class="input-styled-os" min="0" style="text-align:center; font-weight:900; font-size:1.3rem;">
+        <input type="number" id="inputEditScoreB" class="input-styled-os" min="0" max="99" style="text-align:center; font-weight:900; font-size:1.3rem;" oninput="syncEditScoreWinner()">
       </div>
     </div>
 
@@ -3197,6 +3216,17 @@
 //  ONESPORT UNIFIED MULTI-SPORT ENGINE (Badminton & Mini Soccer in One File)
 // ============================================================================
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/`/g, '&#96;');
+}
+
 let currentSport = 'badminton'; // 'badminton' | 'minisoccer'
 let userRole = localStorage.getItem('onesport_user_role') || 'spectator'; // 'host' | 'spectator' (Default: Penonton)
 
@@ -3210,8 +3240,11 @@ let bCooldownMatches = 1; // Default cooldown 1 match setelah main
 let bPartnerRequests = []; // Daftar request rekan tim (Maks. 1x)
 let bPartnerHistory = {}; // Riwayat berpasangan (idA-idB -> count)
 let bOpponentHistory = {}; // Riwayat bertanding lawan (idA-idB -> count)
-let bShuttlecockInventory = { stokAwalBaru: 24, stokAwalBekas: 12, terpakaiBaru: 0, terpakaiBekas: 0, bekasLayakDidapat: 0 };
+let bShuttlecockInventory = { stokAwalBaru: 24, stokAwalBekas: 12 };
 let bAuditLog = []; // Log riwayat aksi manual & override host
+let bSessionId = 'sess_' + Date.now();
+let bAwardedSessionIds = [];
+let bOfficialScoring = false;
 
 // ── MINI SOCCER STATE ──
 let sPlayers = [];
@@ -3471,7 +3504,11 @@ function addNewPlayer() {
       gender: genderInput.value,
       role: roleInput.value
     });
-    showToast(`✅ ${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
+    if (newP.warning) {
+      showToast(`⚠️ Peringatan: ${newP.warning} Pemain tetap ditambahkan.`, 'warning');
+    } else {
+      showToast(`✅ ${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
+    }
   } else {
     const newP = {
       id: Date.now() + Math.floor(Math.random() * 1000),
@@ -3523,7 +3560,7 @@ function removePlayer(id) {
   if (currentSport === 'badminton') {
     const round = bSchedule[bCurrentRoundIndex];
     const activeCourts = (round && round.courts) || [];
-    const res = BadmintonService.removePlayerIncremental(id, bPlayers, activeCourts);
+    const res = BadmintonService.removePlayerIncremental(id, bPlayers, activeCourts, bPartnerRequests);
     if (!res.success) {
       showToast(res.message, 'error');
       return;
@@ -3593,7 +3630,7 @@ function renderPlayersList() {
           <div>
             <strong>⚠️ Notifikasi Kuota (${belowQuota.length} Pemain < ${bMinPlays}x Main):</strong>
             <div style="font-size:0.7rem; font-weight:600; margin-top:2px;">
-              ${belowQuota.map(p => `${p.name} (${p.jumlah_main || 0}/${bMinPlays}x)`).join(', ')}
+              ${belowQuota.map(p => `${escapeHtml(p.name)} (${p.jumlah_main || 0}/${bMinPlays}x)`).join(', ')}
             </div>
           </div>
           <span style="font-size:0.68rem; background:#FEF3C7; color:#92400E; padding:3px 7px; border-radius:4px; font-weight:800; white-space:nowrap;">Diprioritaskan</span>
@@ -3639,7 +3676,16 @@ function renderPlayersList() {
       // Partner Request Button / Tag (Poin 2)
       let partnerReqHtml = '';
       if (!p.is_deleted && st !== BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
-        if (p.request_used) {
+        const activeReq = bPartnerRequests.find(r => 
+          (r.status === BadmintonService.REQUEST_STATUS.PENDING || r.status === BadmintonService.REQUEST_STATUS.APPROVED) &&
+          (r.requesterId === p.id || r.targetId === p.id)
+        );
+
+        if (activeReq) {
+          const isRequester = activeReq.requesterId === p.id;
+          const otherName = isRequester ? activeReq.targetName : activeReq.requesterName;
+          partnerReqHtml = `<span style="font-size:0.65rem; color:#065F46; font-weight:700; background:#D1FAE5; padding:2px 6px; border-radius:4px; border:1px solid #A7F3D0;" title="Menunggu jadwal match bersama ${escapeHtml(otherName)}">🤝 Request: ${escapeHtml(otherName)}</span>`;
+        } else if (p.request_used) {
           partnerReqHtml = `<span style="font-size:0.65rem; color:var(--text-muted); font-weight:700; background:#F1F5F9; padding:2px 6px; border-radius:4px;">🤝 Kuota Request Habis</span>`;
         } else if (st === BadmintonService.PLAYER_STATUS.MENUNGGU) {
           partnerReqHtml = `<button class="btn-court-quick-action" onclick="openPartnerRequestModal(${p.id})" title="Ajukan request rekan tim (Maks. 1x)">🤝 Request Rekan</button>`;
@@ -3666,7 +3712,7 @@ function renderPlayersList() {
             </select>
             <div>
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <span class="player-roster-name" style="${p.is_deleted ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${p.name}</span>
+                <span class="player-roster-name" style="${p.is_deleted ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(p.name)}</span>
                 ${statusBadge}
                 ${quotaBadge}
                 ${leaveNotice}
@@ -3698,7 +3744,7 @@ function renderPlayersList() {
               <option value="P" ${!isMale ? 'selected' : ''}>Putri (P)</option>
             </select>
             <div>
-              <div class="player-roster-name">${p.name}</div>
+              <div class="player-roster-name">${escapeHtml(p.name)}</div>
               <div class="player-roster-badges">
                 ${roleSelectHtml}
               </div>
@@ -3732,14 +3778,27 @@ function openPartnerRequestModal(playerId) {
   document.getElementById('partnerReqRequesterInfo').textContent = `${p.name} (${p.gender === 'L' ? 'Putra' : 'Putri'} • ${p.role})`;
 
   const select = document.getElementById('selectPartnerTarget');
-  // Hanya ambil kandidat yang berstatus menunggu dan bukan dirinya
-  const candidates = BadmintonService.getEligibleQueue(bPlayers).filter(x => x.id !== p.id);
+  // Hanya ambil kandidat yang berstatus menunggu, bukan dirinya, belum punya request aktif, dan bukan kombinasi peran terlarang
+  const busyIds = new Set();
+  bPartnerRequests.forEach(r => {
+    if (r && (r.status === BadmintonService.REQUEST_STATUS.PENDING || r.status === BadmintonService.REQUEST_STATUS.APPROVED)) {
+      busyIds.add(r.requesterId);
+      busyIds.add(r.targetId);
+    }
+  });
+
+  const candidates = BadmintonService.getEligibleQueue(bPlayers).filter(x => {
+    if (x.id === p.id) return false;
+    if (busyIds.has(x.id)) return false;
+    if (BadmintonService.hasInterAndAdvanceTogether([p, x])) return false;
+    return true;
+  });
 
   if (candidates.length === 0) {
-    select.innerHTML = '<option value="">-- Tidak ada pemain menunggu lain saat ini --</option>';
+    select.innerHTML = '<option value="">-- Tidak ada rekan kompatibel yang menunggu saat ini --</option>';
   } else {
     select.innerHTML = '<option value="">-- Pilih Rekan Menunggu --</option>' + candidates.map(c => `
-      <option value="${c.id}">${c.name} (${c.gender === 'L' ? 'Putra' : 'Putri'} • ${c.role} • ${c.jumlah_main || 0}x main)</option>
+      <option value="${c.id}">${escapeHtml(c.name)} (${c.gender === 'L' ? 'Putra' : 'Putri'} • ${escapeHtml(c.role)} • ${c.jumlah_main || 0}x main)</option>
     `).join('');
   }
 
@@ -3758,6 +3817,22 @@ function checkPartnerTargetWarning() {
 
   if (!reqId || !targetId) {
     alertEl.style.display = 'none';
+    return;
+  }
+
+  const p1 = bPlayers.find(x => x.id === reqId);
+  const p2 = bPlayers.find(x => x.id === targetId);
+
+  if (p1 && p2 && BadmintonService.hasInterAndAdvanceTogether([p1, p2])) {
+    alertEl.style.display = 'block';
+    alertEl.innerHTML = `❌ <strong>Regulasi Terlarang:</strong> Pemain level <strong>Intermediate</strong> dan <strong>Advance</strong> tidak boleh berada dalam satu tim!`;
+    return;
+  }
+
+  const busyReq = bPartnerRequests.find(r => (r.status === 'pending' || r.status === 'approved') && (r.requesterId === targetId || r.targetId === targetId));
+  if (busyReq) {
+    alertEl.style.display = 'block';
+    alertEl.innerHTML = `⚠️ <strong>Perhatian:</strong> Rekan yang dipilih sudah memiliki jadwal request aktif lain.`;
     return;
   }
 
@@ -3814,20 +3889,40 @@ function openPartnerRequestsListModal() {
   } else {
     container.innerHTML = bPartnerRequests.map(r => {
       const isPending = r.status === BadmintonService.REQUEST_STATUS.PENDING || r.status === BadmintonService.REQUEST_STATUS.APPROVED;
+      let statusColor = '#D97706';
+      let statusLabel = r.status ? r.status.toUpperCase() : 'PENDING';
+      if (r.status === BadmintonService.REQUEST_STATUS.COMPLETED) {
+        statusColor = '#059669';
+        statusLabel = 'SELESAI (COMPLETED)';
+      } else if (r.status === BadmintonService.REQUEST_STATUS.CANCELLED) {
+        statusColor = '#6B7280';
+        statusLabel = 'DIBATALKAN';
+      } else if (r.status === BadmintonService.REQUEST_STATUS.APPROVED) {
+        const p1 = bPlayers.find(x => x.id === r.requesterId);
+        const inMatch = p1 && p1.status === BadmintonService.PLAYER_STATUS.DI_LAPANGAN;
+        if (inMatch) {
+          statusColor = '#2563EB';
+          statusLabel = 'SEDANG BERMAIN';
+        } else {
+          statusColor = '#D97706';
+          statusLabel = 'MENUNGGU JADWAL';
+        }
+      }
+
       return `
         <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
           <div>
             <div style="font-weight:800; font-size:0.85rem; color:var(--brand-navy-dark);">
-              ${r.requesterName} 🤝 ${r.targetName}
+              ${escapeHtml(r.requesterName)} 🤝 ${escapeHtml(r.targetName)}
             </div>
             <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
-              Status: <strong style="color:${r.status === 'completed' ? '#059669' : '#D97706'};">${r.status.toUpperCase()}</strong>
+              Status: <strong style="color:${statusColor};">${statusLabel}</strong>
               ${r.hasPartneredBefore ? ` • <span style="color:#DC2626; font-weight:700;">⚠️ Pernah berpasangan ${r.timesPartnered}x</span>` : ' • Pasangan Baru'}
             </div>
           </div>
           ${isPending ? `
             <button class="btn-court-reject" style="font-size:0.72rem; padding:4px 8px;" onclick="cancelPartnerRequestByHost(${r.id})">Batalkan</button>
-          ` : `<span style="font-size:0.72rem; color:var(--text-muted);">Selesai</span>`}
+          ` : `<span style="font-size:0.72rem; color:var(--text-muted);">${r.status === 'completed' ? 'Selesai' : 'Batal'}</span>`}
         </div>
       `;
     }).join('');
@@ -3857,135 +3952,32 @@ function cancelPartnerRequestByHost(reqId) {
 //  BADMINTON ENGINE
 // ============================================================================
 
-// ── BADMINTON TEAM & ROLE RULES ENGINE ──
+// ── BADMINTON TEAM & ROLE RULES ENGINE (Delegasi ke BadmintonService) ──
 function isIntermadiateRole(player) {
-  if (!player || !player.role) return false;
-  const r = String(player.role).toLowerCase();
-  return r.includes('inter');
+  return BadmintonService.isIntermediateRole(player);
 }
 
 function isAdvanceRole(player) {
-  if (!player || !player.role) return false;
-  const r = String(player.role).toLowerCase();
-  return r.includes('adv');
+  return BadmintonService.isAdvanceRole(player);
 }
 
 function hasInterAndAdvanceTogether(team) {
-  if (!Array.isArray(team)) return false;
-  const validPlayers = team.filter(Boolean);
-  const hasInter = validPlayers.some(isIntermadiateRole);
-  const hasAdv = validPlayers.some(isAdvanceRole);
-  return hasInter && hasAdv;
+  return BadmintonService.hasInterAndAdvanceTogether(team);
 }
 
-/**
- * Membagi 4 pemain menjadi 2 tim ganda (Tim A dan Tim B):
- * 1. Tim SELALU DIACAK (randomized).
- * 2. Role Intermadiate dan Advance TIDAK BOLEH berada dalam 1 tim yang sama.
- * 3. Jika ada 2 pemain Advance, diprioritaskan berada di tim yang berlawanan.
- * 4. Meminimalkan frekuensi berpasangan yang sama (pairHistory) jika tersedia.
- */
 function splitFourPlayersIntoTeams(fourPlayers, pairHistory = {}) {
-  if (!Array.isArray(fourPlayers) || fourPlayers.length < 4) {
-    return {
-      teamA: fourPlayers ? fourPlayers.slice(0, 2) : [],
-      teamB: fourPlayers ? fourPlayers.slice(2, 4) : []
-    };
-  }
-
-  const p = [...fourPlayers];
-
-  // 3 kemungkinan kombinasi ganda dari 4 pemain
-  const pairings = [
-    { t1: [p[0], p[1]], t2: [p[2], p[3]] },
-    { t1: [p[0], p[2]], t2: [p[1], p[3]] },
-    { t1: [p[0], p[3]], t2: [p[1], p[2]] }
-  ];
-
-  // Aturan Wajib: Role Intermadiate dan Advance TIDAK BOLEH 1 tim
-  let validPairings = pairings.filter(pair => 
-    !hasInterAndAdvanceTogether(pair.t1) && !hasInterAndAdvanceTogether(pair.t2)
-  );
-
-  // Jika kondisi darurat (misal 3 Adv + 1 Inter secara paksa), fallback ke semua kemungkinan
-  if (validPairings.length === 0) {
-    validPairings = pairings;
-  }
-
-  // Jika terdapat 2 pemain Advance, prioritaskan memisahkan keduanya di tim berlawanan
-  const advCount = p.filter(isAdvanceRole).length;
-  if (advCount === 2) {
-    const separatedAdv = validPairings.filter(pair => 
-      pair.t1.filter(isAdvanceRole).length === 1 && pair.t2.filter(isAdvanceRole).length === 1
-    );
-    if (separatedAdv.length > 0) {
-      validPairings = separatedAdv;
-    }
-  }
-
-  // Jika terdapat 2 pemain Intermadiate dan tidak ada Advance, prioritaskan dipisah agar berimbang
-  const interCount = p.filter(isIntermadiateRole).length;
-  if (interCount === 2 && advCount === 0) {
-    const separatedInter = validPairings.filter(pair => 
-      pair.t1.filter(isIntermadiateRole).length === 1 && pair.t2.filter(isIntermadiateRole).length === 1
-    );
-    if (separatedInter.length > 0) {
-      validPairings = separatedInter;
-    }
-  }
-
-  // Hitung riwayat berpasangan untuk meminimalkan pasangan yang berulang
-  const scoredPairings = validPairings.map(pair => {
-    let score = 0;
-    if (pair.t1[0] && pair.t1[1]) {
-      const k1 = [pair.t1[0].id, pair.t1[1].id].sort((a,b)=>a-b).join('-');
-      score += (pairHistory[k1] || 0);
-    }
-    if (pair.t2[0] && pair.t2[1]) {
-      const k2 = [pair.t2[0].id, pair.t2[1].id].sort((a,b)=>a-b).join('-');
-      score += (pairHistory[k2] || 0);
-    }
-    return { pair, score };
-  });
-
-  const minScore = Math.min(...scoredPairings.map(sp => sp.score));
-  const bestPairings = scoredPairings.filter(sp => sp.score === minScore).map(sp => sp.pair);
-
-  // Acak di antara pilihan terbaik ("selalu diacak")
-  const chosen = bestPairings[Math.floor(Math.random() * bestPairings.length)];
-
-  // Acak tim mana yang menjadi Tim A dan Tim B (50% probabilitas)
-  let teamA = (Math.random() < 0.5) ? [...chosen.t1] : [...chosen.t2];
-  let teamB = (teamA[0].id === chosen.t1[0].id) ? [...chosen.t2] : [...chosen.t1];
-
-  // Acak posisi pemain di dalam tim
-  if (Math.random() < 0.5) teamA.reverse();
-  if (Math.random() < 0.5) teamB.reverse();
-
-  return { teamA, teamB };
+  const res = BadmintonService.splitFourIntoTeamsSmart(fourPlayers, pairHistory, {}, []);
+  return { teamA: res.teamA, teamB: res.teamB };
 }
 
 function pickCompatibleFourPlayers(availablePlayers) {
-  if (!availablePlayers || availablePlayers.length <= 4) return availablePlayers ? availablePlayers.slice(0, 4) : [];
-
-  const first4 = availablePlayers.slice(0, 4);
-  const advCount = first4.filter(isAdvanceRole).length;
-  const interCount = first4.filter(isIntermadiateRole).length;
-
-  // Jika kombinasi 1 Adv + 3 Inter (atau 3 Adv + 1 Inter), coba swap salah satu dengan pemain Pemula/Amatir dari pool sisa
-  if ((advCount === 1 && interCount === 3) || (advCount === 3 && interCount === 1)) {
-    const candidateIdx = availablePlayers.slice(4).findIndex(p => !isIntermadiateRole(p) && !isAdvanceRole(p));
-    if (candidateIdx !== -1) {
-      const swapTargetIndex = advCount === 1 ? first4.findIndex(isIntermadiateRole) : first4.findIndex(isAdvanceRole);
-      const chosen = [...first4];
-      chosen[swapTargetIndex] = availablePlayers[4 + candidateIdx];
-      return chosen;
-    }
-  }
-
-  return first4;
+  const picked = BadmintonService.pickNextFourPlayersForMatch(availablePlayers, [], {}, availablePlayers);
+  return picked || (availablePlayers ? availablePlayers.slice(0, 4) : []);
 }
 
+/**
+ * @deprecated [LEGACY] Jalur penjadwalan aktif utama adalah alur ACC Host (proposeNextCourtMatch / createCourtProposal).
+ */
 function generateInitialBadminton() {
   if (bPlayers.length < 4) {
     bSchedule = [];
@@ -4040,6 +4032,9 @@ function generateInitialBadminton() {
   bCurrentRoundIndex = 0;
 }
 
+/**
+ * @deprecated [LEGACY]
+ */
 function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap, restCountMap, currentRoundNumber = 1, lastPlayedRoundMap = {}) {
   const femaleOnly = roster.filter(p => p.gender === 'P');
   let femaleMatchesCount = Math.floor(femaleOnly.length / 4);
@@ -4200,14 +4195,14 @@ function renderSoccerTeams() {
   container.innerHTML = sTeams.map(t => `
     <div style="margin-bottom:10px;">
       <div class="team-card-header ${t.key}">
-        <span>${t.name}</span>
+        <span>${escapeHtml(t.name)}</span>
         <span style="font-size:0.75rem; font-weight:800;">${t.players.length} Pemain</span>
       </div>
       <div class="team-members-list">
         ${t.players.map(p => `
           <div class="team-member-item">
-            <span style="font-weight:700; color:var(--brand-navy-dark);">${p.name}</span>
-            <span class="pos-badge pos-${(p.role||'MF').toLowerCase()}">${p.role || 'MF'}</span>
+            <span style="font-weight:700; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</span>
+            <span class="pos-badge pos-${(p.role||'MF').toLowerCase()}">${escapeHtml(p.role || 'MF')}</span>
           </div>
         `).join('')}
       </div>
@@ -4216,6 +4211,9 @@ function renderSoccerTeams() {
 }
 
 // ── SMART REBALANCE / GENERATE ──
+/**
+ * @deprecated [LEGACY] Dipertahankan untuk kompatibilitas tombol UI "Susun Ulang" / "Smart Match".
+ */
 function smartRebalanceUpcoming(showToast = true) {
   if (!checkEditPermission()) return;
   if (currentSport === 'badminton') {
@@ -4230,6 +4228,9 @@ function smartRebalanceUpcoming(showToast = true) {
   persistAndBroadcast();
 }
 
+/**
+ * @deprecated [LEGACY]
+ */
 function regenerateUpcomingRoundsFrom(fromRoundIdx) {
   if (bPlayers.length < 4) return;
   const maxPossibleCourts = Math.max(1, Math.floor(bPlayers.length / 4));
@@ -4592,9 +4593,9 @@ function updateCustomCourtUI() {
       el.innerHTML = `
         <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
           <span class="gender-badge ${player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.65rem; padding:1px 5px;">${player.gender === 'L' ? 'L' : 'P'}</span>
-          <span style="font-weight:800; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${player.name}</span>
+          <span style="font-weight:800; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${escapeHtml(player.name)}</span>
         </div>
-        <span class="role-pill ${(player.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${player.role}</span>
+        <span class="role-pill ${(player.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${escapeHtml(player.role)}</span>
       `;
     } else {
       el.className = 'custom-court-slot empty';
@@ -4653,7 +4654,7 @@ function renderCustomCourtPlayersList() {
     if (restingIds.has(p.id)) {
       statusBadge = `<span style="background:#DCFCE7; color:#15803D; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">Istirahat</span>`;
     } else if (playerLocMap[p.id]) {
-      statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">${playerLocMap[p.id]}</span>`;
+      statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">${escapeHtml(playerLocMap[p.id])}</span>`;
     }
 
     return `
@@ -4662,9 +4663,9 @@ function renderCustomCourtPlayersList() {
           <input type="checkbox" ${isSelected ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px; accent-color:var(--brand-orange);" onclick="event.stopPropagation(); toggleCustomCourtPlayer(${p.id})">
           <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${p.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${p.name}</div>
+            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</div>
             <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
-              <span class="role-pill ${(p.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${p.role}</span>
+              <span class="role-pill ${(p.role || 'Pemula').toLowerCase()}" style="font-size:0.65rem; padding:1px 6px;">${escapeHtml(p.role)}</span>
               ${statusBadge}
             </div>
           </div>
@@ -4791,17 +4792,17 @@ function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, 
   }
   const isMale = p.gender === 'L';
   const canSwap = isHost && !isLocked;
-  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${p.name}" style="cursor:pointer;"` : `style="cursor:default;"`;
+  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${escapeHtml(p.name)}" style="cursor:pointer;"` : `style="cursor:default;"`;
   const swapBtnHtml = canSwap ? `<span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>` : '';
 
   return `
     <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" ${clickAttr}>
       <div class="player-cell-top">
-        <span class="player-cell-name">${p.name}</span>
+        <span class="player-cell-name">${escapeHtml(p.name)}</span>
         <span class="gender-badge ${isMale ? 'male' : 'female'}">${isMale ? 'L' : 'P'}</span>
       </div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-        <span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${p.role}</span>
+        <span class="role-pill ${(p.role||'Pemula').toLowerCase()}">${escapeHtml(p.role)}</span>
         ${swapBtnHtml}
       </div>
     </div>
@@ -4917,8 +4918,8 @@ function renderCourtsView() {
       nextMatchContainer.innerHTML = nextRound.courts.map((court, cIdx) => `
         <div class="match-court-block">
           <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.8rem; font-weight:800; color:var(--brand-navy-dark);">
-            <span>${court.courtName || ('Lapangan ' + (cIdx + 1))} (Ronde ${nextRound.roundNumber})</span>
-            <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+            <span>${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))} (Ronde ${nextRound.roundNumber})</span>
+            <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
           </div>
           <div class="match-versus-grid">
             <div class="team-column">
@@ -4966,7 +4967,13 @@ function renderCourtsView() {
     `;
 
     const courtsHtml = currentRound.courts.map((court, cIdx) => {
-      const cStatus = court.status || BadmintonService.COURT_STATUS.KOSONG;
+      let cStatus = court.status || BadmintonService.COURT_STATUS.KOSONG;
+      // Q-5: Petakan 'pending' ke status yang dikenal renderCourtsView
+      if (cStatus === 'pending') {
+        cStatus = (court.teamA && court.teamA.length > 0)
+          ? BadmintonService.COURT_STATUS.MENUNGGU_ACC
+          : BadmintonService.COURT_STATUS.KOSONG;
+      }
       const isKosong = cStatus === BadmintonService.COURT_STATUS.KOSONG;
       const isMenungguAcc = cStatus === BadmintonService.COURT_STATUS.MENUNGGU_ACC;
       const isOngoing = cStatus === BadmintonService.COURT_STATUS.SEDANG_MAIN || cStatus === 'ongoing';
@@ -4978,7 +4985,7 @@ function renderCourtsView() {
           return `
             <div class="os-card dashed" style="margin-top:8px; border:2px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
               <div class="card-top-title" style="margin-bottom:6px;">
-                <span class="card-title-text" style="color:var(--text-muted);">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <span class="court-status-chip pending">⚪ Kosong</span>
               </div>
               <div style="font-size:1.4rem; margin-bottom:4px;">🏸</div>
@@ -4991,7 +4998,7 @@ function renderCourtsView() {
         return `
           <div class="os-card dashed" style="margin-top:8px; border:2px dashed #CBD5E1; background:#F8FAFC;">
             <div class="card-top-title">
-              <span class="card-title-text" style="color:var(--text-muted);">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+              <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <span class="court-status-chip pending">⚪ Kosong</span>
             </div>
             <div style="text-align:center; padding:18px 12px;">
@@ -5023,10 +5030,10 @@ function renderCourtsView() {
             <div class="os-card" style="margin-top:8px; border:2px solid #FCD34D; background:#FFFDF7;">
               <div class="card-top-title">
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                  <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                   <span class="court-status-chip menunggu_acc">⏳ Menunggu Mulai</span>
                 </div>
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
               <div style="background:#FEF3C7; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:6px 10px; margin-bottom:8px; font-size:0.72rem; color:#92400E; text-align:center; font-weight:700;">
                 ⏳ Jadwal pertandingan sedang dipersiapkan dan menunggu konfirmasi Host.
@@ -5052,11 +5059,11 @@ function renderCourtsView() {
           <div class="os-card" style="margin-top:8px; border:2px solid #FCD34D; background:#FFFDF7;">
             <div class="card-top-title">
               <div style="display:flex; align-items:center; gap:6px;">
-                <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <span class="court-status-chip menunggu_acc">⏳ Menunggu ACC Host</span>
               </div>
               <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
                 ${court.isRepeatedPartner ? `<span class="partner-repeated-pill">⚠️ Pasangan Berulang</span>` : ''}
                 ${court.usedRequest ? `<span style="font-size:0.68rem; background:#DCFCE7; color:#15803D; padding:2px 6px; border-radius:4px; font-weight:800;">🤝 Sesuai Request</span>` : ''}
               </div>
@@ -5126,10 +5133,10 @@ function renderCourtsView() {
           return `
             <div class="os-card is-ongoing" style="margin-top:8px; border-color:#3B82F6;">
               <div class="card-top-title">
-                <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+                <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
                 <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
                   <span class="court-status-chip ongoing">🟢 Sedang Main</span>
-                  <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                  <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
                 </div>
               </div>
               <div class="match-versus-grid">
@@ -5155,10 +5162,10 @@ function renderCourtsView() {
         return `
           <div class="os-card is-ongoing" style="margin-top:8px; border-color:#3B82F6;">
             <div class="card-top-title">
-              <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+              <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
                 <span class="court-status-chip ongoing">🟢 Sedang Main</span>
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
             </div>
 
@@ -5198,10 +5205,10 @@ function renderCourtsView() {
         return `
           <div class="os-card is-finished" style="margin-top:8px;">
             <div class="card-top-title">
-              <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+              <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
               <div style="display:flex; align-items:center; gap:5px;">
                 <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
-                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+                <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
               </div>
             </div>
 
@@ -5229,10 +5236,10 @@ function renderCourtsView() {
       return `
         <div class="os-card is-finished" style="margin-top:8px;">
           <div class="card-top-title">
-            <span class="card-title-text">${court.courtName || ('Lapangan ' + (cIdx + 1))}</span>
+            <span class="card-title-text">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
             <div style="display:flex; align-items:center; gap:5px;">
               <span class="court-status-chip finished">✓ Selesai (${court.scoreA || 0} - ${court.scoreB || 0})</span>
-              <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+              <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
             </div>
           </div>
 
@@ -5328,9 +5335,9 @@ function renderCourtsView() {
         drawerHtml += `<span style="font-size:0.75rem; color:var(--text-muted);">Tidak ada pemain menunggu.</span>`;
       } else {
         drawerHtml += waitingPlayers.map(p => `
-          <span class="resting-chip" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46;" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk masukkan ${p.name} ke lapangan">
+          <span class="resting-chip" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46;" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk masukkan ${escapeHtml(p.name)} ke lapangan">
             <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}">${p.gender}</span>
-            <strong>${p.name}</strong>
+            <strong>${escapeHtml(p.name)}</strong>
             <span class="quota-badge ${p.jumlah_main >= bMinPlays ? 'quota-ok' : (p.jumlah_main > 0 ? 'quota-mid' : 'quota-0')}">${p.jumlah_main || 0}/${bMinPlays}</span>
           </span>
         `).join('');
@@ -5346,7 +5353,7 @@ function renderCourtsView() {
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
             ${restingPlayers.map(p => `
               <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Cooldown: ${p.cooldown_remaining || 1} match lagi">
-                <span>${p.name}</span>
+                <span>${escapeHtml(p.name)}</span>
                 <span style="font-size:0.65rem; font-weight:800; background:#FEF3C7; padding:1px 5px; border-radius:4px;">${p.cooldown_remaining || 1} match lagi</span>
                 <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly(${p.id})" title="Selesai istirahat sekarang">⚡ Siap</span>
               </span>
@@ -5364,7 +5371,7 @@ function renderCourtsView() {
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             ${onCourtPlayers.map(p => `
               <span class="resting-chip" style="background:#EFF6FF; border:1px solid #BFDBFE; color:#1E40AF;">
-                <span>${p.name}</span>
+                <span>${escapeHtml(p.name)}</span>
                 <span style="font-size:0.65rem; font-weight:700;">(Di Lapangan)</span>
               </span>
             `).join('')}
@@ -5403,18 +5410,18 @@ function renderCourtsView() {
       return `
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px;">
           <div class="card-top-title">
-            <span class="card-title-text">${m.title}</span>
+            <span class="card-title-text">${escapeHtml(m.title)}</span>
             <span class="court-status-chip ${m.status}">${m.status === 'finished' ? 'Selesai' : (isOngoing ? 'Live' : 'Pending')}</span>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; background:#F8FAFC; padding:12px; border-radius:var(--radius-lg); margin-bottom:10px;">
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${m.teamA.name}</strong>
+              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${escapeHtml(m.teamA.name)}</strong>
               <div style="font-size:1.8rem; font-weight:900; color:var(--brand-orange);">${m.scoreA !== null ? m.scoreA : '-'}</div>
             </div>
             <div style="font-size:0.85rem; font-weight:900; color:var(--text-muted);">VS</div>
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${m.teamB.name}</strong>
+              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${escapeHtml(m.teamB.name)}</strong>
               <div style="font-size:1.8rem; font-weight:900; color:var(--brand-navy-dark);">${m.scoreB !== null ? m.scoreB : '-'}</div>
             </div>
           </div>
@@ -5423,8 +5430,8 @@ function renderCourtsView() {
             ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">Mulai Kickoff</button>` : ''}
             <div class="winner-picker-box">
               <span style="font-size:0.74rem; font-weight:800;">Pemenang:</span>
-              <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${m.teamA.name.split(' ')[0]}</button>
-              <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${m.teamB.name.split(' ')[0]}</button>
+              <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${escapeHtml(m.teamA.name.split(' ')[0])}</button>
+              <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${escapeHtml(m.teamB.name.split(' ')[0])}</button>
               <button class="btn-pick-winner ${m.winner === 'D' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'D')">Seri</button>
             </div>
           </div>
@@ -5487,7 +5494,7 @@ function hostRejectCourt(cIdx) {
   const court = round.courts[cIdx];
   if (!court) return;
 
-  const res = BadmintonService.rejectCourtProposal(court, bPlayers);
+  const res = BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
   BadmintonService.logHostAction(bAuditLog, 'REJECT_MATCH', { courtNumber: cIdx + 1 });
   renderCourtsView();
   renderPlayersList();
@@ -5501,7 +5508,7 @@ function clearCourt(cIdx) {
   const court = round.courts[cIdx];
   if (!court) return;
 
-  BadmintonService.rejectCourtProposal(court, bPlayers);
+  BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
   court.status = BadmintonService.COURT_STATUS.KOSONG;
   BadmintonService.logHostAction(bAuditLog, 'CLEAR_COURT', { courtNumber: cIdx + 1 });
   renderCourtsView();
@@ -5557,8 +5564,8 @@ function openDirectCourtScoreModal(cIdx) {
   targetInput.value = cIdx;
   titleEl.textContent = `🏸 Input Skor: ${court.courtName}`;
 
-  const tA = (court.teamA || []).map(p => p.name).join(' & ');
-  const tB = (court.teamB || []).map(p => p.name).join(' & ');
+  const tA = (court.teamA || []).map(p => escapeHtml(p.name)).join(' & ');
+  const tB = (court.teamB || []).map(p => escapeHtml(p.name)).join(' & ');
 
   headerEl.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; font-weight:900;">
@@ -5598,6 +5605,51 @@ function handleDirectWinnerChange(winner) {
   }
 }
 
+function syncDirectScoreWinner() {
+  const sA = Number(document.getElementById('inputDirectScoreA').value);
+  const sB = Number(document.getElementById('inputDirectScoreB').value);
+  const winA = document.getElementById('directWinRadioA');
+  const winB = document.getElementById('directWinRadioB');
+  if (!isNaN(sA) && !isNaN(sB) && sA !== sB) {
+    if (sA > sB) {
+      if (winA) winA.checked = true;
+      if (winB) winB.checked = false;
+    } else {
+      if (winB) winB.checked = true;
+      if (winA) winA.checked = false;
+    }
+  }
+}
+
+function syncEditScoreWinner() {
+  const sA = Number(document.getElementById('inputEditScoreA').value);
+  const sB = Number(document.getElementById('inputEditScoreB').value);
+  const winA = document.getElementById('editWinA');
+  const winB = document.getElementById('editWinB');
+  if (!isNaN(sA) && !isNaN(sB) && sA !== sB) {
+    if (sA > sB) {
+      if (winA) winA.checked = true;
+      if (winB) winB.checked = false;
+    } else {
+      if (winB) winB.checked = true;
+      if (winA) winA.checked = false;
+    }
+  }
+}
+
+function handleEditWinnerChange(winner) {
+  const sAInput = document.getElementById('inputEditScoreA');
+  const sBInput = document.getElementById('inputEditScoreB');
+  if (!sAInput || !sBInput) return;
+  const sA = Number(sAInput.value) || 0;
+  const sB = Number(sBInput.value) || 0;
+  if (winner === 'A' && sA <= sB) {
+    sAInput.value = Math.max(21, sB + 2);
+  } else if (winner === 'B' && sB <= sA) {
+    sBInput.value = Math.max(21, sA + 2);
+  }
+}
+
 function submitDirectScore() {
   if (!checkEditPermission()) return;
   const cIdx = Number(document.getElementById('directScoreTargetCourtIdx').value);
@@ -5608,7 +5660,7 @@ function submitDirectScore() {
   const scoreA = Number(document.getElementById('inputDirectScoreA').value);
   const scoreB = Number(document.getElementById('inputDirectScoreB').value);
   const winRadio = document.querySelector('input[name="direct_winner_radio"]:checked');
-  const winner = winRadio ? winRadio.value : (scoreA > scoreB ? 'A' : 'B');
+  const winner = scoreA > scoreB ? 'A' : (scoreB > scoreA ? 'B' : (winRadio ? winRadio.value : 'A'));
 
   const kokBaru = Number(document.getElementById('inputDirectKokBaru').value) || 0;
   const kokBekas = Number(document.getElementById('inputDirectKokBekas').value) || 0;
@@ -5622,9 +5674,11 @@ function submitDirectScore() {
     players: bPlayers,
     partnerHistory: bPartnerHistory,
     opponentHistory: bOpponentHistory,
+    partnerRequests: bPartnerRequests,
     shuttlecocks: { baru: kokBaru, bekas_layak: kokBekas, bekas_dihasilkan: kokLayakDihasilkan },
     defaultCooldown: bCooldownMatches,
-    inventory: bShuttlecockInventory
+    inventory: bShuttlecockInventory,
+    options: { officialRules: bOfficialScoring }
   });
 
   if (!recordRes.success) {
@@ -5667,10 +5721,17 @@ function openEditFinishedMatchModal(rIdx, cIdx, isArchive = false) {
   const round = bSchedule[rIdx];
   if (!round) return;
 
-  // Cari di finishedCourts atau courts
-  let court = (isArchive && round.finishedCourts) ? round.finishedCourts[cIdx] : (round.courts && round.courts[cIdx]);
-  if (!court && round.finishedCourts) court = round.finishedCourts[cIdx];
-  if (!court && round.courts) court = round.courts[cIdx];
+  // Cari di finishedCourts atau courts dengan pencarian cerdas
+  let court = null;
+  if (isArchive && round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (!isArchive && round.courts && round.courts[cIdx] && (round.courts[cIdx].status === 'finished' || round.courts[cIdx].status === BadmintonService.COURT_STATUS.FINISHED)) {
+    court = round.courts[cIdx];
+  } else if (round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (round.courts && round.courts[cIdx]) {
+    court = round.courts[cIdx];
+  }
   if (!court) return;
 
   document.getElementById('editFinishedTargetRoundIdx').value = rIdx;
@@ -5679,21 +5740,32 @@ function openEditFinishedMatchModal(rIdx, cIdx, isArchive = false) {
     document.getElementById('editFinishedIsArchive').value = isArchive ? '1' : '0';
   }
 
-  const tA = (court.teamA || []).map(p => p.name).join(' & ');
-  const tB = (court.teamB || []).map(p => p.name).join(' & ');
+  const tA = (court.teamA || []).map(p => escapeHtml(p.name)).join(' & ');
+  const tB = (court.teamB || []).map(p => escapeHtml(p.name)).join(' & ');
 
   document.getElementById('editFinishedTeamsHeader').innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem;">
-      <span>${tA}</span>
+      <span>${tA || 'Tim A'}</span>
       <span style="color:var(--brand-orange);">VS</span>
-      <span>${tB}</span>
+      <span>${tB || 'Tim B'}</span>
     </div>
   `;
 
-  document.getElementById('inputEditScoreA').value = court.scoreA || 21;
-  document.getElementById('inputEditScoreB').value = court.scoreB || 18;
-  document.getElementById('editWinA').checked = court.winner === 'A' || !court.winner;
-  document.getElementById('editWinB').checked = court.winner === 'B';
+  if (document.getElementById('editWinnerLabelA')) {
+    document.getElementById('editWinnerLabelA').textContent = `${tA || 'Tim A'} Menang`;
+  }
+  if (document.getElementById('editWinnerLabelB')) {
+    document.getElementById('editWinnerLabelB').textContent = `${tB || 'Tim B'} Menang`;
+  }
+
+  const sA = court.scoreA !== null && court.scoreA !== undefined ? court.scoreA : 21;
+  const sB = court.scoreB !== null && court.scoreB !== undefined ? court.scoreB : 18;
+  document.getElementById('inputEditScoreA').value = sA;
+  document.getElementById('inputEditScoreB').value = sB;
+
+  const winner = court.winner || (sA > sB ? 'A' : 'B');
+  document.getElementById('editWinA').checked = winner === 'A';
+  document.getElementById('editWinB').checked = winner === 'B';
 
   document.getElementById('editFinishedScoreModalOverlay').classList.add('open');
 }
@@ -5710,21 +5782,38 @@ function submitEditFinishedScore() {
   const round = bSchedule[rIdx];
   if (!round) return;
 
-  let court = (isArchive && round.finishedCourts) ? round.finishedCourts[cIdx] : (round.courts && round.courts[cIdx]);
-  if (!court && round.finishedCourts) court = round.finishedCourts[cIdx];
-  if (!court && round.courts) court = round.courts[cIdx];
+  let court = null;
+  if (isArchive && round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (!isArchive && round.courts && round.courts[cIdx] && (round.courts[cIdx].status === 'finished' || round.courts[cIdx].status === BadmintonService.COURT_STATUS.FINISHED)) {
+    court = round.courts[cIdx];
+  } else if (round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (round.courts && round.courts[cIdx]) {
+    court = round.courts[cIdx];
+  }
   if (!court) return;
 
   const newScoreA = Number(document.getElementById('inputEditScoreA').value);
   const newScoreB = Number(document.getElementById('inputEditScoreB').value);
+  if (isNaN(newScoreA) || isNaN(newScoreB)) {
+    showToast('Masukkan skor yang valid.', 'error');
+    return;
+  }
+  if (newScoreA === newScoreB) {
+    showToast('Pertandingan bulu tangkis tidak boleh berakhir seri (skor sama).', 'error');
+    return;
+  }
+
   const winRadio = document.querySelector('input[name="edit_finished_winner"]:checked');
-  const newWinner = winRadio ? winRadio.value : (newScoreA > newScoreB ? 'A' : 'B');
+  const newWinner = newScoreA > newScoreB ? 'A' : (newScoreB > newScoreA ? 'B' : (winRadio ? winRadio.value : 'A'));
 
   const res = BadmintonService.editFinishedMatchScore({
     court,
     newScoreA,
     newScoreB,
-    newWinner
+    newWinner,
+    options: { officialRules: bOfficialScoring }
   });
 
   if (!res.success) {
@@ -5739,6 +5828,7 @@ function submitEditFinishedScore() {
   renderHistory();
   renderFinalPodium();
   renderCourtsView();
+  renderPlayersList();
   persistAndBroadcast();
   showToast('✅ Skor berhasil diperbarui dan klasemen telah dihitung ulang!', 'success');
 }
@@ -5781,7 +5871,7 @@ function openShuttlecockModal() {
       <div style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark); margin-bottom:6px;">Rincian Penggunaan Per Lapangan:</div>
       ${Object.keys(sum.perCourtUsage).length === 0 ? `<div style="font-size:0.72rem; color:var(--text-muted);">Belum ada pencatatan kok pada pertandingan selesai.</div>` : Object.entries(sum.perCourtUsage).map(([name, u]) => `
         <div style="display:flex; justify-content:space-between; font-size:0.74rem; padding:4px 6px; background:#FFF; border:1px solid var(--border-color); border-radius:4px; margin-bottom:4px;">
-          <strong>${name}</strong>
+          <strong>${escapeHtml(name)}</strong>
           <span>${u.baru} baru · ${u.bekas_layak} bekas (Total: ${u.total})</span>
         </div>
       `).join('')}
@@ -5797,11 +5887,14 @@ function closeShuttlecockModal() {
 
 function saveShuttlecockInventorySettings() {
   if (!checkEditPermission()) return;
-  const baru = Number(document.getElementById('inputSettingStokBaru').value) || 0;
-  const bekas = Number(document.getElementById('inputSettingStokBekas').value) || 0;
+  const baru = Math.max(0, Math.floor(Number(document.getElementById('inputSettingStokBaru').value) || 0));
+  const bekas = Math.max(0, Math.floor(Number(document.getElementById('inputSettingStokBekas').value) || 0));
 
   bShuttlecockInventory.stokAwalBaru = baru;
   bShuttlecockInventory.stokAwalBekas = bekas;
+  delete bShuttlecockInventory.terpakaiBaru;
+  delete bShuttlecockInventory.terpakaiBekas;
+  delete bShuttlecockInventory.bekasLayakDidapat;
 
   persistAndBroadcast();
   openShuttlecockModal();
@@ -5848,8 +5941,8 @@ function openFinishScoreModal() {
     container.innerHTML = round.courts.map((court, idx) => `
       <div class="score-court-row" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:10px; margin-bottom:8px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-weight:800; font-size:0.85rem;">
-          <span>${court.courtName || ('Lapangan ' + (idx + 1))}</span>
-          <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${court.categoryLabel}</span>
+          <span>${escapeHtml(court.courtName || ('Lapangan ' + (idx + 1)))}</span>
+          <span class="court-cat-pill ${court.category === 'PUTRI' ? 'putri' : 'putra'}">${escapeHtml(court.categoryLabel)}</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">
           <label style="display:flex; align-items:center; gap:6px; background:#FFF; padding:6px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.76rem; font-weight:700;">
@@ -5862,24 +5955,24 @@ function openFinishScoreModal() {
           </label>
         </div>
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;">
-          <input type="number" id="inputScoreA_${idx}" class="input-styled-os" value="${court.scoreA || 21}" style="text-align:center; font-weight:900; font-size:1.2rem;">
+          <input type="number" id="inputScoreA_${idx}" class="input-styled-os" value="${court.scoreA ?? 21}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           <strong style="color:var(--text-muted);">VS</strong>
-          <input type="number" id="inputScoreB_${idx}" class="input-styled-os" value="${court.scoreB || 18}" style="text-align:center; font-weight:900; font-size:1.2rem;">
+          <input type="number" id="inputScoreB_${idx}" class="input-styled-os" value="${court.scoreB ?? 18}" style="text-align:center; font-weight:900; font-size:1.2rem;">
         </div>
       </div>
     `).join('');
   } else {
     container.innerHTML = sMatches.map((m, idx) => `
       <div class="score-court-row" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:10px; margin-bottom:8px;">
-        <div style="font-weight:800; font-size:0.85rem; margin-bottom:6px;">${m.title}</div>
+        <div style="font-weight:800; font-size:0.85rem; margin-bottom:6px;">${escapeHtml(m.title)}</div>
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;">
           <div>
-            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${m.teamA.name}</div>
+            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamA.name)}</div>
             <input type="number" id="inputSoccerScoreA_${idx}" class="input-styled-os" value="${m.scoreA !== null ? m.scoreA : 2}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           </div>
           <strong style="color:var(--text-muted); margin-top:14px;">VS</strong>
           <div>
-            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${m.teamB.name}</div>
+            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamB.name)}</div>
             <input type="number" id="inputSoccerScoreB_${idx}" class="input-styled-os" value="${m.scoreB !== null ? m.scoreB : 1}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           </div>
         </div>
@@ -5940,21 +6033,24 @@ function saveScoresAndAdvance() {
 // ============================================================================
 
 /**
- * Aturan Penentuan Peringkat Hierarkis:
+ * Aturan Penentuan Peringkat Hierarkis Resmi (BUG-9 / README):
  * 1. Peringkat utama: Jumlah Kemenangan terbanyak (Wins) / Poin klasemen (Soccer).
- * 2. Jika menang sama: Ditentukan dari SKOR JUARA, yaitu jumlah poin menang/didapat
- *    di setiap ronde dikurangi jumlah poin lawan di setiap rondenya (Point Difference / Diff).
- * 3. Jika skor selisih poin masih sama: Total Poin yang didapat di seluruh ronde.
- * 4. Jika masih sama: Head-to-Head (H2H jika tepat 2 tim/pemain pernah bertanding langsung).
- * 5. Jika masih sama: Rekam Jejak Juara (titles), lalu Undian panitia.
+ * 2. Jika menang sama:
+ *    a. Head-to-Head (H2H jika tepat 2 pemain/tim pernah bertanding langsung).
+ *    b. Total Poin yang didapat di seluruh ronde.
+ *    c. Rekam Jejak Juara (titles).
+ *    d. Undian / Nilai Sama.
  */
 function resolveStandingsByRules(items, getH2H) {
+  if (window.BadmintonService && typeof BadmintonService.resolveStandingsByRules === 'function') {
+    return BadmintonService.resolveStandingsByRules(items, getH2H);
+  }
+
   // Reset tieBreakNote agar tidak bercampur dari pemanggilan sebelumnya
   items.forEach(it => { it.tieBreakNote = ''; });
 
   const groups = {};
   items.forEach(it => {
-    // Prioritas utama: pts (untuk mini soccer jika ada) atau wins (untuk badminton & match umum)
     const primaryKey = (it.pts !== undefined && it.p !== undefined) ? (it.pts || 0) : (it.wins || 0);
     if (!groups[primaryKey]) groups[primaryKey] = [];
     groups[primaryKey].push(it);
@@ -5970,69 +6066,7 @@ function resolveStandingsByRules(items, getH2H) {
 function resolveTiedSubset(subset, getH2H) {
   if (subset.length <= 1) return subset;
 
-  // 1. Kriteria Utama saat Menang Sama: Skor Selisih Poin (Poin Ronde Didapat - Poin Ronde Lawan)
-  const diffGroups = {};
-  subset.forEach(it => {
-    const d = (it.diff !== undefined) ? it.diff : ((it.scored || 0) - (it.conceded || 0));
-    if (!diffGroups[d]) diffGroups[d] = [];
-    diffGroups[d].push(it);
-  });
-  const diffKeys = Object.keys(diffGroups).map(Number).sort((a, b) => b - a);
-
-  // Jika skor selisih memisahkan peringkat:
-  if (diffKeys.length > 1) {
-    let result = [];
-    diffKeys.forEach(d => {
-      const sub = diffGroups[d];
-      if (sub.length === 1) {
-        const sign = sub[0].diff >= 0 ? '+' : '';
-        sub[0].tieBreakNote = `Skor Selisih (${sign}${sub[0].diff})`;
-        result.push(sub[0]);
-      } else {
-        // Jika masih ada 2 atau lebih pemain yang memiliki skor selisih yang sama persis:
-        result = result.concat(resolveByTotalScore(sub, getH2H));
-      }
-    });
-    return result;
-  }
-
-  // Jika seluruh tim di subset memiliki skor selisih poin yang sama persis:
-  return resolveByTotalScore(subset, getH2H);
-}
-
-function resolveByTotalScore(subset, getH2H) {
-  if (subset.length <= 1) return subset;
-
-  // 2. Kriteria Selanjutnya: Total Poin yang Didapat di Semua Ronde
-  const scoreGroups = {};
-  subset.forEach(it => {
-    const s = it.totalScore || 0;
-    if (!scoreGroups[s]) scoreGroups[s] = [];
-    scoreGroups[s].push(it);
-  });
-  const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
-
-  if (scoreKeys.length > 1) {
-    let result = [];
-    scoreKeys.forEach(s => {
-      const sub = scoreGroups[s];
-      if (sub.length === 1) {
-        sub[0].tieBreakNote = `Total Poin (${sub[0].totalScore} Poin)`;
-        result.push(sub[0]);
-      } else {
-        result = result.concat(resolveByH2HAndTitles(sub, getH2H));
-      }
-    });
-    return result;
-  }
-
-  return resolveByH2HAndTitles(subset, getH2H);
-}
-
-function resolveByH2HAndTitles(subset, getH2H) {
-  if (subset.length <= 1) return subset;
-
-  // 3. Head-to-Head (jika tepat 2 tim/pemain)
+  // 1. Head-to-Head HANYA jika tepat 2 tim/pemain yang seri
   if (subset.length === 2 && typeof getH2H === 'function') {
     const h2h = getH2H(subset[0], subset[1]);
     if (h2h > 0) {
@@ -6044,7 +6078,47 @@ function resolveByH2HAndTitles(subset, getH2H) {
     }
   }
 
-  // 4. Riwayat Rekam Jejak Juara (titles)
+  // 2. Total Poin yang didapat di seluruh ronde
+  const scoreGroups = {};
+  subset.forEach(it => {
+    const s = (it.totalScore !== undefined) ? it.totalScore : (it.scored || 0);
+    if (!scoreGroups[s]) scoreGroups[s] = [];
+    scoreGroups[s].push(it);
+  });
+  const scoreKeys = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
+
+  if (scoreKeys.length > 1) {
+    let result = [];
+    scoreKeys.forEach(s => {
+      const sub = scoreGroups[s];
+      if (sub.length === 1) {
+        sub[0].tieBreakNote = `Total Poin (${s} Poin)`;
+        result.push(sub[0]);
+      } else {
+        result = result.concat(resolveByTitles(sub, getH2H));
+      }
+    });
+    return result;
+  }
+
+  return resolveByTitles(subset, getH2H);
+}
+
+function resolveByTitles(subset, getH2H) {
+  if (subset.length <= 1) return subset;
+
+  if (subset.length === 2 && typeof getH2H === 'function') {
+    const h2h = getH2H(subset[0], subset[1]);
+    if (h2h > 0) {
+      subset[0].tieBreakNote = `Unggul H2H vs ${subset[1].name}`;
+      return [subset[0], subset[1]];
+    } else if (h2h < 0) {
+      subset[1].tieBreakNote = `Unggul H2H vs ${subset[0].name}`;
+      return [subset[1], subset[0]];
+    }
+  }
+
+  // 3. Rekam Jejak Juara (titles)
   const titleGroups = {};
   subset.forEach(it => {
     const t = it.titles || 0;
@@ -6066,7 +6140,7 @@ function resolveByH2HAndTitles(subset, getH2H) {
     return result;
   }
 
-  // 5. Undian / Nilai Sama
+  // 4. Undian / Nilai Sama
   subset[0].tieBreakNote = subset[0].tieBreakNote || 'Undian / Nilai Sama';
   return subset;
 }
@@ -6173,7 +6247,7 @@ function getBadmintonStatsAndRankings(sortMode = 'wins') {
   } else if (sortMode === 'wr') {
     return list.sort((a, b) => b.winRate - a.winRate || b.wins - a.wins || b.diff - a.diff || b.totalScore - a.totalScore);
   } else {
-    // Sesuai Regulasi Penentuan Juara: Menang -> Skor Selisih Poin (Poin Ronde - Poin Lawan) -> Total Poin
+    // Sesuai Regulasi Penentuan Juara (README / BUG-9): Menang -> H2H (tepat 2 seri) -> Total Poin -> Gelar
     return resolveStandingsByRules(list, getH2H);
   }
 }
@@ -6304,8 +6378,8 @@ function renderLeaderboard() {
           <div class="player-rank-cell">
             <span class="player-rank-num">${idx + 1}.</span>
             <div>
-              <span class="player-rank-name">${s.name}</span>
-              ${s.tieBreakNote ? `<div class="tiebreak-badge">${s.tieBreakNote}</div>` : ''}
+              <span class="player-rank-name">${escapeHtml(s.name)}</span>
+              ${s.tieBreakNote ? `<div class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</div>` : ''}
             </div>
           </div>
         </td>
@@ -6313,7 +6387,7 @@ function renderLeaderboard() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-right" style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-mid);">
-          ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (s.tieBreakNote || '-')))}
+          ${idx === 0 ? '🥇 Juara 1' : (idx === 1 ? '🥈 Juara 2' : (idx === 2 ? '🥉 Juara 3' : (escapeHtml(s.tieBreakNote) || '-')))}
         </td>
       </tr>
     `).join('');
@@ -6348,8 +6422,8 @@ function renderLeaderboard() {
     tbody.innerHTML = list.map((s, idx) => `
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-left">
-          <strong>${idx + 1}. ${s.name}</strong>
-          ${s.tieBreakNote ? `<br><span class="tiebreak-badge">${s.tieBreakNote}</span>` : ''}
+          <strong>${idx + 1}. ${escapeHtml(s.name)}</strong>
+          ${s.tieBreakNote ? `<br><span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : ''}
         </td>
         <td class="col-center">${s.p}</td>
         <td class="col-center">${s.w}-${s.d}-${s.l}</td>
@@ -6386,8 +6460,8 @@ function renderHistory() {
         </div>
         ${group.finishedMatches.map(item => {
           const c = item.court;
-          const tA = (c.teamA || []).map(p => p.name).join(' & ') || 'Tim A';
-          const tB = (c.teamB || []).map(p => p.name).join(' & ') || 'Tim B';
+          const tA = (c.teamA || []).map(p => escapeHtml(p.name)).join(' & ') || 'Tim A';
+          const tB = (c.teamB || []).map(p => escapeHtml(p.name)).join(' & ') || 'Tim B';
           const isAWin = c.winner === 'A';
           const isBWin = c.winner === 'B';
           const kokInfo = c.shuttlecocks && (c.shuttlecocks.baru > 0 || c.shuttlecocks.bekas_layak > 0)
@@ -6397,7 +6471,7 @@ function renderHistory() {
           return `
             <div style="background:#FFF; padding:10px; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:6px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-mid);">${c.courtName || `Lapangan ${c.courtNumber}`}</span>
+                <span style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-mid);">${escapeHtml(c.courtName || `Lapangan ${c.courtNumber}`)}</span>
                 ${userRole === 'host' ? `
                 <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; border-radius:4px; background:#0F1E36; color:#FFF;" onclick="openEditFinishedMatchModal(${group.rIdx}, ${item.index}, ${item.isArchive})">
                   ✏️ Edit Skor
@@ -6428,16 +6502,51 @@ function renderHistory() {
     }
     container.innerHTML = finished.map(m => `
       <div style="display:flex; justify-content:space-between; align-items:center; background:#FFF; padding:12px; border-radius:var(--radius-md); border:1.5px solid var(--border-color); margin-bottom:8px;">
-        <span style="font-weight:800; color:var(--brand-navy-dark);">${m.teamA.name}</span>
+        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamA.name)}</span>
         <strong style="color:var(--brand-orange); font-size:1.2rem;">${m.scoreA || 0} - ${m.scoreB || 0}</strong>
-        <span style="font-weight:800; color:var(--brand-navy-dark);">${m.teamB.name}</span>
+        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamB.name)}</span>
       </div>
     `).join('');
   }
 }
 
+// ── PENGHARGAAN GELAR JUARA SESI (BUG-9) ──
+function awardSessionWinnerTitle() {
+  if (currentSport !== 'badminton') return null;
+  // Pastikan ada setidaknya 1 match yang telah selesai
+  const hasFinishedMatch = bSchedule.some(r =>
+    (r.courts && r.courts.some(c => c.status === 'finished')) ||
+    (r.finishedCourts && r.finishedCourts.length > 0)
+  );
+  if (!hasFinishedMatch) return null;
+
+  if (!Array.isArray(bAwardedSessionIds)) bAwardedSessionIds = [];
+  const currentSessId = bSessionId || ('sess_' + Date.now());
+  if (bAwardedSessionIds.includes(currentSessId)) return null;
+
+  const rankings = getBadmintonStatsAndRankings('wins');
+  if (!rankings || rankings.length === 0) return null;
+  const winner = rankings[0];
+  if (!winner || winner.wins <= 0) return null;
+
+  const targetPlayer = bPlayers.find(p => p.id === winner.id);
+  if (targetPlayer) {
+    targetPlayer.titles = (targetPlayer.titles || 0) + 1;
+    bAwardedSessionIds.push(currentSessId);
+    return targetPlayer;
+  }
+  return null;
+}
+
 // ── FINAL PODIUM ──
 function renderFinalPodium() {
+  if (userRole === 'host') {
+    const awarded = awardSessionWinnerTitle();
+    if (awarded) {
+      persistAndBroadcast();
+    }
+  }
+
   const podium = document.getElementById('podiumTop3Container');
   const tbody = document.getElementById('finalTableBody');
   const btnNewMabar = document.getElementById('btnNewMabarSession');
@@ -6453,7 +6562,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label silver">Juara 2</span>
-          <div class="podium-name">${p2 ? p2.name : '-'}</div>
+          <div class="podium-name">${p2 ? escapeHtml(p2.name) : '-'}</div>
           ${p2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p2.wins} Menang · Skor ${p2.diff >= 0 ? '+' + p2.diff : p2.diff} (${p2.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-2">2</div>
@@ -6461,7 +6570,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label gold">Juara 1</span>
-          <div class="podium-name">${p1 ? p1.name : '-'}</div>
+          <div class="podium-name">${p1 ? escapeHtml(p1.name) : '-'}</div>
           ${p1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${p1.wins} Menang · Skor ${p1.diff >= 0 ? '+' + p1.diff : p1.diff} (${p1.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-1">1</div>
@@ -6469,7 +6578,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label bronze">Juara 3</span>
-          <div class="podium-name">${p3 ? p3.name : '-'}</div>
+          <div class="podium-name">${p3 ? escapeHtml(p3.name) : '-'}</div>
           ${p3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${p3.wins} Menang · Skor ${p3.diff >= 0 ? '+' + p3.diff : p3.diff} (${p3.totalScore} Poin)</div>` : ''}
         </div>
         <div class="podium-pillar rank-3">3</div>
@@ -6491,7 +6600,7 @@ function renderFinalPodium() {
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
         <td class="col-left">
-          <strong>${s.name}</strong>
+          <strong>${escapeHtml(s.name)}</strong>
           ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
         </td>
         <td class="col-center"><strong>${s.wins}</strong></td>
@@ -6500,7 +6609,7 @@ function renderFinalPodium() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
         <td class="col-left">
-          ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
+          ${s.tieBreakNote ? `<span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
         </td>
       </tr>
     `).join('');
@@ -6513,7 +6622,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label silver">Juara 2</span>
-          <div class="podium-name">${t2 ? t2.name : '-'}</div>
+          <div class="podium-name">${t2 ? escapeHtml(t2.name) : '-'}</div>
           ${t2 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t2.w} Menang · Selisih ${t2.gd >= 0 ? '+' + t2.gd : t2.gd} (${t2.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-2">2</div>
@@ -6521,7 +6630,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label gold">Juara 1</span>
-          <div class="podium-name">${t1 ? t1.name : '-'}</div>
+          <div class="podium-name">${t1 ? escapeHtml(t1.name) : '-'}</div>
           ${t1 ? `<div style="font-size:0.7rem; color:#92400E; font-weight:800;">${t1.w} Menang · Selisih ${t1.gd >= 0 ? '+' + t1.gd : t1.gd} (${t1.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-1">1</div>
@@ -6529,7 +6638,7 @@ function renderFinalPodium() {
       <div class="podium-column">
         <div class="podium-player-meta">
           <span class="podium-medal-label bronze">Juara 3</span>
-          <div class="podium-name">${t3 ? t3.name : '-'}</div>
+          <div class="podium-name">${t3 ? escapeHtml(t3.name) : '-'}</div>
           ${t3 ? `<div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">${t3.w} Menang · Selisih ${t3.gd >= 0 ? '+' + t3.gd : t3.gd} (${t3.totalScore} Gol)</div>` : ''}
         </div>
         <div class="podium-pillar rank-3">3</div>
@@ -6551,7 +6660,7 @@ function renderFinalPodium() {
       <tr class="${idx === 0 ? 'top-rank-gold' : (idx === 1 ? 'top-rank-silver' : (idx === 2 ? 'top-rank-bronze' : ''))}">
         <td class="col-center" style="font-weight:900;">${idx + 1}</td>
         <td class="col-left">
-          <strong>${s.name}</strong>
+          <strong>${escapeHtml(s.name)}</strong>
           ${idx === 0 ? ' <span style="font-size:0.75rem;">🥇</span>' : (idx === 1 ? ' <span style="font-size:0.75rem;">🥈</span>' : (idx === 2 ? ' <span style="font-size:0.75rem;">🥉</span>' : ''))}
         </td>
         <td class="col-center"><strong>${s.w}</strong></td>
@@ -6560,7 +6669,7 @@ function renderFinalPodium() {
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.gd >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
         <td class="col-left">
-          ${s.tieBreakNote ? `<span class="tiebreak-badge">${s.tieBreakNote}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
+          ${s.tieBreakNote ? `<span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
         </td>
       </tr>
     `).join('');
@@ -6616,15 +6725,56 @@ function closeRulesModal() {
 
 function startNewMabarSession() {
   if (!checkEditPermission()) return;
-  if (!confirm('Mulai sesi mabar baru? Skor akan direset.')) return;
-  if (currentSport === 'badminton') generateInitialBadminton();
-  else generateSoccerTeams();
+  if (!confirm('Mulai sesi mabar baru?\n\n• Skor, antrian, dan riwayat pertandingan akan direset.\n• Daftar pemain, gelar juara (titles), dan pengaturan sesi tetap dipertahankan.')) return;
+
+  if (currentSport === 'badminton') {
+    awardSessionWinnerTitle();
+    bSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const hasInactive = bPlayers.some(p => p.is_deleted || p.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF);
+    let clearInactive = false;
+    if (hasInactive) {
+      clearInactive = confirm('Apakah pemain yang berstatus Tidak Aktif ingin dihapus permanen dari daftar pemain?\n\n• OK = Hapus permanen pemain tidak aktif\n• Batal = Tetap pertahankan dalam daftar');
+    }
+
+    const reset = BadmintonService.resetBadmintonSession({
+      players: bPlayers,
+      inventory: bShuttlecockInventory,
+      clearInactive
+    });
+
+    bPlayers = reset.players;
+    bPartnerHistory = reset.partnerHistory;
+    bOpponentHistory = reset.opponentHistory;
+    bPartnerRequests = reset.partnerRequests;
+    bAuditLog = reset.auditLog;
+    bSchedule = reset.schedule;
+    bCurrentRoundIndex = reset.currentRoundIndex;
+    if (reset.inventory) bShuttlecockInventory = reset.inventory;
+
+    ensureBadmintonCourtsInitialized();
+  } else {
+    sPlayers.forEach(p => { p.w = 0; p.l = 0; p.d = 0; p.pts = 0; p.gf = 0; p.ga = 0; p.gd = 0; });
+    generateSoccerTeams();
+  }
+
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
   persistAndBroadcast();
   switchTab('tab-match');
+  showToast('✅ Sesi mabar baru berhasil dimulai! Statistik dan riwayat telah direset.', 'success');
 }
 
 // ── SETTINGS MODAL ──
-function openSettingsModal() { document.getElementById('settingsModalOverlay').classList.add('open'); }
+function openSettingsModal() {
+  if (document.getElementById('settingOfficialScoring')) {
+    document.getElementById('settingOfficialScoring').checked = !!bOfficialScoring;
+  }
+  document.getElementById('settingsModalOverlay').classList.add('open');
+}
 function closeSettingsModal() { document.getElementById('settingsModalOverlay').classList.remove('open'); }
 function saveSettings() {
   if (!checkEditPermission()) return;
@@ -6633,6 +6783,9 @@ function saveSettings() {
   if (document.getElementById('settingNumCourts')) bNumCourts = parseInt(document.getElementById('settingNumCourts').value) || bNumCourts;
   if (document.getElementById('settingMinPlays')) bMinPlays = parseInt(document.getElementById('settingMinPlays').value) || bMinPlays;
   if (document.getElementById('settingTotalRounds')) plannedRounds = parseInt(document.getElementById('settingTotalRounds').value) || plannedRounds;
+  if (document.getElementById('settingOfficialScoring')) {
+    bOfficialScoring = document.getElementById('settingOfficialScoring').checked;
+  }
   updateSessionLabels();
   closeSettingsModal();
   persistAndBroadcast();
@@ -6668,6 +6821,8 @@ const MQTT_BROKER_URLS = [
   'wss://test.mosquitto.org:8081/mqtt'
 ];
 let currentBrokerIndex = 0;
+let consecutiveBrokerErrors = 0;
+const MAX_BROKER_RETRIES = 3;
 const LOBBY_DISCOVERY_TOPIC = 'onesport/v3/lobby/discovery';
 const LOBBY_ROOMS_PREFIX = 'onesport/v3/lobby/rooms/';
 
@@ -6682,12 +6837,15 @@ let hostPin = '1234';
 let currentRoomPinHash = '';
 let isCollabMode = false;
 let connectedPeersCount = 1;
+let currentRev = 0;
+let lastHostConflictWarningTime = 0;
+const peerHeartbeats = new Map();
 let myClientId = 'onesport_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now().toString(36);
 let qrcodeInstance = null;
 let roomStartTime = null;
 let heartbeatInterval = null;
 let discoverySweepInterval = null;
-let activeLiveRooms = {}; // roomId -> { roomId, title, sport, hostId, hasPin, pinHash, lastSeen, startedAt }
+let activeLiveRooms = {}; // roomId -> { roomId, title, sport, hostId, hasPin, lastSeen, startedAt }
 
 // ── PERSISTENT LIVE SESSION HELPERS (TERSIMPAN DI PERANGKAT HINGGA HOST BERHENTI) ──
 function saveActiveLiveSession() {
@@ -6697,8 +6855,6 @@ function saveActiveLiveSession() {
       roomId: currentRoomId,
       role: userRole,
       isHostCreator: userRole === 'host' && (isHostCreator || !pendingHostCandidatePin),
-      hostPin: hostPin,
-      pinHash: currentRoomPinHash || hashPin(hostPin),
       roomStartTime: roomStartTime || Date.now(),
       sessionTitle: sessionTitle,
       currentSport: currentSport,
@@ -6706,6 +6862,9 @@ function saveActiveLiveSession() {
       savedAt: Date.now()
     };
     localStorage.setItem(STORAGE_ACTIVE_LIVE_SESSION, JSON.stringify(sessionData));
+    if (hostPin) {
+      sessionStorage.setItem('onesport_host_pin_' + currentRoomId, hostPin);
+    }
 
     // Sinkronkan juga URL browser (?room=CODE) tanpa reload
     if (window.history && window.history.replaceState) {
@@ -6721,6 +6880,9 @@ function saveActiveLiveSession() {
 function clearActiveLiveSession() {
   try {
     localStorage.removeItem(STORAGE_ACTIVE_LIVE_SESSION);
+    if (currentRoomId) {
+      sessionStorage.removeItem('onesport_host_pin_' + currentRoomId);
+    }
     if (window.history && window.history.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.delete('room');
@@ -6754,8 +6916,7 @@ function restoreActiveLiveSessionIfAny() {
     currentRoomId = session.roomId;
     userRole = session.role || 'host';
     isHostCreator = session.isHostCreator !== false;
-    hostPin = session.hostPin || '1234';
-    currentRoomPinHash = session.pinHash || hashPin(hostPin);
+    hostPin = sessionStorage.getItem('onesport_host_pin_' + session.roomId) || '1234';
     roomStartTime = session.roomStartTime || Date.now();
     isCollabMode = !!session.isCollabMode;
     if (session.sessionTitle) sessionTitle = session.sessionTitle;
@@ -6779,6 +6940,7 @@ function restoreActiveLiveSessionIfAny() {
 function getCurrentAppState() {
   return {
     version: 3,
+    rev: currentRev || 0,
     timestamp: Date.now(),
     currentSport,
     sessionTitle,
@@ -6794,6 +6956,9 @@ function getCurrentAppState() {
     bOpponentHistory,
     bShuttlecockInventory,
     bAuditLog,
+    bSessionId: bSessionId || ('sess_' + Date.now()),
+    bAwardedSessionIds: Array.isArray(bAwardedSessionIds) ? bAwardedSessionIds : [],
+    bOfficialScoring: Boolean(bOfficialScoring),
     sPlayers,
     sTeamCount,
     sTeams,
@@ -6815,9 +6980,14 @@ function loadFromLocalStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
-    const data = JSON.parse(raw);
+    let data = JSON.parse(raw);
     if (!data || !data.version) return false;
+    if (window.BadmintonService && typeof BadmintonService.validateAndNormalizeState === 'function') {
+      data = BadmintonService.validateAndNormalizeState(data);
+      if (!data) return false;
+    }
 
+    if (typeof data.rev === 'number') currentRev = Math.max(currentRev, data.rev);
     if (data.currentSport) currentSport = data.currentSport;
     if (data.sessionTitle) sessionTitle = data.sessionTitle;
     if (data.plannedRounds) plannedRounds = data.plannedRounds;
@@ -6832,6 +7002,9 @@ function loadFromLocalStorage() {
     if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object') bOpponentHistory = data.bOpponentHistory;
     if (data.bShuttlecockInventory && typeof data.bShuttlecockInventory === 'object') bShuttlecockInventory = data.bShuttlecockInventory;
     if (Array.isArray(data.bAuditLog)) bAuditLog = data.bAuditLog;
+    if (typeof data.bSessionId === 'string') bSessionId = data.bSessionId;
+    if (Array.isArray(data.bAwardedSessionIds)) bAwardedSessionIds = data.bAwardedSessionIds;
+    if (typeof data.bOfficialScoring === 'boolean') bOfficialScoring = data.bOfficialScoring;
 
     if (Array.isArray(data.sPlayers)) sPlayers = data.sPlayers;
     if (typeof data.sTeamCount === 'number') sTeamCount = data.sTeamCount;
@@ -6860,6 +7033,9 @@ function loadFromLocalStorage() {
 }
 
 function persistAndBroadcast(skipBroadcast = false) {
+  if (userRole === 'host' || isCollabMode) {
+    currentRev++;
+  }
   if (isOnlineActive && currentRoomId) {
     try {
       localStorage.setItem('onesport_room_cache_' + currentRoomId, JSON.stringify(getCurrentAppState()));
@@ -6997,8 +7173,8 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${cand.player.role}</span></div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
           </div>
         </div>
         <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Pilih</button>
@@ -7053,14 +7229,14 @@ function openSwapFromResting(rIdx, restingPlayerId) {
     listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain yang sedang di lapangan untuk diganti.</div>`;
   } else {
     listEl.innerHTML = `
-      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Pilih pemain di lapangan yang ingin digantikan oleh ${restingPlayer.name}:</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Pilih pemain di lapangan yang ingin digantikan oleh ${escapeHtml(restingPlayer.name)}:</div>
     ` + candidates.map((cand, idx) => `
       <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s; margin-bottom:6px;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwapFromResting(${idx})">
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${cand.player.name}</div>
-            <div style="font-size:0.72rem; color:var(--text-muted);">${cand.location} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${cand.player.role}</span></div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)}</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
           </div>
         </div>
         <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Gantikan</button>
@@ -7155,16 +7331,31 @@ function executeSwap(candidateIdx) {
   showToast('Pemain berhasil ditukar!');
 }
 
-// ── REALTIME ONLINE SYNC ENGINE (ROOM ISOLATED & MULTI-HOST) ──
-function hashPin(pin) {
-  if (!pin) return '';
-  let str = String(pin).trim();
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
+// ── REALTIME ONLINE SYNC ENGINE (SEC-2 & SEC-3 CRYPTO & AUTH) ──
+let currentHmacKey = null;
+let currentHostEcdsa = null;
+let currentHostPubHex = null;
+let trustedHostPubHex = null;
+let hostSeq = 0;
+let roomLastSeenSeq = 0;
+let pendingPinReqNonce = null;
+let pendingChallengeNonce = null;
+let activePinChallenges = {};
+
+async function initHostAuthKeys(pin, roomId) {
+  try {
+    if (window.BadmintonService && BadmintonService.MqttAuth) {
+      if (pin && roomId) {
+        currentHmacKey = await BadmintonService.MqttAuth.deriveHmacKey(pin, roomId);
+      }
+      if (!currentHostEcdsa) {
+        currentHostEcdsa = await BadmintonService.MqttAuth.generateEcdsaKeyPair();
+        currentHostPubHex = await BadmintonService.MqttAuth.exportEcdsaPublicKey(currentHostEcdsa.publicKey);
+      }
+    }
+  } catch (e) {
+    console.warn('Init host auth keys warning:', e);
   }
-  return 'hp_' + Math.abs(hash).toString(36) + '_' + (str.length * 7);
 }
 
 function openOnlineModal(preferredSubTab = null) {
@@ -7243,16 +7434,28 @@ function generateRandomRoomCode() {
   if (input) input.value = code;
 }
 
-function toggleCollabSetting(enabled) {
+async function toggleCollabSetting(enabled) {
   isCollabMode = enabled;
   showToast(enabled ? 'Mode Kolaborasi: Semua wasit bisa input skor' : 'Mode Kolaborasi Nonaktif: Hanya Host');
   if (isOnlineActive && mqttClient && currentRoomId) {
-    mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+    let msg = {
       type: 'COLLAB_TOGGLE',
       roomId: currentRoomId,
       senderId: myClientId,
       isCollabMode: enabled
-    }));
+    };
+    if (window.BadmintonService && BadmintonService.MqttAuth) {
+      if (!currentHmacKey && hostPin) {
+        await initHostAuthKeys(hostPin, currentRoomId);
+      }
+      msg = await BadmintonService.MqttAuth.signMessage(msg, {
+        hmacKey: currentHmacKey,
+        ecdsaPrivateKey: currentHostEcdsa?.privateKey,
+        hostPubHex: currentHostPubHex,
+        seq: ++hostSeq
+      });
+    }
+    mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify(msg));
   }
 }
 
@@ -7298,15 +7501,6 @@ function submitJoinRoomForm() {
       if (pinInput) pinInput.focus();
       return;
     }
-    const roomInfo = activeLiveRooms[code];
-    if (roomInfo && roomInfo.pinHash) {
-      if (hashPin(pin) !== roomInfo.pinHash) {
-        showToast('❌ PIN Host salah! Silakan periksa kembali PIN Anda.', 'error');
-        alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + code + '.');
-        if (pinInput) { pinInput.focus(); pinInput.select(); }
-        return;
-      }
-    }
     joinRoomAsHost(code, pin);
   } else {
     joinRoomAsSpectator(code);
@@ -7324,10 +7518,10 @@ function joinRoomAsSpectator(roomId) {
   showToast(`👁️ Masuk ke Siaran Live ${roomId.trim().toUpperCase()} sebagai Penonton!`, 'info');
 }
 
-function joinRoomAsHost(roomId, candidatePin) {
+function joinRoomAsHost(roomId, pin) {
   closeJoinChoiceModal();
   closeOnlineModal();
-  connectOnlineRoom(roomId.trim().toUpperCase(), 'host', candidatePin, false, false);
+  connectOnlineRoom(roomId.trim().toUpperCase(), 'host', pin, false, false);
   switchTab('tab-match');
   applyRoleUI();
 }
@@ -7374,15 +7568,6 @@ function executeSelectedJoinChoice() {
       alert('Silakan masukkan PIN Host untuk masuk sebagai Wasit / Host!');
       if (pinInput) pinInput.focus();
       return;
-    }
-    const roomInfo = activeLiveRooms[pendingJoinRoomId];
-    if (roomInfo && roomInfo.pinHash) {
-      if (hashPin(pin) !== roomInfo.pinHash) {
-        showToast('❌ PIN Host salah! Silakan periksa kembali PIN Anda.', 'error');
-        alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + pendingJoinRoomId + '.');
-        if (pinInput) { pinInput.focus(); pinInput.select(); }
-        return;
-      }
     }
     joinRoomAsHost(pendingJoinRoomId, pin);
   } else {
@@ -7525,10 +7710,8 @@ function submitSwitchToHost() {
     return;
   }
 
-  const validPins = [hostPin, '1234'].filter(Boolean);
-  const isValid = validPins.includes(enteredPin) || (currentRoomPinHash && hashPin(enteredPin) === currentRoomPinHash);
-
-  if (isValid || (!currentRoomPinHash && enteredPin === (hostPin || '1234'))) {
+  // Jika belum terkoneksi room online, ubah peran secara lokal
+  if (!isOnlineActive || !currentRoomId) {
     userRole = 'host';
     hostPin = enteredPin;
     localStorage.setItem('onesport_user_role', 'host');
@@ -7536,20 +7719,23 @@ function submitSwitchToHost() {
     applyRoleUI();
     saveActiveLiveSession();
     showToast('👑 Berhasil masuk sebagai Host! Semua kontrol & fitur terbuka penuh.', 'success');
-  } else {
-    if (mqttClient && isOnlineActive && currentRoomId) {
-      pendingHostCandidatePin = enteredPin;
-      mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
-        type: 'VERIFY_HOST_PIN_REQUEST',
-        roomId: currentRoomId,
-        senderId: myClientId,
-        candidatePin: enteredPin
-      }));
-      closeSwitchRoleModal();
-      showToast('Memverifikasi PIN Host...');
-    } else {
-      showToast('❌ PIN Host salah! (Default PIN: 1234)', 'error');
-    }
+    return;
+  }
+
+  // Jika online di dalam room, verifikasi via challenge-response kriptografis
+  if (mqttClient && isOnlineActive && currentRoomId) {
+    pendingHostCandidatePin = enteredPin;
+    pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
+      ? BadmintonService.MqttAuth.generateNonce(16)
+      : String(Date.now());
+    mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+      type: 'VERIFY_HOST_PIN_INIT',
+      roomId: currentRoomId,
+      senderId: myClientId,
+      reqNonce: pendingPinReqNonce
+    }));
+    closeSwitchRoleModal();
+    showToast('Memverifikasi PIN Host...');
   }
 }
 
@@ -7572,7 +7758,6 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
   const cleanRoomId = roomId.trim().toUpperCase();
   currentRoomId = cleanRoomId;
   hostPin = pin;
-  currentRoomPinHash = pin ? hashPin(pin) : '';
   if (!isReconnecting || !roomStartTime) {
     roomStartTime = Date.now();
   }
@@ -7581,13 +7766,16 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
   saveActiveLiveSession();
 
   // Jika masuk ke room yang sudah ada sebagai host (bukan pembuat baru dan bukan reconnect),
-  // tahan peran sebagai spectator sementara menunggu verifikasi PIN dari broker / host awal.
+  // tahan peran sebagai spectator sementara menunggu verifikasi PIN challenge-response dari host awal.
   if (role === 'host' && !isCreator && !isReconnecting) {
     userRole = 'spectator';
     pendingHostCandidatePin = pin;
   } else {
     userRole = role;
     pendingHostCandidatePin = null;
+    if (role === 'host' && pin) {
+      initHostAuthKeys(pin, cleanRoomId);
+    }
   }
 
   // Backup sesi offline hanya jika koneksi baru (bukan saat reconnect / refresh)
@@ -7613,60 +7801,14 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
       initMqttDiscovery();
     }
 
-    const roomTopic = `onesport/v3/room/${currentRoomId}`;
-    const stateTopic = `onesport/v3/room/${currentRoomId}/state`;
-
-    const setupSubscriptions = () => {
-      isOnlineActive = true;
-      mqttClient.subscribe(roomTopic, { qos: 1 });
-      mqttClient.subscribe(stateTopic, { qos: 1 });
-      updateOnlineUI('connected');
-      applyRoleUI();
-
-      const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
-      const shareInput = document.getElementById('shareRoomUrlInput');
-      if (shareInput) shareInput.value = fullUrl;
-      generateQrCode(fullUrl);
-
-      if (userRole === 'host') {
-        saveActiveLiveSession();
-        broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
-        startHeartbeatTimer();
-        broadcastStateUpdate();
-        showToast(`🔴 Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
-      } else if (pendingHostCandidatePin) {
-        // Minta verifikasi PIN Host ke host yang sedang aktif
-        mqttClient.publish(roomTopic, JSON.stringify({
-          type: 'VERIFY_HOST_PIN_REQUEST',
-          roomId: currentRoomId,
-          senderId: myClientId,
-          candidatePin: pendingHostCandidatePin
-        }));
-        showToast(`Memverifikasi PIN Host untuk Room: ${currentRoomId}...`);
-      } else {
-        // Penonton biasa
-        saveActiveLiveSession();
-        mqttClient.publish(roomTopic, JSON.stringify({
-          type: 'REQUEST_STATE',
-          roomId: currentRoomId,
-          senderId: myClientId,
-          timestamp: Date.now()
-        }));
-        showToast(`Terhubung ke Room: ${currentRoomId} (Penonton)`);
-      }
-
-      mqttClient.publish(roomTopic, JSON.stringify({
-        type: 'PEER_PING',
-        roomId: currentRoomId,
-        senderId: myClientId,
-        role: userRole
-      }));
-    };
-
-    if (mqttClient.connected) {
-      setupSubscriptions();
+    isOnlineActive = true;
+    if (mqttClient && mqttClient.connected) {
+      onMqttConnected();
     } else {
-      mqttClient.once('connect', setupSubscriptions);
+      updateOnlineUI('connecting');
+      if (!mqttClient) {
+        initMqttDiscovery();
+      }
     }
   } catch (err) {
     console.error('MQTT room connect failed:', err);
@@ -7675,23 +7817,105 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
   }
 }
 
-function broadcastStateUpdate() {
+function onMqttConnected() {
+  consecutiveBrokerErrors = 0;
+  const brokerUrl = MQTT_BROKER_URLS[currentBrokerIndex % MQTT_BROKER_URLS.length];
+  console.log('Connected to MQTT Live Broker:', brokerUrl);
+
+  if (!mqttClient) return;
+
+  mqttClient.subscribe(LOBBY_DISCOVERY_TOPIC, { qos: 1 });
+  mqttClient.subscribe(LOBBY_ROOMS_PREFIX + '+', { qos: 1 });
+  mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
+    type: 'DISCOVER_ROOMS_REQUEST',
+    senderId: myClientId
+  }));
+
+  if (isOnlineActive && currentRoomId) {
+    const roomTopic = `onesport/v3/room/${currentRoomId}`;
+    const stateTopic = `onesport/v3/room/${currentRoomId}/state`;
+
+    mqttClient.subscribe(roomTopic, { qos: 1 });
+    mqttClient.subscribe(stateTopic, { qos: 1 });
+    updateOnlineUI('connected');
+    applyRoleUI();
+
+    const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
+    const shareInput = document.getElementById('shareRoomUrlInput');
+    if (shareInput) shareInput.value = fullUrl;
+    generateQrCode(fullUrl);
+
+    if (userRole === 'host') {
+      saveActiveLiveSession();
+      broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
+      startHeartbeatTimer();
+      broadcastStateUpdate();
+      showToast(`🔴 Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
+    } else if (pendingHostCandidatePin) {
+      pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
+        ? BadmintonService.MqttAuth.generateNonce(16)
+        : String(Date.now());
+      mqttClient.publish(roomTopic, JSON.stringify({
+        type: 'VERIFY_HOST_PIN_INIT',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        reqNonce: pendingPinReqNonce
+      }));
+      showToast(`Memverifikasi PIN Host untuk Room: ${currentRoomId}...`);
+    } else {
+      saveActiveLiveSession();
+      mqttClient.publish(roomTopic, JSON.stringify({
+        type: 'REQUEST_STATE',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        timestamp: Date.now()
+      }));
+      showToast(`Terhubung ke Room: ${currentRoomId} (Penonton)`);
+    }
+
+    mqttClient.publish(roomTopic, JSON.stringify({
+      type: 'PEER_PING',
+      roomId: currentRoomId,
+      senderId: myClientId,
+      role: userRole
+    }));
+
+    startHeartbeatTimer();
+  }
+
+  updateLiveRoomsDirectoryUI();
+}
+
+async function broadcastStateUpdate() {
   if (!isOnlineActive || !mqttClient || !currentRoomId) return;
   const stateTopic = `onesport/v3/room/${currentRoomId}/state`;
   const roomTopic = `onesport/v3/room/${currentRoomId}`;
 
-  const payload = {
+  const rawPayload = {
     version: 3,
+    rev: currentRev || 0,
     type: 'STATE_UPDATE',
     roomId: currentRoomId,
     sessionTitle: sessionTitle || 'Pertandingan Live',
     currentSport: currentSport,
-    hostPinHash: currentRoomPinHash || hashPin(hostPin),
     senderId: myClientId,
     role: userRole,
     timestamp: Date.now(),
     payload: getCurrentAppState()
   };
+
+  let payload = rawPayload;
+  if (window.BadmintonService && BadmintonService.MqttAuth) {
+    if (!currentHmacKey && hostPin) {
+      await initHostAuthKeys(hostPin, currentRoomId);
+    }
+    payload = await BadmintonService.MqttAuth.signMessage(rawPayload, {
+      hmacKey: currentHmacKey,
+      ecdsaPrivateKey: currentHostEcdsa ? currentHostEcdsa.privateKey : null,
+      hostPubHex: currentHostPubHex,
+      seq: ++hostSeq
+    });
+  }
 
   try {
     mqttClient.publish(stateTopic, JSON.stringify(payload), { qos: 1, retain: true });
@@ -7701,7 +7925,7 @@ function broadcastStateUpdate() {
   }
 }
 
-function handleIncomingMessage(topic, rawText) {
+async function handleIncomingMessage(topic, rawText) {
   try {
     const msg = JSON.parse(rawText);
     if (!msg) return;
@@ -7722,42 +7946,89 @@ function handleIncomingMessage(topic, rawText) {
     }
 
     if (msg.type === 'PEER_PING') {
-      connectedPeersCount = Math.max(connectedPeersCount + 1, 2);
-      const peerEl = document.getElementById('onlineDisplayPeerCount');
-      if (peerEl) peerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>${connectedPeersCount} Perangkat Terhubung</span>`;
+      peerHeartbeats.set(msg.senderId, Date.now());
+      pruneStalePeers();
+
+      // Deteksi split-brain host (BUG-6)
+      if (userRole === 'host' && msg.role === 'host' && msg.senderId !== myClientId) {
+        const now = Date.now();
+        if (now - lastHostConflictWarningTime > 20000) {
+          lastHostConflictWarningTime = now;
+          showToast('⚠️ Konflik Host: Terdeteksi perangkat lain bertindak sebagai Host di room ini!', 'warning');
+        }
+      }
       return;
     }
 
-    if (msg.type === 'COLLAB_TOGGLE') {
-      isCollabMode = !!msg.isCollabMode;
-      const toggleEl = document.getElementById('toggleCollabMode');
-      if (toggleEl) toggleEl.checked = isCollabMode;
-      showToast(isCollabMode ? 'Host mengizinkan wasit bersama' : 'Host mengunci izin ubah skor');
-      return;
-    }
-
-    if (msg.type === 'VERIFY_HOST_PIN_REQUEST') {
+    // ── CHALLENGE-RESPONSE PIN VERIFICATION (SEC-2 & SEC-3) ──
+    if (msg.type === 'VERIFY_HOST_PIN_INIT') {
       if (userRole === 'host') {
-        const isValid = msg.candidatePin === hostPin;
-        mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
-          type: 'VERIFY_HOST_PIN_RESPONSE',
-          roomId: currentRoomId,
-          targetId: msg.senderId,
-          success: isValid,
-          hostPinHash: hashPin(hostPin)
-        }));
+        if (window.BadmintonService && BadmintonService.MqttAuth) {
+          const challenge = BadmintonService.MqttAuth.createPinChallenge(msg.senderId, msg.reqNonce);
+          activePinChallenges[msg.senderId] = challenge;
+          mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+            type: 'VERIFY_HOST_PIN_CHALLENGE',
+            roomId: currentRoomId,
+            targetId: msg.senderId,
+            reqNonce: msg.reqNonce,
+            challengeNonce: challenge.challengeNonce
+          }));
+        }
+      }
+      return;
+    }
+
+    if (msg.type === 'VERIFY_HOST_PIN_CHALLENGE') {
+      if (msg.targetId === myClientId && msg.reqNonce === pendingPinReqNonce && pendingHostCandidatePin) {
+        pendingChallengeNonce = msg.challengeNonce;
+        if (window.BadmintonService && BadmintonService.MqttAuth) {
+          BadmintonService.MqttAuth.solvePinChallenge(msg.challengeNonce, pendingHostCandidatePin).then(authResponse => {
+            mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+              type: 'VERIFY_HOST_PIN_RESPONSE',
+              roomId: currentRoomId,
+              senderId: myClientId,
+              challengeNonce: msg.challengeNonce,
+              authResponse: authResponse
+            }));
+          });
+        }
       }
       return;
     }
 
     if (msg.type === 'VERIFY_HOST_PIN_RESPONSE') {
-      if (msg.targetId === myClientId) {
+      if (userRole === 'host') {
+        const challenge = activePinChallenges[msg.senderId];
+        if (challenge && challenge.challengeNonce === msg.challengeNonce && Date.now() <= challenge.expires) {
+          delete activePinChallenges[msg.senderId];
+          if (window.BadmintonService && BadmintonService.MqttAuth) {
+            BadmintonService.MqttAuth.verifyPinResponse(msg.challengeNonce, hostPin, msg.authResponse).then(isValid => {
+              mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+                type: 'VERIFY_HOST_PIN_RESULT',
+                roomId: currentRoomId,
+                targetId: msg.senderId,
+                challengeNonce: msg.challengeNonce,
+                success: isValid
+              }));
+            });
+          }
+        }
+      }
+      return;
+    }
+
+    if (msg.type === 'VERIFY_HOST_PIN_RESULT') {
+      if (msg.targetId === myClientId && pendingChallengeNonce && msg.challengeNonce === pendingChallengeNonce) {
+        pendingChallengeNonce = null;
+        pendingPinReqNonce = null;
         if (msg.success) {
           userRole = 'host';
           localStorage.setItem('onesport_user_role', 'host');
-          if (pendingHostCandidatePin) hostPin = pendingHostCandidatePin;
+          if (pendingHostCandidatePin) {
+            hostPin = pendingHostCandidatePin;
+            initHostAuthKeys(hostPin, currentRoomId);
+          }
           pendingHostCandidatePin = null;
-          currentRoomPinHash = msg.hostPinHash || (hostPin ? hashPin(hostPin) : '');
           applyRoleUI();
           updateOnlineUI('connected');
           saveActiveLiveSession();
@@ -7776,34 +8047,45 @@ function handleIncomingMessage(topic, rawText) {
       return;
     }
 
-    if (msg.type === 'STATE_UPDATE') {
-      if (msg.hostPinHash) {
-        currentRoomPinHash = msg.hostPinHash;
+    // ── SEC-2 VERIFIKASI PESAN STATE & KONTROL ──
+    if (msg.type === 'COLLAB_TOGGLE' || msg.type === 'STATE_UPDATE' || msg.type === 'ROOM_FINALIZED') {
+      if (window.BadmintonService && BadmintonService.MqttAuth) {
+        const isSpec = (userRole === 'spectator');
+        const verifyRes = await BadmintonService.MqttAuth.verifyMessage(msg, {
+          hmacKey: currentHmacKey,
+          isSpectator: isSpec,
+          trustedHostPub: trustedHostPubHex,
+          lastSeenSeq: roomLastSeenSeq
+        });
+        if (!verifyRes.valid) {
+          console.warn('Ditolak pesan MQTT tanpa autentikasi/replay:', verifyRes.reason, msg.type);
+          return;
+        }
+        roomLastSeenSeq = msg.seq;
+        if (verifyRes.newHostPub && !trustedHostPubHex) {
+          trustedHostPubHex = verifyRes.newHostPub;
+        }
       }
-      if (pendingHostCandidatePin) {
-        const candidateHash = hashPin(pendingHostCandidatePin);
-        if (msg.hostPinHash && candidateHash === msg.hostPinHash) {
-          userRole = 'host';
-          localStorage.setItem('onesport_user_role', 'host');
-          hostPin = pendingHostCandidatePin;
-          pendingHostCandidatePin = null;
-          applyRoleUI();
-          updateOnlineUI('connected');
-          saveActiveLiveSession();
-          showToast('✅ PIN Host terverifikasi! Anda masuk sebagai Host / Wasit.', 'success');
-        } else if (msg.hostPinHash && candidateHash !== msg.hostPinHash) {
-          pendingHostCandidatePin = null;
-          userRole = 'spectator';
-          localStorage.setItem('onesport_user_role', 'spectator');
-          applyRoleUI();
-          updateOnlineUI('connected');
-          saveActiveLiveSession();
-          showToast('❌ PIN Host salah! Anda masuk sebagai Penonton (Hanya Lihat).', 'error');
-          alert('PIN Host salah!\n\nPIN yang Anda masukkan tidak cocok dengan PIN pembuat room ' + currentRoomId + '.\n\nAnda masuk dalam Mode Penonton (Hanya Lihat).');
+    }
+
+    if (msg.type === 'COLLAB_TOGGLE') {
+      isCollabMode = !!msg.isCollabMode;
+      const toggleEl = document.getElementById('toggleCollabMode');
+      if (toggleEl) toggleEl.checked = isCollabMode;
+      showToast(isCollabMode ? 'Host mengizinkan wasit bersama' : 'Host mengunci izin ubah skor');
+      return;
+    }
+
+    if (msg.type === 'STATE_UPDATE') {
+      if (userRole === 'host' && msg.role === 'host' && msg.senderId !== myClientId) {
+        const now = Date.now();
+        if (now - lastHostConflictWarningTime > 20000) {
+          lastHostConflictWarningTime = now;
+          showToast('⚠️ Konflik Host: Terdeteksi perangkat lain mengirim state update sebagai Host!', 'warning');
         }
       }
       if (userRole === 'spectator' || isCollabMode) {
-        applyReceivedState(msg.payload);
+        applyReceivedState(msg.payload || msg);
         showToast('Data pertandingan diperbarui langsung oleh Host');
       }
       return;
@@ -7825,8 +8107,25 @@ function handleIncomingMessage(topic, rawText) {
   }
 }
 
-function applyReceivedState(data) {
-  if (!data) return;
+function applyReceivedState(incomingData) {
+  if (!incomingData) return;
+  let data = incomingData;
+  if (window.BadmintonService && typeof BadmintonService.validateAndNormalizeState === 'function') {
+    data = BadmintonService.validateAndNormalizeState(incomingData);
+    if (!data) {
+      console.warn('Rejected invalid received state payload');
+      return;
+    }
+  }
+
+  // BUG-6: Tolak update state jika versinya lebih lama dari state lokal (stale revision)
+  if (typeof data.rev === 'number') {
+    if (typeof currentRev === 'number' && data.rev < currentRev) {
+      console.warn(`Mengabaikan state usang: rev masuk ${data.rev} < rev lokal ${currentRev}`);
+      return;
+    }
+    currentRev = Math.max(currentRev, data.rev);
+  }
   if (data.currentSport) currentSport = data.currentSport;
   if (data.sessionTitle) sessionTitle = data.sessionTitle;
   if (data.plannedRounds) plannedRounds = data.plannedRounds;
@@ -8034,18 +8333,7 @@ function initMqttDiscovery() {
     });
 
     mqttClient.on('connect', () => {
-      console.log('Connected to MQTT Live Broker:', brokerUrl);
-      mqttClient.subscribe(LOBBY_DISCOVERY_TOPIC, { qos: 1 });
-      mqttClient.subscribe(LOBBY_ROOMS_PREFIX + '+', { qos: 1 });
-      mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
-        type: 'DISCOVER_ROOMS_REQUEST',
-        senderId: myClientId
-      }));
-      if (isOnlineActive && currentRoomId) {
-        mqttClient.subscribe(`onesport/v3/room/${currentRoomId}`, { qos: 1 });
-        mqttClient.subscribe(`onesport/v3/room/${currentRoomId}/state`, { qos: 1 });
-      }
-      updateLiveRoomsDirectoryUI();
+      onMqttConnected();
     });
 
     mqttClient.on('message', (topic, message) => {
@@ -8054,7 +8342,10 @@ function initMqttDiscovery() {
 
     mqttClient.on('error', (err) => {
       console.warn('MQTT error on broker', brokerUrl, err);
-      if (!mqttClient || !mqttClient.connected) {
+      consecutiveBrokerErrors++;
+      if (consecutiveBrokerErrors >= MAX_BROKER_RETRIES) {
+        console.warn(`Gagal terhubung setelah ${consecutiveBrokerErrors}x error berturut-turut, memutar ke broker cadangan...`);
+        consecutiveBrokerErrors = 0;
         tryNextBroker();
       }
     });
@@ -8078,7 +8369,9 @@ function tryNextBroker() {
     try { mqttClient.end(true); } catch(e){}
     mqttClient = null;
   }
+  consecutiveBrokerErrors = 0;
   currentBrokerIndex = (currentBrokerIndex + 1) % MQTT_BROKER_URLS.length;
+  console.log('Beralih ke broker MQTT:', MQTT_BROKER_URLS[currentBrokerIndex]);
   setTimeout(() => initMqttDiscovery(), 1200);
 }
 
@@ -8099,7 +8392,6 @@ function handleLobbyDiscoveryMessage(msg) {
       sport: msg.sport || 'badminton',
       hostId: msg.hostId,
       hasPin: !!msg.hasPin,
-      pinHash: msg.pinHash || '',
       startedAt: msg.startedAt || Date.now(),
       lastSeen: Date.now()
     };
@@ -8124,8 +8416,7 @@ function broadcastRoomLobbyAnnounce(type = 'ROOM_HEARTBEAT') {
     title: sessionTitle || `Mabar ${currentRoomId}`,
     sport: currentSport,
     hostId: myClientId,
-    hasPin: !!hostPin,
-    pinHash: currentRoomPinHash || hashPin(hostPin),
+    hasPin: !!(hostPin && hostPin.trim()),
     startedAt: roomStartTime || Date.now(),
     timestamp: Date.now()
   };
@@ -8138,8 +8429,35 @@ function broadcastRoomLobbyAnnounce(type = 'ROOM_HEARTBEAT') {
 function startHeartbeatTimer() {
   stopHeartbeatTimer();
   heartbeatInterval = setInterval(() => {
-    broadcastRoomLobbyAnnounce('ROOM_HEARTBEAT');
+    if (isOnlineActive && currentRoomId && mqttClient && mqttClient.connected) {
+      if (userRole === 'host') {
+        broadcastRoomLobbyAnnounce('ROOM_HEARTBEAT');
+      }
+      mqttClient.publish(`onesport/v3/room/${currentRoomId}`, JSON.stringify({
+        type: 'PEER_PING',
+        roomId: currentRoomId,
+        senderId: myClientId,
+        role: userRole
+      }));
+      pruneStalePeers();
+    }
   }, 12000);
+}
+
+function pruneStalePeers() {
+  const now = Date.now();
+  for (const [id, lastSeen] of peerHeartbeats.entries()) {
+    if (now - lastSeen > 40000) {
+      peerHeartbeats.delete(id);
+    }
+  }
+  connectedPeersCount = (window.BadmintonService && typeof BadmintonService.calculateActivePeers === 'function')
+    ? BadmintonService.calculateActivePeers(peerHeartbeats, 40000, now)
+    : (peerHeartbeats.size + 1);
+  const peerEl = document.getElementById('onlineDisplayPeerCount');
+  if (peerEl) {
+    peerEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>${connectedPeersCount} Perangkat Terhubung</span>`;
+  }
 }
 
 function stopHeartbeatTimer() {
@@ -8260,10 +8578,10 @@ function updateLiveRoomsDirectoryUI() {
           ${escapeHtml(safeTitle)}
         </div>
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:6px;">
-          <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" onclick="joinRoomAsSpectator('${r.roomId}')">
+          <button class="btn-os-orange" style="font-size:0.75rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800;" data-room-id="${escapeHtml(r.roomId)}" onclick="joinRoomAsSpectator(this.getAttribute('data-room-id'))">
             <span>👁️ Nonton Live</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" onclick="showJoinChoiceModal('${r.roomId}', '${(r.title || '').replace(/'/g, "\\'")}')">
+          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 6px; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-weight:800; background:#FFF;" data-room-id="${escapeHtml(r.roomId)}" data-room-title="${escapeHtml(r.title || '')}" onclick="showJoinChoiceModal(this.getAttribute('data-room-id'), this.getAttribute('data-room-title'))">
             <span>👑 Wasit/Host</span>
           </button>
         </div>
@@ -8286,11 +8604,11 @@ function confirmFinishLiveBroadcast() {
   if (summaryBox) {
     const podium = getPodiumSummaryData();
     let podiumText = podium.length > 0
-      ? podium.map(p => `<strong>${p.label}:</strong> ${p.name} (${p.score})`).join('<br>')
+      ? podium.map(p => `<strong>${escapeHtml(p.label)}:</strong> ${escapeHtml(p.name)} (${escapeHtml(p.score)})`).join('<br>')
       : 'Belum ada juara yang ditentukan.';
 
     summaryBox.innerHTML = `
-      <div style="margin-bottom:4px; color:var(--text-muted);">Judul: <strong>${sessionTitle || '-'}</strong></div>
+      <div style="margin-bottom:4px; color:var(--text-muted);">Judul: <strong>${escapeHtml(sessionTitle || '-')}</strong></div>
       <div style="margin-bottom:4px; color:var(--text-muted);">Olahraga: <strong>${currentSport === 'badminton' ? 'Badminton' : 'Mini Soccer'}</strong></div>
       <div style="margin-top:6px; border-top:1px dashed var(--border-color); padding-top:6px;">
         ${podiumText}
@@ -8306,7 +8624,7 @@ function closeEndLiveConfirmModal() {
   if (modal) modal.classList.remove('open');
 }
 
-function executeFinishLiveBroadcast() {
+async function executeFinishLiveBroadcast() {
   closeEndLiveConfirmModal();
   if (!currentRoomId) return;
 
@@ -8331,12 +8649,24 @@ function executeFinishLiveBroadcast() {
 
   if (mqttClient && mqttClient.connected) {
     try {
-      mqttClient.publish(`onesport/v3/room/${finishedRoomId}`, JSON.stringify({
+      let finalMsg = {
         type: 'ROOM_FINALIZED',
         roomId: finishedRoomId,
         endedAt: Date.now(),
         summary: matchRecord
-      }));
+      };
+      if (window.BadmintonService && BadmintonService.MqttAuth) {
+        if (!currentHmacKey && hostPin) {
+          await initHostAuthKeys(hostPin, finishedRoomId);
+        }
+        finalMsg = await BadmintonService.MqttAuth.signMessage(finalMsg, {
+          hmacKey: currentHmacKey,
+          ecdsaPrivateKey: currentHostEcdsa ? currentHostEcdsa.privateKey : null,
+          hostPubHex: currentHostPubHex,
+          seq: ++hostSeq
+        });
+      }
+      mqttClient.publish(`onesport/v3/room/${finishedRoomId}`, JSON.stringify(finalMsg));
       mqttClient.publish(`onesport/v3/room/${finishedRoomId}/state`, '', { qos: 1, retain: true });
       mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
         type: 'ROOM_ENDED',
@@ -8365,8 +8695,8 @@ function showLiveEndedNoticeModal(roomId, summary) {
   if (box && summary) {
     let podiumHtml = (summary.podium || []).map(p => `
       <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-        <span>${p.label}: <strong>${p.name}</strong></span>
-        <span style="color:var(--brand-orange); font-weight:700;">${p.score || ''}</span>
+        <span>${escapeHtml(p.label)}: <strong>${escapeHtml(p.name)}</strong></span>
+        <span style="color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</span>
       </div>
     `).join('');
     box.innerHTML = podiumHtml || 'Pertandingan selesai dengan sukses.';
@@ -8390,6 +8720,8 @@ function openHistoryFromEndedNotice() {
 
 function leaveOnlineRoom(keepRoomData = false) {
   stopHeartbeatTimer();
+  peerHeartbeats.clear();
+  connectedPeersCount = 1;
   clearActiveLiveSession();
   if (mqttClient && isOnlineActive && currentRoomId) {
     const leftRoom = currentRoomId;
@@ -8500,7 +8832,7 @@ function renderLiveHistoryList() {
   container.innerHTML = list.map(item => {
     const isBadm = item.sport === 'badminton';
     const podiumStr = (item.podium && item.podium.length > 0)
-      ? item.podium.map(p => `<strong>${p.label}:</strong> ${p.name}`).join(' · ')
+      ? item.podium.map(p => `<strong>${escapeHtml(p.label)}:</strong> ${escapeHtml(p.name)}`).join(' · ')
       : 'Hasil tersimpan';
 
     return `
@@ -8526,16 +8858,16 @@ function renderLiveHistoryList() {
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr auto auto; gap:6px; align-items:center;">
-          <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="openHistoryDetailModal('${item.id}')">
+          <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="openHistoryDetailModal(this.getAttribute('data-history-id'))">
             <span>📋 Detail</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:6px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="shareHistoryItemWA('${item.id}')">
+          <button class="btn-court-action" style="font-size:0.72rem; padding:6px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="shareHistoryItemWA(this.getAttribute('data-history-id'))">
             <span>📤 Salin WA</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" onclick="loadHistorySnapshotToApp('${item.id}')">
+          <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" data-history-id="${escapeHtml(item.id)}" onclick="loadHistorySnapshotToApp(this.getAttribute('data-history-id'))">
             📥 Muat
           </button>
-          <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" onclick="deleteLiveHistoryItem('${item.id}')">
+          <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" data-history-id="${escapeHtml(item.id)}" onclick="deleteLiveHistoryItem(this.getAttribute('data-history-id'))">
             ✕
           </button>
         </div>
@@ -8653,15 +8985,15 @@ function openHistoryDetailModal(id) {
     <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; margin-bottom:12px; font-size:0.78rem;">
       <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
         <span style="color:var(--text-muted);">Kode Room:</span>
-        <strong style="color:var(--brand-orange);">${item.roomId}</strong>
+        <strong style="color:var(--brand-orange);">${escapeHtml(item.roomId)}</strong>
       </div>
       <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
         <span style="color:var(--text-muted);">Waktu Selesai:</span>
-        <strong>${item.dateFormatted} · ${item.timeFormatted || ''}</strong>
+        <strong>${escapeHtml(item.dateFormatted)} · ${escapeHtml(item.timeFormatted || '')}</strong>
       </div>
       <div style="display:flex; justify-content:space-between;">
         <span style="color:var(--text-muted);">Olahraga / Peran:</span>
-        <strong>${item.sport === 'badminton' ? 'Badminton 🏸' : 'Mini Soccer ⚽'} (${item.role || 'Peserta'})</strong>
+        <strong>${item.sport === 'badminton' ? 'Badminton 🏸' : 'Mini Soccer ⚽'} (${escapeHtml(item.role || 'Peserta')})</strong>
       </div>
     </div>
   `;
@@ -8673,9 +9005,9 @@ function openHistoryDetailModal(id) {
         <div style="display:grid; grid-template-columns:repeat(${Math.min(item.podium.length, 3)}, 1fr); gap:6px;">
           ${item.podium.map(p => `
             <div style="background:#FFF; border:1.5px solid ${p.rank === 1 ? '#F59E0B' : (p.rank === 2 ? '#94A3B8' : '#D97706')}; border-radius:var(--radius-md); padding:8px; text-align:center;">
-              <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">${p.label}</div>
-              <div style="font-size:0.85rem; font-weight:900; color:var(--brand-navy-dark); margin:2px 0;">${p.name}</div>
-              <div style="font-size:0.68rem; color:var(--brand-orange); font-weight:700;">${p.score || ''}</div>
+              <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted);">${escapeHtml(p.label)}</div>
+              <div style="font-size:0.85rem; font-weight:900; color:var(--brand-navy-dark); margin:2px 0;">${escapeHtml(p.name)}</div>
+              <div style="font-size:0.68rem; color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</div>
             </div>
           `).join('')}
         </div>
@@ -8702,10 +9034,10 @@ function openHistoryDetailModal(id) {
               ${item.leaderboard.map((s, idx) => `
                 <tr style="border-top:1px solid var(--border-color); ${idx < 3 ? 'background:#FFFBEB;' : ''}">
                   <td style="padding:6px 8px; font-weight:800;">${idx + 1}.</td>
-                  <td style="padding:6px 8px; font-weight:700;">${s.name}</td>
-                  <td style="padding:6px 8px; text-align:center;">${s.wins || 0}-${s.losses || 0}</td>
-                  <td style="padding:6px 8px; text-align:center; font-weight:800; color:var(--brand-orange);">${s.totalScore || s.score || 0}</td>
-                  <td style="padding:6px 8px; text-align:center; font-weight:700;">${s.diff || 0}</td>
+                  <td style="padding:6px 8px; font-weight:700;">${escapeHtml(s.name)}</td>
+                  <td style="padding:6px 8px; text-align:center;">${Number(s.wins) || 0}-${Number(s.losses) || 0}</td>
+                  <td style="padding:6px 8px; text-align:center; font-weight:800; color:var(--brand-orange);">${Number(s.totalScore || s.score) || 0}</td>
+                  <td style="padding:6px 8px; text-align:center; font-weight:700;">${Number(s.diff) || 0}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -8723,16 +9055,16 @@ function openHistoryDetailModal(id) {
           ${item.roundsSummary.map(r => `
             <div style="background:#FFF; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px;">
               <div style="font-weight:800; font-size:0.78rem; color:var(--brand-navy-dark); margin-bottom:6px; border-bottom:1px solid #F1F5F9; padding-bottom:4px;">
-                ${r.roundName}
+                ${escapeHtml(r.roundName)}
               </div>
               <div style="display:flex; flex-direction:column; gap:6px;">
                 ${(r.matches || []).map(m => `
                   <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.73rem; background:#F8FAFC; padding:6px 8px; border-radius:var(--radius-sm);">
-                    <div style="font-weight:800; color:var(--brand-navy-mid);">${m.court}</div>
+                    <div style="font-weight:800; color:var(--brand-navy-mid);">${escapeHtml(m.court)}</div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-weight:${m.winner === 'A' ? '900' : '600'}; color:${m.winner === 'A' ? 'var(--brand-orange)' : 'inherit'};">${m.teamA}</span>
-                      <strong style="background:#FFF; padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">${m.scoreA} - ${m.scoreB}</strong>
-                      <span style="font-weight:${m.winner === 'B' ? '900' : '600'}; color:${m.winner === 'B' ? 'var(--brand-orange)' : 'inherit'};">${m.teamB}</span>
+                      <span style="font-weight:${m.winner === 'A' ? '900' : '600'}; color:${m.winner === 'A' ? 'var(--brand-orange)' : 'inherit'};">${escapeHtml(m.teamA)}</span>
+                      <strong style="background:#FFF; padding:2px 6px; border-radius:4px; border:1px solid var(--border-color);">${Number(m.scoreA) || 0} - ${Number(m.scoreB) || 0}</strong>
+                      <span style="font-weight:${m.winner === 'B' ? '900' : '600'}; color:${m.winner === 'B' ? 'var(--brand-orange)' : 'inherit'};">${escapeHtml(m.teamB)}</span>
                     </div>
                   </div>
                 `).join('')}
@@ -8858,10 +9190,10 @@ function generateQrCode(url) {
         correctLevel: QRCode.CorrectLevel.M
       });
     } catch (e) {
-      container.innerHTML = `<a href="${url}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${url}</a>`;
+      container.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${escapeHtml(url)}</a>`;
     }
   } else {
-    container.innerHTML = `<a href="${url}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${url}</a>`;
+    container.innerHTML = `<a href="${escapeHtml(url)}" target="_blank" style="font-size:0.8rem; word-break:break-all; color:var(--brand-orange); font-weight:800;">${escapeHtml(url)}</a>`;
   }
 }
 
@@ -8958,11 +9290,16 @@ function importSessionJSON(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const data = JSON.parse(e.target.result);
+      const rawData = JSON.parse(e.target.result);
+      let data = rawData;
+      if (window.BadmintonService && typeof BadmintonService.validateAndNormalizeState === 'function') {
+        data = BadmintonService.validateAndNormalizeState(rawData);
+      }
       if (data && (data.bPlayers || data.sPlayers)) {
         applyReceivedState(data);
-        if (Array.isArray(data.liveHistory)) {
-          localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(data.liveHistory));
+        if (Array.isArray(rawData.liveHistory)) {
+          const safeHistory = rawData.liveHistory.filter(h => h && typeof h === 'object').slice(0, 100);
+          localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(safeHistory));
           renderLiveHistoryList();
           updateLiveHistoryBadges();
         }
@@ -8970,7 +9307,7 @@ function importSessionJSON(event) {
         showToast('Data berhasil dipulihkan dari cadangan!');
         closeOnlineModal();
       } else {
-        alert('File JSON tidak valid untuk ONESPORT.');
+        alert('File JSON tidak valid atau struktur data ditolak.');
       }
     } catch(err) {
       alert('Gagal membaca file: ' + err.message);

@@ -1,12 +1,16 @@
 // Service Worker for ONESPORT PWA
-const CACHE_NAME = 'onesport-cache-v1';
+const CACHE_NAME = 'onesport-cache-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './badminton-service.js',
   './manifest.json',
   './logo.png',
   './logo-icon.png',
   './logo-shield.png',
+  './onesport-home-hero.jpg',
+  './vendor/mqtt.min.js',
+  './vendor/qrcode.min.js',
   './minisoccer.html'
 ];
 
@@ -29,7 +33,10 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network first, fallback to cache for HTML, cache-first for images/assets
+  // Hanya proses request GET
+  if (event.request.method !== 'GET') return;
+
+  // Network first, fallback to cache for HTML navigation
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => caches.match('./index.html'))
@@ -43,12 +50,21 @@ self.addEventListener('fetch', (event) => {
         // Return cached, update in background
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
           }
         }).catch(() => {});
         return cachedResponse;
       }
-      return fetch(event.request);
+
+      return fetch(event.request).then((networkResponse) => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
+        }
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+        return networkResponse;
+      }).catch(() => caches.match(event.request.url));
     })
   );
 });
