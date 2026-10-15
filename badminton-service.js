@@ -41,11 +41,21 @@
 
   /**
    * Helper untuk membuat pair key konsisten: "idKecil-idBesar"
+   * Q-4: Gunakan perbandingan string untuk id non-numerik.
    */
   function getPairKey(id1, id2) {
-    const a = Number(id1);
-    const b = Number(id2);
-    return a < b ? `${a}-${b}` : `${b}-${a}`;
+    const isNum1 = typeof id1 === 'number' || (typeof id1 === 'string' && id1.trim() !== '' && !Number.isNaN(Number(id1)));
+    const isNum2 = typeof id2 === 'number' || (typeof id2 === 'string' && id2.trim() !== '' && !Number.isNaN(Number(id2)));
+
+    if (isNum1 && isNum2) {
+      const a = Number(id1);
+      const b = Number(id2);
+      return a < b ? `${a}-${b}` : `${b}-${a}`;
+    }
+
+    const s1 = String(id1);
+    const s2 = String(id2);
+    return s1 < s2 ? `${s1}-${s2}` : `${s2}-${s1}`;
   }
 
   // ── 1. PEMERIKSAAN ROLE / LEVEL ──

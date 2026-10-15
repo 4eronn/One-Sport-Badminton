@@ -1025,6 +1025,15 @@ it('Jika semua kandidat sudah pernah berpasangan, fallback dengan penanda isRepe
   assert.ok(kA === getPairKey(1, 3) || kA === getPairKey(2, 4));
 });
 
+it('Q-4: getPairKey menggunakan perbandingan string untuk id non-numerik (id a dan b)', () => {
+  assert.strictEqual(getPairKey('a', 'b'), 'a-b');
+  assert.strictEqual(getPairKey('b', 'a'), 'a-b');
+  assert.strictEqual(getPairKey(10, 2), '2-10');
+  assert.strictEqual(getPairKey('2', '10'), '2-10');
+  assert.strictEqual(getPairKey('user_alpha', 'user_beta'), 'user_alpha-user_beta');
+  assert.strictEqual(getPairKey('user_beta', 'user_alpha'), 'user_alpha-user_beta');
+});
+
 // ── TEST: BUG-4 Reset Sesi Mabar Baru ──
 console.log('\n--- BUG-4. Reset Sesi Mabar Baru (resetBadmintonSession) ---');
 it('BUG-4: Reset menyeluruh statistik, antrian, riwayat, dan kok namun mempertahankan pemain dan gelar juara', () => {
