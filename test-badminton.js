@@ -543,7 +543,7 @@ it('Menyimpan skor match langsung menghitung klasemen secara inkremental', () =>
 
 it('BUG-2: Skor 21-0 dibuka lalu diedit/disimpan tanpa perubahan tetap 21-0', () => {
   const court = {
-    status: COURT_STATUS.SELESAI,
+    status: COURT_STATUS.FINISHED,
     scoreA: 21,
     scoreB: 0,
     winner: 'A',
@@ -564,6 +564,56 @@ it('BUG-2: Skor 21-0 dibuka lalu diedit/disimpan tanpa perubahan tetap 21-0', ()
   assert.strictEqual(res.success, true);
   assert.strictEqual(court.scoreA, 21);
   assert.strictEqual(court.scoreB, 0);
+});
+
+it('BUG-2/Edit: Mengedit skor membalik pemenang dan memperbarui klasemen tanpa error konflik winner', () => {
+  const p1 = { id: 1, name: 'Andi' };
+  const p2 = { id: 2, name: 'Budi' };
+  const p3 = { id: 3, name: 'Caca' };
+  const p4 = { id: 4, name: 'Dedi' };
+  const players = [p1, p2, p3, p4];
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.FINISHED,
+    scoreA: 21,
+    scoreB: 18,
+    winner: 'A',
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const schedule = [{ roundNumber: 1, courts: [], finishedCourts: [court] }];
+
+  // Klasemen awal: Tim A menang (21-18)
+  const st1 = calculateStandings(players, schedule);
+  assert.strictEqual(st1[0].id, 1);
+  assert.strictEqual(st1[0].wins, 1);
+  assert.strictEqual(st1[0].diff, 3);
+  assert.strictEqual(st1[2].wins, 0);
+  assert.strictEqual(st1[2].diff, -3);
+
+  // Edit skor: Tim B menang (15-21), sekalipun radio winner usang ('A') terkirim
+  const res = editFinishedMatchScore({
+    court,
+    newScoreA: 15,
+    newScoreB: 21,
+    newWinner: 'A'
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(court.scoreA, 15);
+  assert.strictEqual(court.scoreB, 21);
+  assert.strictEqual(court.winner, 'B', 'Pemenang harus otomatis berbalik menjadi B');
+
+  // Klasemen setelah edit: Tim B sekarang di atas (1 win, diff +6)
+  const st2 = calculateStandings(players, schedule);
+  assert.strictEqual(st2[0].id, 3);
+  assert.strictEqual(st2[0].wins, 1);
+  assert.strictEqual(st2[0].diff, 6);
+  assert.strictEqual(st2[2].id, 1);
+  assert.strictEqual(st2[2].wins, 0);
+  assert.strictEqual(st2[2].diff, -6);
 });
 
 // ── TEST 5: Jadwal Masuk Lapangan Harus Di-ACC Host (Fitur 5) ──

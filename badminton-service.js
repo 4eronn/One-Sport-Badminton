@@ -838,13 +838,8 @@
       return { valid: false, message: 'Pertandingan bulu tangkis tidak boleh berakhir seri (skor sama).' };
     }
 
-    const declaredWinner = winner || (sA > sB ? 'A' : 'B');
-    if (declaredWinner === 'A' && sA <= sB) {
-      return { valid: false, message: 'Pemenang Tim A harus memiliki skor lebih tinggi dari Tim B.' };
-    }
-    if (declaredWinner === 'B' && sB <= sA) {
-      return { valid: false, message: 'Pemenang Tim B harus memiliki skor lebih tinggi dari Tim A.' };
-    }
+    // Dalam bulutangkis, pemenang selalu tim dengan perolehan skor yang lebih tinggi
+    const declaredWinner = sA > sB ? 'A' : 'B';
 
     return {
       valid: true,
@@ -971,6 +966,7 @@
     court.scoreA = validation.scoreA;
     court.scoreB = validation.scoreB;
     court.winner = validation.winner;
+    court.status = COURT_STATUS.FINISHED;
 
     return { success: true, court };
   }

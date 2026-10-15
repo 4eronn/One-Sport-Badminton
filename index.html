@@ -3028,12 +3028,12 @@
     <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:14px;">
       <div>
         <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:3px;">Skor Tim A</label>
-        <input type="number" id="inputDirectScoreA" class="input-styled-os" min="0" max="99" value="21" style="text-align:center; font-weight:900; font-size:1.4rem;">
+        <input type="number" id="inputDirectScoreA" class="input-styled-os" min="0" max="99" value="21" style="text-align:center; font-weight:900; font-size:1.4rem;" oninput="syncDirectScoreWinner()">
       </div>
       <div style="font-weight:900; color:var(--text-muted); font-size:1.1rem; margin-top:16px;">VS</div>
       <div>
         <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft); display:block; margin-bottom:3px;">Skor Tim B</label>
-        <input type="number" id="inputDirectScoreB" class="input-styled-os" min="0" max="99" value="18" style="text-align:center; font-weight:900; font-size:1.4rem;">
+        <input type="number" id="inputDirectScoreB" class="input-styled-os" min="0" max="99" value="18" style="text-align:center; font-weight:900; font-size:1.4rem;" oninput="syncDirectScoreWinner()">
       </div>
     </div>
 
@@ -3149,24 +3149,24 @@
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
       <label style="display:flex; align-items:center; gap:6px; background:#FFF; padding:8px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.76rem; font-weight:800; cursor:pointer;">
-        <input type="radio" name="edit_finished_winner" id="editWinA" value="A">
-        <span>Tim A Menang</span>
+        <input type="radio" name="edit_finished_winner" id="editWinA" value="A" onchange="handleEditWinnerChange('A')">
+        <span id="editWinnerLabelA">Tim A Menang</span>
       </label>
       <label style="display:flex; align-items:center; gap:6px; background:#FFF; padding:8px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.76rem; font-weight:800; cursor:pointer;">
-        <input type="radio" name="edit_finished_winner" id="editWinB" value="B">
-        <span>Tim B Menang</span>
+        <input type="radio" name="edit_finished_winner" id="editWinB" value="B" onchange="handleEditWinnerChange('B')">
+        <span id="editWinnerLabelB">Tim B Menang</span>
       </label>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:14px;">
       <div>
         <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:3px;">Skor Tim A</label>
-        <input type="number" id="inputEditScoreA" class="input-styled-os" min="0" style="text-align:center; font-weight:900; font-size:1.3rem;">
+        <input type="number" id="inputEditScoreA" class="input-styled-os" min="0" max="99" style="text-align:center; font-weight:900; font-size:1.3rem;" oninput="syncEditScoreWinner()">
       </div>
       <div style="font-weight:900; color:var(--text-muted); margin-top:16px;">VS</div>
       <div>
         <label style="font-size:0.72rem; font-weight:800; display:block; margin-bottom:3px;">Skor Tim B</label>
-        <input type="number" id="inputEditScoreB" class="input-styled-os" min="0" style="text-align:center; font-weight:900; font-size:1.3rem;">
+        <input type="number" id="inputEditScoreB" class="input-styled-os" min="0" max="99" style="text-align:center; font-weight:900; font-size:1.3rem;" oninput="syncEditScoreWinner()">
       </div>
     </div>
 
@@ -5677,6 +5677,51 @@ function handleDirectWinnerChange(winner) {
   }
 }
 
+function syncDirectScoreWinner() {
+  const sA = Number(document.getElementById('inputDirectScoreA').value);
+  const sB = Number(document.getElementById('inputDirectScoreB').value);
+  const winA = document.getElementById('directWinRadioA');
+  const winB = document.getElementById('directWinRadioB');
+  if (!isNaN(sA) && !isNaN(sB) && sA !== sB) {
+    if (sA > sB) {
+      if (winA) winA.checked = true;
+      if (winB) winB.checked = false;
+    } else {
+      if (winB) winB.checked = true;
+      if (winA) winA.checked = false;
+    }
+  }
+}
+
+function syncEditScoreWinner() {
+  const sA = Number(document.getElementById('inputEditScoreA').value);
+  const sB = Number(document.getElementById('inputEditScoreB').value);
+  const winA = document.getElementById('editWinA');
+  const winB = document.getElementById('editWinB');
+  if (!isNaN(sA) && !isNaN(sB) && sA !== sB) {
+    if (sA > sB) {
+      if (winA) winA.checked = true;
+      if (winB) winB.checked = false;
+    } else {
+      if (winB) winB.checked = true;
+      if (winA) winA.checked = false;
+    }
+  }
+}
+
+function handleEditWinnerChange(winner) {
+  const sAInput = document.getElementById('inputEditScoreA');
+  const sBInput = document.getElementById('inputEditScoreB');
+  if (!sAInput || !sBInput) return;
+  const sA = Number(sAInput.value) || 0;
+  const sB = Number(sBInput.value) || 0;
+  if (winner === 'A' && sA <= sB) {
+    sAInput.value = Math.max(21, sB + 2);
+  } else if (winner === 'B' && sB <= sA) {
+    sBInput.value = Math.max(21, sA + 2);
+  }
+}
+
 function submitDirectScore() {
   if (!checkEditPermission()) return;
   const cIdx = Number(document.getElementById('directScoreTargetCourtIdx').value);
@@ -5687,7 +5732,7 @@ function submitDirectScore() {
   const scoreA = Number(document.getElementById('inputDirectScoreA').value);
   const scoreB = Number(document.getElementById('inputDirectScoreB').value);
   const winRadio = document.querySelector('input[name="direct_winner_radio"]:checked');
-  const winner = winRadio ? winRadio.value : (scoreA > scoreB ? 'A' : 'B');
+  const winner = scoreA > scoreB ? 'A' : (scoreB > scoreA ? 'B' : (winRadio ? winRadio.value : 'A'));
 
   const kokBaru = Number(document.getElementById('inputDirectKokBaru').value) || 0;
   const kokBekas = Number(document.getElementById('inputDirectKokBekas').value) || 0;
@@ -5747,10 +5792,17 @@ function openEditFinishedMatchModal(rIdx, cIdx, isArchive = false) {
   const round = bSchedule[rIdx];
   if (!round) return;
 
-  // Cari di finishedCourts atau courts
-  let court = (isArchive && round.finishedCourts) ? round.finishedCourts[cIdx] : (round.courts && round.courts[cIdx]);
-  if (!court && round.finishedCourts) court = round.finishedCourts[cIdx];
-  if (!court && round.courts) court = round.courts[cIdx];
+  // Cari di finishedCourts atau courts dengan pencarian cerdas
+  let court = null;
+  if (isArchive && round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (!isArchive && round.courts && round.courts[cIdx] && (round.courts[cIdx].status === 'finished' || round.courts[cIdx].status === BadmintonService.COURT_STATUS.FINISHED)) {
+    court = round.courts[cIdx];
+  } else if (round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (round.courts && round.courts[cIdx]) {
+    court = round.courts[cIdx];
+  }
   if (!court) return;
 
   document.getElementById('editFinishedTargetRoundIdx').value = rIdx;
@@ -5764,16 +5816,27 @@ function openEditFinishedMatchModal(rIdx, cIdx, isArchive = false) {
 
   document.getElementById('editFinishedTeamsHeader').innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:0.85rem;">
-      <span>${tA}</span>
+      <span>${tA || 'Tim A'}</span>
       <span style="color:var(--brand-orange);">VS</span>
-      <span>${tB}</span>
+      <span>${tB || 'Tim B'}</span>
     </div>
   `;
 
-  document.getElementById('inputEditScoreA').value = court.scoreA ?? 21;
-  document.getElementById('inputEditScoreB').value = court.scoreB ?? 18;
-  document.getElementById('editWinA').checked = court.winner === 'A' || !court.winner;
-  document.getElementById('editWinB').checked = court.winner === 'B';
+  if (document.getElementById('editWinnerLabelA')) {
+    document.getElementById('editWinnerLabelA').textContent = `${tA || 'Tim A'} Menang`;
+  }
+  if (document.getElementById('editWinnerLabelB')) {
+    document.getElementById('editWinnerLabelB').textContent = `${tB || 'Tim B'} Menang`;
+  }
+
+  const sA = court.scoreA !== null && court.scoreA !== undefined ? court.scoreA : 21;
+  const sB = court.scoreB !== null && court.scoreB !== undefined ? court.scoreB : 18;
+  document.getElementById('inputEditScoreA').value = sA;
+  document.getElementById('inputEditScoreB').value = sB;
+
+  const winner = court.winner || (sA > sB ? 'A' : 'B');
+  document.getElementById('editWinA').checked = winner === 'A';
+  document.getElementById('editWinB').checked = winner === 'B';
 
   document.getElementById('editFinishedScoreModalOverlay').classList.add('open');
 }
@@ -5790,15 +5853,31 @@ function submitEditFinishedScore() {
   const round = bSchedule[rIdx];
   if (!round) return;
 
-  let court = (isArchive && round.finishedCourts) ? round.finishedCourts[cIdx] : (round.courts && round.courts[cIdx]);
-  if (!court && round.finishedCourts) court = round.finishedCourts[cIdx];
-  if (!court && round.courts) court = round.courts[cIdx];
+  let court = null;
+  if (isArchive && round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (!isArchive && round.courts && round.courts[cIdx] && (round.courts[cIdx].status === 'finished' || round.courts[cIdx].status === BadmintonService.COURT_STATUS.FINISHED)) {
+    court = round.courts[cIdx];
+  } else if (round.finishedCourts && round.finishedCourts[cIdx]) {
+    court = round.finishedCourts[cIdx];
+  } else if (round.courts && round.courts[cIdx]) {
+    court = round.courts[cIdx];
+  }
   if (!court) return;
 
   const newScoreA = Number(document.getElementById('inputEditScoreA').value);
   const newScoreB = Number(document.getElementById('inputEditScoreB').value);
+  if (isNaN(newScoreA) || isNaN(newScoreB)) {
+    showToast('Masukkan skor yang valid.', 'error');
+    return;
+  }
+  if (newScoreA === newScoreB) {
+    showToast('Pertandingan bulu tangkis tidak boleh berakhir seri (skor sama).', 'error');
+    return;
+  }
+
   const winRadio = document.querySelector('input[name="edit_finished_winner"]:checked');
-  const newWinner = winRadio ? winRadio.value : (newScoreA > newScoreB ? 'A' : 'B');
+  const newWinner = newScoreA > newScoreB ? 'A' : (newScoreB > newScoreA ? 'B' : (winRadio ? winRadio.value : 'A'));
 
   const res = BadmintonService.editFinishedMatchScore({
     court,
@@ -5819,6 +5898,7 @@ function submitEditFinishedScore() {
   renderHistory();
   renderFinalPodium();
   renderCourtsView();
+  renderPlayersList();
   persistAndBroadcast();
   showToast('✅ Skor berhasil diperbarui dan klasemen telah dihitung ulang!', 'success');
 }
