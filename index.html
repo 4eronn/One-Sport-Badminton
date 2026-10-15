@@ -2845,7 +2845,7 @@
             <button class="btn-court-action" onclick="refreshLiveRoomsList()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px;">
               <span>Segarkan</span>
             </button>
-            <button class="btn-court-action" onclick="clearAllLiveRoomsFromLobby()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px; color:#DC2626; border-color:#FECACA; background:#FFF;" title="Bersihkan semua daftar siaran">
+            <button class="btn-court-action" id="btnClearLiveRoomsLobby" onclick="clearAllLiveRoomsFromLobby()" style="font-size:0.68rem; padding:2px 8px; display:inline-flex; align-items:center; gap:4px; color:#DC2626; border-color:#FECACA; background:#FFF;" title="Bersihkan semua daftar siaran">
               <span>Bersihkan Semua</span>
             </button>
           </div>
@@ -2860,7 +2860,7 @@
       <!-- Actions when Offline / Not in Room -->
       <div id="onlineSetupForm">
         <!-- Sub-Tabs: Buat Baru vs Gabung Room -->
-        <div class="role-toggle-group">
+        <div class="role-toggle-group" id="onlineSetupTabsGroup">
           <button class="role-toggle-btn active" id="btnSubSetupCreate" onclick="switchSetupSubTab('create')">Buat Siaran Baru (Host)</button>
           <button class="role-toggle-btn" id="btnSubSetupJoin" onclick="switchSetupSubTab('join')">Gabung Siaran Live</button>
         </div>
@@ -2902,7 +2902,7 @@
               <input type="text" id="inputJoinRoomCode" class="input-styled-os" placeholder="Contoh: MABAR-88" style="text-transform:uppercase; font-weight:800; margin-top:4px;">
             </div>
             <div style="font-size:0.72rem; color:var(--text-muted); background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 10px;">
-              Akses kontrol skor dan rotasi disesuaikan dengan status login akun Anda (Host: admin@onesport.co.id).
+              Akses kontrol skor dan rotasi pertandingan disesuaikan dengan status peran akun Anda.
             </div>
           </div>
 
@@ -2975,7 +2975,7 @@
         <div style="font-size:0.78rem; color:var(--text-secondary); font-weight:700;">
           Tersimpan: <strong id="historyCountBadge">0</strong> Siaran (APK & Web)
         </div>
-        <button class="btn-court-action" style="font-size:0.7rem; padding:3px 8px; color:#DC2626; border-color:#FECACA; background:#FFF;" onclick="clearAllLiveHistory()">
+        <button class="btn-court-action" id="btnClearAllHistoryBtn" style="font-size:0.7rem; padding:3px 8px; color:#DC2626; border-color:#FECACA; background:#FFF;" onclick="clearAllLiveHistory()">
           Bersihkan Semua
         </button>
       </div>
@@ -3421,23 +3421,18 @@
       <button class="btn-del-player" onclick="closeLoginModal()">✕</button>
     </div>
     <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
-      Masuk dengan akun Host untuk mengelola turnamen, jadwal lapangan, dan skor. Akun selain Host akan masuk sebagai penonton.
+      Silakan masuk dengan akun Anda untuk mengakses fitur aplikasi.
     </div>
 
     <form onsubmit="event.preventDefault(); submitLoginForm();" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;">
       <div>
         <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username / Email</label>
-        <input type="text" id="loginInputEmail" class="input-styled-os" placeholder="contoh: admin@onesport.co.id" autocomplete="username" required>
+        <input type="text" id="loginInputEmail" class="input-styled-os" placeholder="" autocomplete="username" required>
       </div>
 
       <div>
         <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Password</label>
-        <input type="password" id="loginInputPassword" class="input-styled-os" placeholder="Masukkan password" autocomplete="current-password" required>
-      </div>
-
-      <div style="background: #F8FAFC; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px; font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">
-        Akun Host: <strong>admin@onesport.co.id</strong><br>
-        <span style="font-size:0.68rem; color:var(--text-muted);">Akun selain di atas akan masuk sebagai penonton biasa.</span>
+        <input type="password" id="loginInputPassword" class="input-styled-os" placeholder="" autocomplete="current-password" required>
       </div>
 
       <div style="display: flex; gap: 8px; margin-top: 4px;">
@@ -7793,7 +7788,9 @@ function openOnlineModal(preferredSubTab = null) {
   const modal = document.getElementById('onlineModalOverlay');
   if (modal) modal.classList.add('open');
   switchOnlineTab('live');
-  if (preferredSubTab) {
+  if (!isHostUser()) {
+    switchSetupSubTab('join');
+  } else if (preferredSubTab) {
     switchSetupSubTab(preferredSubTab);
   }
   if (!document.getElementById('inputRoomCode').value) {
@@ -7801,6 +7798,7 @@ function openOnlineModal(preferredSubTab = null) {
   }
   refreshLiveRoomsList();
   renderLiveHistoryList();
+  applyRoleUI();
 }
 
 function closeOnlineModal() {
@@ -7826,6 +7824,10 @@ function switchOnlineTab(tabKey) {
 }
 
 function switchSetupSubTab(subKey) {
+  if (subKey === 'create' && !isHostUser()) {
+    showToast('Hanya akun Host yang dapat membuat room siaran baru.', 'error');
+    subKey = 'join';
+  }
   const btnCreate = document.getElementById('btnSubSetupCreate');
   const btnJoin = document.getElementById('btnSubSetupJoin');
   const paneCreate = document.getElementById('subPaneSetupCreate');
@@ -7891,6 +7893,11 @@ async function toggleCollabSetting(enabled) {
 }
 
 function startHostRoom() {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat membuat room siaran baru. Silakan login sebagai Host.', 'error');
+    openLoginModal();
+    return;
+  }
   let code = document.getElementById('inputRoomCode').value.trim().toUpperCase();
   if (!code) {
     code = 'BADM-' + Math.floor(100 + Math.random() * 900);
@@ -7938,6 +7945,11 @@ function joinRoomAsSpectator(roomId) {
 }
 
 function joinRoomAsHost(roomId, pin) {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat masuk dengan kontrol Host.', 'error');
+    openLoginModal();
+    return;
+  }
   closeJoinChoiceModal();
   closeOnlineModal();
   const cleanRoom = roomId.trim().toUpperCase();
@@ -8060,6 +8072,28 @@ function applyRoleUI() {
   const btnNewMabar = document.getElementById('btnNewMabarSession');
   if (btnNewMabar) btnNewMabar.style.display = isHost ? 'inline-flex' : 'none';
 
+  // 8. Live Room Modal Controls (Host vs Spectator)
+  const btnClearLobby = document.getElementById('btnClearLiveRoomsLobby');
+  if (btnClearLobby) {
+    btnClearLobby.style.display = isHost ? 'inline-flex' : 'none';
+  }
+  const btnClearHistory = document.getElementById('btnClearAllHistoryBtn');
+  if (btnClearHistory) {
+    btnClearHistory.style.display = isHost ? 'inline-flex' : 'none';
+  }
+  const setupTabsGroup = document.getElementById('onlineSetupTabsGroup');
+  if (setupTabsGroup) {
+    setupTabsGroup.style.display = isHost ? 'flex' : 'none';
+  }
+  const subPaneCreate = document.getElementById('subPaneSetupCreate');
+  const subPaneJoin = document.getElementById('subPaneSetupJoin');
+  if (!isHost) {
+    if (subPaneCreate) subPaneCreate.style.display = 'none';
+    if (subPaneJoin) subPaneJoin.style.display = 'block';
+    const btnSubJoin = document.getElementById('btnSubSetupJoin');
+    if (btnSubJoin) btnSubJoin.classList.add('active');
+  }
+
   // Sinkronkan tab aktif jika non-host berada di tab pemain
   const activeTab = document.querySelector('.app-tab-pane.active')?.id;
   if (!isHost && activeTab === 'tab-pemain') {
@@ -8108,7 +8142,7 @@ function openLoginModal() {
   if (modal) {
     modal.classList.add('open');
     if (inputEmail) {
-      inputEmail.value = (currentUser && currentUser.email) ? currentUser.email : '';
+      inputEmail.value = '';
       setTimeout(() => inputEmail.focus(), 150);
     }
     if (inputPass) inputPass.value = '';
@@ -9004,11 +9038,13 @@ function updateLiveRoomsDirectoryUI() {
 
   if (!listContainer) return;
 
+  const isHost = isHostUser();
+
   if (count === 0) {
     listContainer.innerHTML = `
       <div style="text-align:center; padding:18px 8px; font-size:0.75rem; color:var(--text-muted); line-height:1.5;">
         <div style="margin-bottom:6px; color:var(--brand-navy-soft); font-weight:800;">Belum ada siaran langsung publik saat ini.</div>
-        <div style="color:var(--brand-orange); font-weight:700;">Buat room baru di bawah untuk memulai siaran!</div>
+        ${isHost ? `<div style="color:var(--brand-orange); font-weight:700;">Buat room baru di bawah untuk memulai siaran!</div>` : `<div style="color:var(--text-muted);">Menunggu Host memulai siaran baru.</div>`}
       </div>
     `;
     return;
@@ -9036,13 +9072,15 @@ function updateLiveRoomsDirectoryUI() {
         <div style="font-size:0.78rem; color:var(--brand-navy-dark); font-weight:700; margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;" title="${escapeHtml(rawTitle)}">
           ${escapeHtml(safeTitle)}
         </div>
-        <div style="display:grid; grid-template-columns:1fr auto; gap:6px;">
+        <div style="display:grid; grid-template-columns:${isHost ? '1fr auto' : '1fr'}; gap:6px;">
           <button class="btn-os-orange" style="font-size:0.75rem; padding:8px 12px; display:inline-flex; align-items:center; justify-content:center; gap:6px; font-weight:800;" data-room-id="${escapeHtml(r.roomId)}" onclick="joinRoomAsSpectator(this.getAttribute('data-room-id'))">
-            <span>Gabung Siaran</span>
+            <span>Masuk Room</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:7px 12px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:800; background:#FFF1F2; border-color:#FECDD3; color:#E11D48;" data-room-id="${escapeHtml(r.roomId)}" onclick="deleteLiveRoomFromLobby(this.getAttribute('data-room-id'))" title="Hapus siaran ini dari daftar">
-            <span>Hapus</span>
-          </button>
+          ${isHost ? `
+            <button class="btn-court-action" style="font-size:0.72rem; padding:7px 12px; display:inline-flex; align-items:center; justify-content:center; gap:3px; font-weight:800; background:#FFF1F2; border-color:#FECDD3; color:#E11D48;" data-room-id="${escapeHtml(r.roomId)}" onclick="deleteLiveRoomFromLobby(this.getAttribute('data-room-id'))" title="Hapus siaran ini dari daftar">
+              <span>Hapus</span>
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
@@ -9187,6 +9225,10 @@ function deleteActiveLiveBroadcast() {
 }
 
 function deleteLiveRoomFromLobby(roomId) {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat menghapus room siaran.', 'error');
+    return;
+  }
   if (!roomId) return;
   if (!confirm(`Hapus siaran "${roomId}" dari daftar live?`)) return;
 
@@ -9221,6 +9263,10 @@ function deleteLiveRoomFromLobby(roomId) {
 }
 
 function clearAllLiveRoomsFromLobby() {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat membersihkan daftar siaran live.', 'error');
+    return;
+  }
   const roomIds = Object.keys(activeLiveRooms);
   if (roomIds.length === 0) {
     showToast('Daftar siaran live sudah kosong.');
@@ -9423,19 +9469,21 @@ function renderLiveHistoryList() {
           ${podiumStr}
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr auto auto; gap:6px; align-items:center;">
+        <div style="display:grid; grid-template-columns:${isHost ? '1fr 1fr auto auto' : '1fr 1fr'}; gap:6px; align-items:center;">
           <button class="btn-os-cyan" style="font-size:0.72rem; padding:6px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="openHistoryDetailModal(this.getAttribute('data-history-id'))">
             <span>Detail</span>
           </button>
           <button class="btn-court-action" style="font-size:0.72rem; padding:6px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" data-history-id="${escapeHtml(item.id)}" onclick="shareHistoryItemWA(this.getAttribute('data-history-id'))">
             <span>Salin WA</span>
           </button>
-          <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" data-history-id="${escapeHtml(item.id)}" onclick="loadHistorySnapshotToApp(this.getAttribute('data-history-id'))">
-            Muat
-          </button>
-          <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" data-history-id="${escapeHtml(item.id)}" onclick="deleteLiveHistoryItem(this.getAttribute('data-history-id'))">
-            ✕
-          </button>
+          ${isHost ? `
+            <button class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" data-history-id="${escapeHtml(item.id)}" onclick="loadHistorySnapshotToApp(this.getAttribute('data-history-id'))">
+              Muat
+            </button>
+            <button class="btn-del-player" style="font-size:0.78rem; width:28px; height:28px;" title="Hapus catatan ini" data-history-id="${escapeHtml(item.id)}" onclick="deleteLiveHistoryItem(this.getAttribute('data-history-id'))">
+              ✕
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
@@ -9443,6 +9491,10 @@ function renderLiveHistoryList() {
 }
 
 function deleteLiveHistoryItem(id) {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat menghapus catatan histori.', 'error');
+    return;
+  }
   if (!confirm('Hapus riwayat pertandingan ini?')) return;
   try {
     let list = getLiveHistory();
@@ -9455,6 +9507,10 @@ function deleteLiveHistoryItem(id) {
 }
 
 function clearAllLiveHistory() {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat membersihkan riwayat siaran.', 'error');
+    return;
+  }
   if (!confirm('Hapus SEMUA histori siaran live yang tersimpan di perangkat ini?')) return;
   try {
     localStorage.removeItem(STORAGE_LIVE_HISTORY);
@@ -9465,6 +9521,10 @@ function clearAllLiveHistory() {
 }
 
 function loadHistorySnapshotToApp(id) {
+  if (!isHostUser()) {
+    showToast('Hanya akun Host yang dapat memuat riwayat ke papan skor.', 'error');
+    return;
+  }
   const list = getLiveHistory();
   const item = list.find(h => h.id === id);
   if (!item || !item.snapshot) {
