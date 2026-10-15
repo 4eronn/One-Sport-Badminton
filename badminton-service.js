@@ -229,8 +229,19 @@
         return playA - playB;
       }
 
-      // Prioritas 3: Rest count / id stabil
-      return (a.id || 0) - (b.id || 0);
+      // Prioritas 3: Q-3 Tie-break berdasarkan waktu mulai menunggu (waitingSince)
+      // Pemain yang menunggu lebih lama (timestamp lebih kecil) didahulukan
+      const waitA = typeof a.waitingSince === 'number' ? a.waitingSince : 0;
+      const waitB = typeof b.waitingSince === 'number' ? b.waitingSince : 0;
+      if (waitA !== waitB) {
+        return waitA - waitB;
+      }
+
+      // Prioritas 4: Tie-break id stabil
+      if (typeof a.id === 'string' && typeof b.id === 'string') {
+        return a.id.localeCompare(b.id);
+      }
+      return (Number(a.id) || 0) - (Number(b.id) || 0);
     });
   }
 
@@ -271,12 +282,14 @@
         } else {
           p.status = PLAYER_STATUS.MENUNGGU;
           p.cooldown_remaining = 0;
+          p.waitingSince = Date.now();
         }
       } else if (p.status === PLAYER_STATUS.ISTIRAHAT) {
         // Kurangi cooldown pemain yang sedang istirahat saat ada match yang selesai
         p.cooldown_remaining = Math.max(0, (p.cooldown_remaining || 1) - 1);
         if (p.cooldown_remaining === 0) {
           p.status = PLAYER_STATUS.MENUNGGU;
+          p.waitingSince = Date.now();
         }
       }
     });
@@ -614,8 +627,27 @@
       return selected;
     }
 
-    // 2. Jika tidak ada request pasangan, ambil 4 pemain teratas dari antrian yang sudah diprioritaskan
-    return eligibleQueue.slice(0, 4);
+    // 2. Gender-aware selection (Q-3):
+    // a) Bila >= 4 pemain putri menunggu, buat match khusus putri (4 pemain putri)
+    const femalePlayers = eligibleQueue.filter(p => p && p.gender === 'P');
+    if (femalePlayers.length >= 4) {
+      return femalePlayers.slice(0, 4);
+    }
+
+    // b) Ambil 4 pemain teratas dari antrian yang sudah diprioritaskan
+    let candidateFour = eligibleQueue.slice(0, 4);
+    const femalesInCandidate = candidateFour.filter(p => p && p.gender === 'P');
+
+    // c) Hindari 3 putra + 1 putri jika ada alternatif putra di sisa antrian
+    if (femalesInCandidate.length === 1) {
+      const remainingMales = eligibleQueue.slice(4).filter(p => p && p.gender !== 'P');
+      if (remainingMales.length > 0) {
+        candidateFour = candidateFour.filter(p => p.id !== femalesInCandidate[0].id);
+        candidateFour.push(remainingMales[0]);
+      }
+    }
+
+    return candidateFour;
   }
 
   // ── 6. FITUR 5: PROPOSAL JADWAL MASUK LAPANGAN & WORKFLOW ACC HOST ──
@@ -655,6 +687,7 @@
           p.status = PLAYER_STATUS.MENUNGGU;
           p.cooldown_remaining = 0;
           p.cooldownReleased = true;
+          p.waitingSince = Date.now();
         });
         cooldownReleased = true;
 
@@ -1253,6 +1286,7 @@
       cooldown_remaining: 0,
       leave_after_match: false,
       is_deleted: false,
+      waitingSince: typeof newPlayerData.waitingSince === 'number' ? newPlayerData.waitingSince : Date.now(),
       createdAt: Date.now()
     };
 
@@ -1381,6 +1415,7 @@
       p.leave_after_match = false;
       if (!p.is_deleted && p.status !== PLAYER_STATUS.TIDAK_AKTIF) {
         p.status = PLAYER_STATUS.MENUNGGU;
+        p.waitingSince = Date.now();
       }
     });
 
@@ -1495,6 +1530,7 @@
           leave_after_match: Boolean(p.leave_after_match),
           is_deleted: Boolean(p.is_deleted),
           titles: typeof p.titles === 'number' && p.titles >= 0 ? Math.floor(p.titles) : 0,
+          waitingSince: typeof p.waitingSince === 'number' && p.waitingSince >= 0 ? Math.floor(p.waitingSince) : 0,
           createdAt: typeof p.createdAt === 'number' ? p.createdAt : Date.now()
         });
       }

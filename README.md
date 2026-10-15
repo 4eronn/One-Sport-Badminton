@@ -30,9 +30,9 @@ It runs entirely in the browser with no backend and no build step. It can be use
 
 ### Badminton
 
-- **Fair rotation.** Players who just sat out are scheduled first, followed by those with the fewest games played. Each player is guaranteed a configurable minimum number of matches (default: 3).
+- **Fair rotation.** Players who sat out longest (tracked via `waitingSince`) are scheduled first, followed by those with the fewest games played. Each player is guaranteed a configurable minimum number of matches (default: 3).
 - **Skill levels.** Players are tagged as Pemula, Amatir, Intermediate or Advance, and teams are balanced accordingly.
-- **Gender-aware pairing.** Women are grouped into women-only matches when enough players are available. Advance-level women can also be placed in open matches.
+- **Gender-aware pairing.** Women are grouped into women-only matches when >= 4 female players are waiting in queue. In mixed queues, awkward uneven pairings (3 men + 1 woman) are prevented whenever an alternative player is available in queue. Advance-level women can also be placed in open matches.
 - **Flexible courts.** Add courts on the fly and change the number of planned rounds in settings.
 - **Manual overrides.** Swap players in an upcoming match, edit a player's level mid-session, or use *Smart Match* to regenerate the upcoming rounds.
 - **Resting list.** See at a glance who is sitting out in the current round.

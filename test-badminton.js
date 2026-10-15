@@ -932,6 +932,45 @@ it('Antrian memprioritaskan pemain dengan jumlah_main < 3 dibanding yang sudah >
   assert.strictEqual(sorted[3].name, 'D'); // 4x main
 });
 
+it('Q-3: prioritizeQueue melakukan tie-break berdasarkan waitingSince lebih dulu sebelum id', () => {
+  const p1 = { id: 10, name: 'Pemain Baru Antri', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1, waitingSince: 2000 };
+  const p2 = { id: 50, name: 'Pemain Lama Nunggu', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1, waitingSince: 1000 };
+  const p3 = { id: 5, name: 'Pemain ID Kecil Sama Waiting', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1, waitingSince: 3000 };
+  const p4 = { id: 8, name: 'Pemain ID Besar Sama Waiting', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1, waitingSince: 3000 };
+
+  const sorted = prioritizeQueue([p1, p2, p3, p4], 3);
+  // p2 waitingSince 1000 harus pertama meski id 50 > 10
+  assert.strictEqual(sorted[0].id, 50, 'p2 menunggu lebih lama (waitingSince 1000) harus didahulukan');
+  assert.strictEqual(sorted[1].id, 10, 'p1 waitingSince 2000');
+  assert.strictEqual(sorted[2].id, 5, 'p3 waitingSince 3000 tie-break id lebih kecil');
+  assert.strictEqual(sorted[3].id, 8, 'p4 waitingSince 3000 tie-break id');
+});
+
+it('Q-3: pickNextFourPlayersForMatch mengelompokkan >= 4 putri dan menghindari 3 putra + 1 putri bila ada alternatif', () => {
+  // Skenario A: Ada 4 putri dan 2 putra
+  const femaleQ = [
+    { id: 1, name: 'Putra 1', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 2, name: 'Putri 1', gender: 'P', role: 'Pemula', jumlah_main: 0 },
+    { id: 3, name: 'Putri 2', gender: 'P', role: 'Pemula', jumlah_main: 0 },
+    { id: 4, name: 'Putri 3', gender: 'P', role: 'Pemula', jumlah_main: 0 },
+    { id: 5, name: 'Putri 4', gender: 'P', role: 'Pemula', jumlah_main: 0 },
+    { id: 6, name: 'Putra 2', gender: 'L', role: 'Pemula', jumlah_main: 0 }
+  ];
+  const fourFemale = pickNextFourPlayersForMatch(femaleQ, [], {}, femaleQ);
+  assert.strictEqual(fourFemale.every(p => p.gender === 'P'), true, 'bila >= 4 putri menunggu, buat match khusus putri');
+
+  // Skenario B: 4 teratas adalah 3 putra + 1 putri, tapi ada putra alternatif di posisi 5
+  const mixedQ = [
+    { id: 1, name: 'Putra 1', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 2, name: 'Putra 2', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 3, name: 'Putri 1', gender: 'P', role: 'Pemula', jumlah_main: 0 },
+    { id: 4, name: 'Putra 3', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 5, name: 'Putra 4', gender: 'L', role: 'Pemula', jumlah_main: 0 }
+  ];
+  const fourAvoidingOdd = pickNextFourPlayersForMatch(mixedQ, [], {}, mixedQ);
+  assert.strictEqual(fourAvoidingOdd.every(p => p.gender === 'L'), true, 'hindari 3 putra + 1 putri bila ada putra alternatif');
+});
+
 // ── TEST 8: Rekan Tim Harus Berbeda-beda (Fitur 8) ──
 console.log('\n--- 8. Rekan Tim Harus Berbeda-beda (Fitur 8) ---');
 
