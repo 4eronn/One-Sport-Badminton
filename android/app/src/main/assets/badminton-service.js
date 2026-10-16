@@ -177,22 +177,29 @@
     currentCourts.forEach(c => {
       if (!c) return;
       const courtPlayers = [...(c.teamA || []), ...(c.teamB || [])].filter(Boolean);
-      if (c.status === 'sedang_main' || c.status === 'ongoing') {
-        courtPlayers.forEach(p => onCourtPlayerIds.add(p.id));
-      } else if (c.status === 'menunggu_acc') {
-        courtPlayers.forEach(p => pendingAccPlayerIds.add(p.id));
+      const isOngoing = (c.status === 'sedang_main' || c.status === 'ongoing' || c.status === COURT_STATUS.SEDANG_MAIN);
+      const isPending = (c.status === 'menunggu_acc' || c.status === 'pending' || c.status === COURT_STATUS.MENUNGGU_ACC);
+
+      if (isOngoing) {
+        courtPlayers.forEach(p => onCourtPlayerIds.add(String(p.id)));
+      } else if (isPending) {
+        courtPlayers.forEach(p => pendingAccPlayerIds.add(String(p.id)));
       }
     });
 
     players.forEach(p => {
+      if (!p) return;
+      const pIdStr = String(p.id);
       if (p.is_deleted || p.status === PLAYER_STATUS.TIDAK_AKTIF) {
         p.status = PLAYER_STATUS.TIDAK_AKTIF;
-      } else if (onCourtPlayerIds.has(p.id)) {
+      } else if (onCourtPlayerIds.has(pIdStr)) {
         p.status = PLAYER_STATUS.DI_LAPANGAN;
-      } else if (pendingAccPlayerIds.has(p.id)) {
+      } else if (pendingAccPlayerIds.has(pIdStr)) {
         // Sedang diajukan ke lapangan, belum ACC
-        // Tetap dipertahankan statusnya
-      } else if (p.cooldown_remaining > 0) {
+        if (p.status === PLAYER_STATUS.DI_LAPANGAN) {
+          p.status = PLAYER_STATUS.MENUNGGU;
+        }
+      } else if (typeof p.cooldown_remaining === 'number' && p.cooldown_remaining > 0) {
         p.status = PLAYER_STATUS.ISTIRAHAT;
       } else {
         p.status = PLAYER_STATUS.MENUNGGU;
@@ -933,58 +940,92 @@
     court,
     targetPlayerId,
     players = [],
+    activeCourts = [],
     minPlays = 3
   }) {
-    if (!court || !targetPlayerId) return null;
+    if (!court) return null;
 
-    const targetIdStr = String(targetPlayerId);
     let targetTeamKey = null;
     let targetIdx = -1;
     let sourcePlayer = null;
     let teammate = null;
 
-    ['teamA', 'teamB'].forEach(tKey => {
-      const team = court[tKey] || [];
-      const idx = team.findIndex(p => p && String(p.id) === targetIdStr);
-      if (idx !== -1) {
-        targetTeamKey = tKey;
-        targetIdx = idx;
-        sourcePlayer = team[idx];
-        teammate = team.find((p, i) => i !== idx && p);
+    if (targetPlayerId !== null && targetPlayerId !== undefined && targetPlayerId !== '') {
+      const targetIdStr = String(targetPlayerId);
+      ['teamA', 'teamB'].forEach(tKey => {
+        const team = court[tKey] || [];
+        const idx = team.findIndex(p => p && String(p.id) === targetIdStr);
+        if (idx !== -1) {
+          targetTeamKey = tKey;
+          targetIdx = idx;
+          sourcePlayer = team[idx];
+          teammate = team.find((p, i) => i !== idx && p);
+        }
+      });
+      if (!sourcePlayer) return null;
+    } else {
+      // Slot kosong: cari slot pertama yang kosong (null/undefined)
+      for (const tKey of ['teamA', 'teamB']) {
+        const team = court[tKey] || [];
+        for (let i = 0; i < 2; i++) {
+          if (!team[i]) {
+            targetTeamKey = tKey;
+            targetIdx = i;
+            teammate = team[1 - i] || null;
+            break;
+          }
+        }
+        if (targetTeamKey) break;
       }
-    });
-
-    if (!sourcePlayer) return null;
+      if (!targetTeamKey) return null;
+    }
 
     const courtPlayerIds = new Set(
       [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean).map(p => String(p.id))
     );
 
-    const isSourceInterFemale = sourcePlayer.gender === 'P' && isIntermediateRole(sourcePlayer);
+    // Kumpulkan pemain yang sedang berada di lapangan aktif lain agar tidak terpilih
+    const otherCourtsBusyIds = new Set();
+    if (Array.isArray(activeCourts)) {
+      activeCourts.forEach(c => {
+        if (!c || c === court || c.status === COURT_STATUS.FINISHED || c.status === 'finished') return;
+        if (c.courtNumber && court.courtNumber && c.courtNumber === court.courtNumber) return;
+        [...(c.teamA || []), ...(c.teamB || [])].filter(Boolean).forEach(p => otherCourtsBusyIds.add(String(p.id)));
+      });
+    }
+
+    const isSourceInterFemale = sourcePlayer && sourcePlayer.gender === 'P' && isIntermediateRole(sourcePlayer);
 
     // Filter kandidat yang berstatus 'menunggu'
     const eligibleWaiting = players.filter(p => {
       if (!p || p.is_deleted || p.status === PLAYER_STATUS.TIDAK_AKTIF) return false;
       const pIdStr = String(p.id);
-      if (courtPlayerIds.has(pIdStr)) return false;
+      if (courtPlayerIds.has(pIdStr) || otherCourtsBusyIds.has(pIdStr)) return false;
       if (p.status !== PLAYER_STATUS.MENUNGGU) return false;
 
       // Regulasi Gender:
-      // 1. Jika wanita yang diganti adalah Intermediate -> bisa diganti siapa saja (P atau L)
-      // 2. Jika wanita lain (Pemula/Advance) -> wajib diganti wanita (P)
-      // 3. Jika pria -> wajib diganti pria (L) ATAU wanita dengan role Intermediate
-      let genderCompatible = false;
-      if (sourcePlayer.gender === 'P') {
-        if (isSourceInterFemale) {
-          genderCompatible = true;
-        } else {
-          genderCompatible = (p.gender === 'P');
+      if (sourcePlayer) {
+        // 1. Jika wanita yang diganti adalah Intermediate -> bisa diganti siapa saja (P atau L)
+        // 2. Jika wanita lain (Pemula/Advance) -> wajib diganti wanita (P)
+        // 3. Jika pria -> wajib diganti pria (L) ATAU wanita dengan role Intermediate
+        let genderCompatible = false;
+        if (sourcePlayer.gender === 'P') {
+          if (isSourceInterFemale) {
+            genderCompatible = true;
+          } else {
+            genderCompatible = (p.gender === 'P');
+          }
+        } else { // sourcePlayer pria
+          genderCompatible = (p.gender === 'L') || (p.gender === 'P' && isIntermediateRole(p));
         }
-      } else { // sourcePlayer pria
-        genderCompatible = (p.gender === 'L') || (p.gender === 'P' && isIntermediateRole(p));
-      }
 
-      if (!genderCompatible) return false;
+        if (!genderCompatible) return false;
+      } else {
+        // Jika mengisi slot kosong, jika kategori court PUTRI maka wajib wanita
+        if (court.category === 'PUTRI' && p.gender !== 'P') {
+          return false;
+        }
+      }
 
       // Regulasi Role: Intermediate & Advance tidak boleh 1 tim
       if (teammate && hasInterAndAdvanceTogether([teammate, p])) {
@@ -1022,6 +1063,8 @@
     targetPlayerId,
     players = [],
     partnerRequests = [],
+    partnerHistory = {},
+    activeCourts = [],
     minPlays = 3,
     setToRest = false,
     restCooldown = 1
@@ -1030,13 +1073,15 @@
       return { success: false, message: 'Data lapangan tidak ditemukan.' };
     }
 
-    const targetIdStr = String(targetPlayerId);
-    const searchRes = findBestCourtReplacementPlayer({ court, targetPlayerId, players, minPlays });
+    const searchRes = findBestCourtReplacementPlayer({ court, targetPlayerId, players, activeCourts, minPlays });
 
     if (!searchRes) {
-      const inCourt = [...(court.teamA || []), ...(court.teamB || [])].find(p => p && String(p.id) === targetIdStr);
-      if (!inCourt) {
-        return { success: false, message: 'Pemain tidak ditemukan di lapangan ini.' };
+      if (targetPlayerId !== null && targetPlayerId !== undefined && targetPlayerId !== '') {
+        const targetIdStr = String(targetPlayerId);
+        const inCourt = [...(court.teamA || []), ...(court.teamB || [])].find(p => p && String(p.id) === targetIdStr);
+        if (!inCourt) {
+          return { success: false, message: 'Pemain tidak ditemukan di lapangan ini.' };
+        }
       }
       return {
         success: false,
@@ -1049,37 +1094,43 @@
     // 1. Update court team slot
     court[targetTeamKey][targetIdx] = replacement;
 
-    // 2. Update status pemain yang diganti
-    const realSourcePlayer = players.find(p => String(p.id) === targetIdStr) || sourcePlayer;
-    if (setToRest) {
-      realSourcePlayer.status = PLAYER_STATUS.ISTIRAHAT;
-      realSourcePlayer.cooldown_remaining = restCooldown;
-    } else {
-      realSourcePlayer.status = PLAYER_STATUS.MENUNGGU;
-      realSourcePlayer.cooldown_remaining = 0;
-      realSourcePlayer.waitingSince = Date.now();
+    // 2. Update status pemain yang diganti jika ada
+    let realSourcePlayer = null;
+    if (sourcePlayer) {
+      const targetIdStr = String(sourcePlayer.id);
+      realSourcePlayer = players.find(p => String(p.id) === targetIdStr) || sourcePlayer;
+      if (setToRest) {
+        realSourcePlayer.status = PLAYER_STATUS.ISTIRAHAT;
+        realSourcePlayer.cooldown_remaining = restCooldown;
+      } else {
+        realSourcePlayer.status = PLAYER_STATUS.MENUNGGU;
+        realSourcePlayer.cooldown_remaining = 0;
+        realSourcePlayer.waitingSince = Date.now();
+      }
+
+      // 3. Batalkan request pasangan aktif untuk pemain yang diganti jika ada
+      cancelRequestsForPlayer(realSourcePlayer.id, players, partnerRequests);
+
+      // 4. Bersihkan usedRequest lapangan jika terkait dengan pemain yang diganti
+      if (court.usedRequests && Array.isArray(court.usedRequests)) {
+        court.usedRequests = court.usedRequests.filter(r =>
+          String(r.requesterId) !== targetIdStr && String(r.targetId) !== targetIdStr
+        );
+      }
+      if (court.usedRequest && (String(court.usedRequest.requesterId) === targetIdStr || String(court.usedRequest.targetId) === targetIdStr)) {
+        court.usedRequest = court.usedRequests && court.usedRequests[0] ? court.usedRequests[0] : null;
+      }
     }
 
-    // 3. Batalkan request pasangan aktif untuk pemain yang diganti jika ada
-    cancelRequestsForPlayer(realSourcePlayer.id, players, partnerRequests);
-
-    // 4. Bersihkan usedRequest lapangan jika terkait dengan pemain yang diganti
-    if (court.usedRequests && Array.isArray(court.usedRequests)) {
-      court.usedRequests = court.usedRequests.filter(r =>
-        String(r.requesterId) !== targetIdStr && String(r.targetId) !== targetIdStr
-      );
-    }
-    if (court.usedRequest && (String(court.usedRequest.requesterId) === targetIdStr || String(court.usedRequest.targetId) === targetIdStr)) {
-      court.usedRequest = court.usedRequests && court.usedRequests[0] ? court.usedRequests[0] : null;
-    }
-
-    // 5. Update status pemain pengganti jika court sudah 'sedang_main'
+    // 5. Update status pemain pengganti jika court sudah 'sedang_main' atau 'ongoing'
     const realReplacement = players.find(p => String(p.id) === String(replacement.id)) || replacement;
-    if (court.status === COURT_STATUS.SEDANG_MAIN) {
+    if (court.status === COURT_STATUS.SEDANG_MAIN || court.status === 'ongoing') {
       realReplacement.status = PLAYER_STATUS.DI_LAPANGAN;
+    } else {
+      realReplacement.status = PLAYER_STATUS.MENUNGGU;
     }
 
-    // 6. Perbarui metadata court (category, categoryLabel, playerSummaries)
+    // 6. Perbarui metadata court (category, categoryLabel, playerSummaries, partnerDetails)
     const allFour = [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean);
     const hasFemale = allFour.some(p => p.gender === 'P');
     const allFemale = allFour.length === 4 && allFour.every(p => p.gender === 'P');
@@ -1095,14 +1146,35 @@
       quotaMet: (p.jumlah_main || 0) >= minPlays
     }));
 
+    if (court.teamA && court.teamA.length >= 2 && court.teamB && court.teamB.length >= 2 && court.teamA[0] && court.teamA[1] && court.teamB[0] && court.teamB[1]) {
+      const kA = getPairKey(court.teamA[0].id, court.teamA[1].id);
+      const kB = getPairKey(court.teamB[0].id, court.teamB[1].id);
+      const historyA = (partnerHistory && partnerHistory[kA]) || 0;
+      const historyB = (partnerHistory && partnerHistory[kB]) || 0;
+      court.partnerDetails = {
+        teamAPairHistory: historyA,
+        teamBPairHistory: historyB,
+        hasRepeatedInTeamA: historyA > 0,
+        hasRepeatedInTeamB: historyB > 0
+      };
+      court.isRepeatedPartner = (historyA > 0 || historyB > 0);
+    }
+
+    let message = '';
+    if (!realSourcePlayer) {
+      message = `Slot berhasil diisi oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`;
+    } else if (setToRest) {
+      message = `${realSourcePlayer.name} memilih istirahat. Digantikan oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
+    } else {
+      message = `${realSourcePlayer.name} berhasil diganti oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
+    }
+
     return {
       success: true,
       court,
       oldPlayer: realSourcePlayer,
       newPlayer: realReplacement,
-      message: setToRest
-        ? `${realSourcePlayer.name} memilih istirahat. Digantikan oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
-        : `${realSourcePlayer.name} berhasil diganti oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
+      message
     };
   }
 

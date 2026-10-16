@@ -1606,6 +1606,206 @@ it('Ganti pemain otomatis langsung memilih prioritas main paling sedikit dan sta
   assert.strictEqual(p1.cooldown_remaining, 0);
 });
 
+it('Ganti pemain pada court sedang_main atau ongoing: pengganti langsung berstatus DI_LAPANGAN', () => {
+  const p1 = { id: 'p_101', name: 'Alif', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 };
+  const p2 = { id: 'p_102', name: 'Bima', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 };
+  const p3 = { id: 'p_103', name: 'Candra', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 };
+  const p4 = { id: 'p_104', name: 'Doni', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.SEDANG_MAIN,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const pSub = { id: 'p_105', name: 'Eka (Pengganti)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const players = [p1, p2, p3, p4, pSub];
+
+  const res = replaceCourtPlayerAuto({
+    court,
+    targetPlayerId: 'p_101',
+    players,
+    partnerRequests: [],
+    minPlays: 3,
+    setToRest: false
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.id, 'p_105');
+  assert.strictEqual(pSub.status, PLAYER_STATUS.DI_LAPANGAN, 'Pemain pengganti di court sedang_main harus berstatus DI_LAPANGAN');
+  assert.strictEqual(p1.status, PLAYER_STATUS.MENUNGGU, 'Pemain lama yang diganti kembali berstatus MENUNGGU');
+});
+
+it('Auto-swap pemain mengecualikan pemain yang sudah berada di lapangan aktif lain', () => {
+  const c1p1 = { id: 50, name: 'C1-P1', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const c1p2 = { id: 51, name: 'C1-P2', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const c1p3 = { id: 52, name: 'C1-P3', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const c1p4 = { id: 53, name: 'C1-P4', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court1 = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [c1p1, c1p2],
+    teamB: [c1p3, c1p4]
+  };
+
+  // Court 2 memiliki pemain yang mainnya 0x (tapi sudah dialokasikan ke court 2)
+  const c2p1 = { id: 54, name: 'C2-P1 (Main 0x di Lap 2)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const c2p2 = { id: 55, name: 'C2-P2', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const c2p3 = { id: 56, name: 'C2-P3', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const c2p4 = { id: 57, name: 'C2-P4', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court2 = {
+    courtNumber: 2,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [c2p1, c2p2],
+    teamB: [c2p3, c2p4]
+  };
+
+  // Pemain antrian yang benar-benar bebas di luar lapangan
+  const pFree = { id: 58, name: 'Free Waiting Player', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const allPlayers = [c1p1, c1p2, c1p3, c1p4, c2p1, c2p2, c2p3, c2p4, pFree];
+
+  // Ganti c1p1 pada court1 dengan activeCourts [court1, court2]
+  const res = replaceCourtPlayerAuto({
+    court: court1,
+    targetPlayerId: 50,
+    players: allPlayers,
+    activeCourts: [court1, court2],
+    partnerRequests: [],
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  // c2p1 (main 0x) DILARANG diambil karena berada di court 2! Harus ambil pFree (id 58).
+  assert.strictEqual(res.newPlayer.id, 58, 'Pemain pengganti harus pFree (id 58), bukan c2p1 yang sudah ada di lapangan 2');
+});
+
+it('Pemain yang diganti membatalkan request rekan aktif dan membersihkan usedRequests pada court', () => {
+  const p1 = { id: 60, name: 'Pemohon', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1, request_used: true };
+  const p2 = { id: 61, name: 'Target', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p3 = { id: 62, name: 'Lawan1', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p4 = { id: 63, name: 'Lawan2', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const partnerReq = {
+    id: 'req_60_61',
+    requesterId: 60,
+    targetId: 61,
+    status: 'approved'
+  };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, p2],
+    teamB: [p3, p4],
+    usedRequest: partnerReq,
+    usedRequests: [partnerReq]
+  };
+
+  const pSub = { id: 64, name: 'Pengganti', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const players = [p1, p2, p3, p4, pSub];
+  const partnerRequests = [partnerReq];
+
+  // Ganti p1 (pemohon)
+  const res = replaceCourtPlayerAuto({
+    court,
+    targetPlayerId: 60,
+    players,
+    partnerRequests,
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(partnerReq.status, 'cancelled', 'Request pasangan aktif harus otomatis dibatalkan');
+  assert.strictEqual(court.usedRequests.length, 0, 'usedRequests pada court harus dibersihkan dari request yang pemainnya keluar');
+  assert.strictEqual(court.usedRequest, null, 'usedRequest tunggal harus menjadi null');
+});
+
+it('syncActivePlayerStatuses bekerja akurat dengan ID string & tipe campuran', () => {
+  const p1 = { id: 'str_1', status: PLAYER_STATUS.MENUNGGU };
+  const p2 = { id: 2, status: PLAYER_STATUS.MENUNGGU };
+  const p3 = { id: 'str_3', status: PLAYER_STATUS.MENUNGGU, cooldown_remaining: 1 };
+
+  const courts = [{
+    status: 'ongoing',
+    teamA: [{ id: 'str_1' }],
+    teamB: [{ id: 2 }]
+  }];
+
+  BadmintonService.syncActivePlayerStatuses([p1, p2, p3], courts);
+
+  assert.strictEqual(p1.status, PLAYER_STATUS.DI_LAPANGAN);
+  assert.strictEqual(p2.status, PLAYER_STATUS.DI_LAPANGAN);
+  assert.strictEqual(p3.status, PLAYER_STATUS.ISTIRAHAT);
+});
+
+it('Auto-swap pemain dapat mengisi slot kosong (null/targetPlayerId kosong) sesuai prioritas main', () => {
+  const p1 = { id: 'p_201', name: 'Alif', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p3 = { id: 'p_203', name: 'Candra', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p4 = { id: 'p_204', name: 'Doni', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  // Team A memiliki slot kosong di indeks 1
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, null],
+    teamB: [p3, p4]
+  };
+
+  const pSub1 = { id: 'p_205', name: 'Eka (Main 2x)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 2 };
+  const pSub2 = { id: 'p_206', name: 'Fajar (Main 0x)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const players = [p1, p3, p4, pSub1, pSub2];
+
+  const res = replaceCourtPlayerAuto({
+    court,
+    targetPlayerId: '', // Slot kosong
+    players,
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.id, 'p_206', 'Slot kosong harus diisi pemain dengan main paling sedikit');
+  assert.strictEqual(court.teamA[1].id, 'p_206', 'Slot kosong teamA[1] berhasil diisi');
+});
+
+it('findBestCourtReplacementPlayer mengecualikan court yang memiliki nomor lapangan sama pada activeCourts', () => {
+  const p1 = { id: 70, name: 'P1', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p2 = { id: 71, name: 'P2', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p3 = { id: 72, name: 'P3', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p4 = { id: 73, name: 'P4', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const clonedCourt = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const pFree = { id: 75, name: 'PFree', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const players = [p1, p2, p3, p4, pFree];
+
+  const best = findBestCourtReplacementPlayer({
+    court,
+    targetPlayerId: 70,
+    players,
+    activeCourts: [clonedCourt],
+    minPlays: 3
+  });
+
+  assert.ok(best !== null);
+  assert.strictEqual(best.replacement.id, 75);
+});
+
 (async () => {
   console.log('\n--- SEC-2. Autentikasi Pesan MQTT & TOFU (MqttAuth) ---');
   await itAsync('Host menandatangani pesan dengan HMAC dan penerima menolak signature palsu/replay', async () => {

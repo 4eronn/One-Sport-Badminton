@@ -3518,40 +3518,116 @@
   </div>
 </div>
 
-<!-- ── MODAL: LOGIN PENGGUNA & HOST ── -->
+<!-- ── MODAL: AUTH / LOGIN / SIGN UP / GUEST ── -->
 <div class="modal-overlay" id="loginModalOverlay" style="z-index: 99998;">
-  <div class="modal-box" style="max-width: 380px;">
-    <div class="modal-header">
-      <div class="modal-title">Masuk ke ONESPORT</div>
-      <button class="btn-del-player" onclick="closeLoginModal()">✕</button>
+  <div class="modal-box" style="max-width: 400px; padding: 20px;">
+    <div class="modal-header" style="margin-bottom: 12px; align-items: center;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div style="width:32px; height:32px; border-radius:8px; background:var(--brand-orange); display:flex; align-items:center; justify-content:center; color:#FFF; font-weight:900; font-size:1.05rem;">
+          1S
+        </div>
+        <div>
+          <div class="modal-title" style="font-size: 1.05rem; line-height: 1.2;">ONESPORT</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">Sistem Pertandingan Olahraga</div>
+        </div>
+      </div>
+      <button class="btn-del-player" id="btnLoginModalCloseBtn" onclick="closeLoginModal()" title="Tutup">✕</button>
     </div>
-    <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.45;">
-      Silakan masuk dengan akun Anda untuk mengakses fitur aplikasi.
+
+    <!-- Tab Switcher: Sign In, Sign Up, Guest -->
+    <div class="login-tab-switcher" style="display: flex; background: #F1F5F9; border-radius: var(--radius-md); padding: 3px; gap: 4px; margin-bottom: 16px;">
+      <button type="button" class="login-tab-btn active" id="loginTabBtnSignIn" onclick="switchLoginAuthTab('signin')" style="flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: 800; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; background: #FFF; color: var(--brand-navy-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        Sign In
+      </button>
+      <button type="button" class="login-tab-btn" id="loginTabBtnSignUp" onclick="switchLoginAuthTab('signup')" style="flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: 800; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; background: transparent; color: var(--text-muted);">
+        Sign Up
+      </button>
+      <button type="button" class="login-tab-btn" id="loginTabBtnGuest" onclick="switchLoginAuthTab('guest')" style="flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: 800; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; background: transparent; color: var(--text-muted);">
+        Guest
+      </button>
     </div>
 
-    <form onsubmit="event.preventDefault(); submitLoginForm();" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;">
-      <div id="loginErrorMessage" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.74rem; font-weight: 700; line-height: 1.4; text-align: center;">
-        Akses ditolak: Username atau password salah!
+    <!-- PANE 1: SIGN IN -->
+    <div id="loginAuthPaneSignIn" style="display: block;">
+      <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.45;">
+        Masuk dengan akun Host (Admin) atau akun Pengguna Anda.
       </div>
-      <div>
-        <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username / Email</label>
-        <input type="text" id="loginInputEmail" class="input-styled-os" placeholder="" autocomplete="username" required>
-      </div>
+      <form onsubmit="event.preventDefault(); submitLoginForm();" style="display: flex; flex-direction: column; gap: 11px;">
+        <div id="loginErrorMessage" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.74rem; font-weight: 700; line-height: 1.4; text-align: center;">
+          Akses ditolak: Username atau password salah!
+        </div>
+        <div>
+          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username / Email</label>
+          <input type="text" id="loginInputEmail" class="input-styled-os" placeholder="Username atau email..." autocomplete="username" required>
+        </div>
+        <div>
+          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Password</label>
+          <div style="position:relative;">
+            <input type="password" id="loginInputPassword" class="input-styled-os" placeholder="Password akun..." style="padding-right:42px;" autocomplete="current-password" required>
+            <button type="button" onclick="togglePasswordVisibility('loginInputPassword', this)" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; display:flex; align-items:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-os-orange" style="width: 100%; padding: 10px; font-weight: 800; margin-top: 4px;">
+          Masuk Sekarang (Sign In)
+        </button>
+      </form>
+    </div>
 
-      <div>
-        <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Password</label>
-        <input type="password" id="loginInputPassword" class="input-styled-os" placeholder="" autocomplete="current-password" required>
+    <!-- PANE 2: SIGN UP -->
+    <div id="loginAuthPaneSignUp" style="display: none;">
+      <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.45;">
+        Daftarkan akun baru untuk menyimpan profil dan data pertandingan Anda secara permanen.
       </div>
+      <form onsubmit="event.preventDefault(); submitSignUpForm();" style="display: flex; flex-direction: column; gap: 10px;">
+        <div id="signUpErrorMessage" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.74rem; font-weight: 700; line-height: 1.4; text-align: center;"></div>
+        <div>
+          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Nama Lengkap / Panggilan</label>
+          <input type="text" id="signUpInputName" class="input-styled-os" placeholder="Contoh: Budi Santoso" maxlength="30" required>
+        </div>
+        <div>
+          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username</label>
+          <input type="text" id="signUpInputUsername" class="input-styled-os" placeholder="Contoh: budi123 (huruf/angka)" maxlength="20" autocomplete="username" required>
+        </div>
+        <div>
+          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Password</label>
+          <div style="position:relative;">
+            <input type="password" id="signUpInputPassword" class="input-styled-os" placeholder="Minimal 4 karakter..." style="padding-right:42px;" autocomplete="new-password" required>
+            <button type="button" onclick="togglePasswordVisibility('signUpInputPassword', this)" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; display:flex; align-items:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Konfirmasi Password</label>
+          <input type="password" id="signUpInputPasswordConfirm" class="input-styled-os" placeholder="Ketik ulang password..." autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn-os-cyan" style="width: 100%; padding: 10px; font-weight: 800; margin-top: 4px;">
+          Daftar Akun Baru (Sign Up)
+        </button>
+      </form>
+    </div>
 
-      <div style="display: flex; gap: 8px; margin-top: 4px;">
-        <button type="button" class="btn-court-action" style="flex: 1; padding: 10px;" onclick="closeLoginModal()">Batal</button>
-        <button type="submit" class="btn-os-orange" style="flex: 2; padding: 10px; font-weight: 800;">Masuk</button>
+    <!-- PANE 3: GUEST -->
+    <div id="loginAuthPaneGuest" style="display: none;">
+      <div style="text-align: center; padding: 8px 4px 14px 4px;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #EFF6FF; color: var(--brand-blue); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </div>
+        <div style="font-weight: 800; font-size: 0.95rem; color: var(--brand-navy-dark); margin-bottom: 6px;">Masuk Sebagai Tamu (Guest)</div>
+        <div style="font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+          Masuk secara cepat tanpa akun. Ketentuan mode Tamu:
+        </div>
+        <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 0.73rem; color: var(--brand-navy-soft); text-align: left; line-height: 1.5; margin-bottom: 14px;">
+          <div>• <strong>Hanya Penonton:</strong> Hanya dapat memantau pertandingan berjalan (read-only).</div>
+          <div>• <strong>Tanpa Data Selesai:</strong> Tidak mendapatkan data pertandingan jika sudah selesai.</div>
+          <div>• <strong>Sesi Sementara:</strong> Jika Anda me-refresh atau keluar dari web/app, Anda akan kembali ke tampilan login.</div>
+        </div>
+        <button type="button" class="btn-os-orange" style="width: 100%; padding: 10px; font-weight: 800;" onclick="loginAsGuest()">
+          Lanjut Sebagai Tamu (Guest)
+        </button>
       </div>
-    </form>
-
-    <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.71rem; color:var(--text-secondary); line-height:1.45;">
-      <div>• <strong>Host:</strong> admin · temanmainlebihdekat</div>
-      <div>• <strong>User:</strong> user · user123 (atau akun terdaftar)</div>
     </div>
   </div>
 </div>
@@ -3602,6 +3678,7 @@ function saveUsersDatabase(users) {
   } catch (e) {}
 }
 
+let isGuestSession = false;
 let currentUser = null;
 try {
   const savedUser = localStorage.getItem('onesport_auth_user');
@@ -3625,15 +3702,19 @@ try {
   currentUser = null;
 }
 
+function isGuestUser() {
+  return isGuestSession || !!(currentUser && currentUser.role === 'guest');
+}
+
 function isHostUser() {
-  if (!currentUser) return false;
+  if (!currentUser || isGuestUser()) return false;
   if (currentUser.role === 'host') return true;
   const identifier = (currentUser.email || currentUser.username || '').toLowerCase();
   return (identifier === HOST_EMAIL.toLowerCase() || identifier === 'admin');
 }
 
 function isRegularUser() {
-  return !!(currentUser && !isHostUser());
+  return !!(currentUser && !isHostUser() && !isGuestUser());
 }
 
 let userRole = isHostUser() ? 'host' : 'spectator';
@@ -3834,6 +3915,12 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const splash = document.getElementById('splashScreen');
     if (splash) splash.classList.add('hide');
+
+    // Jika pengguna belum login (tidak ada akun tersimpan atau guest setelah refresh/keluar),
+    // langsung tampilkan modal login dengan pilihan Sign In, Sign Up, dan Guest.
+    if (!currentUser && !isGuestSession) {
+      openLoginModal(true);
+    }
   }, 750);
 
   // Auto detect updates in background (Hanya untuk aplikasi Android APK, Web tidak pakai)
@@ -5000,7 +5087,7 @@ function openCustomCourtModal(targetCourtIdx = null) {
 
   if (targetCourtIdx !== null && round && round.courts && round.courts[targetCourtIdx]) {
     const court = round.courts[targetCourtIdx];
-    customCourtState.selectedPlayerIds = [...court.teamA, ...court.teamB].filter(Boolean).map(p => p.id);
+    customCourtState.selectedPlayerIds = [...court.teamA, ...court.teamB].filter(Boolean).map(p => String(p.id));
     customCourtState.teamA = [...court.teamA];
     customCourtState.teamB = [...court.teamB];
     if (titleEl) titleEl.textContent = `Atur Pemain ${court.courtName || ('Lapangan ' + (targetCourtIdx + 1))}`;
@@ -5051,19 +5138,20 @@ function setCustomCourtFilter(tabKey, doRender = true) {
 }
 
 function toggleCustomCourtPlayer(playerId) {
-  const idx = customCourtState.selectedPlayerIds.indexOf(playerId);
+  const pIdStr = String(playerId);
+  const idx = customCourtState.selectedPlayerIds.findIndex(id => String(id) === pIdStr);
   if (idx !== -1) {
     customCourtState.selectedPlayerIds.splice(idx, 1);
-    customCourtState.teamA = customCourtState.teamA.filter(p => p && p.id !== playerId);
-    customCourtState.teamB = customCourtState.teamB.filter(p => p && p.id !== playerId);
+    customCourtState.teamA = customCourtState.teamA.filter(p => p && String(p.id) !== pIdStr);
+    customCourtState.teamB = customCourtState.teamB.filter(p => p && String(p.id) !== pIdStr);
   } else {
     if (customCourtState.selectedPlayerIds.length >= 4) {
       showToast('Maksimal 4 pemain untuk ganda bulutangkis. Hapus salah satu pemain yang sudah dipilih terlebih dahulu.', 'error');
       return;
     }
-    customCourtState.selectedPlayerIds.push(playerId);
+    customCourtState.selectedPlayerIds.push(pIdStr);
     if (customCourtState.selectedPlayerIds.length === 4) {
-      const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+      const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => String(p.id) === String(id))).filter(Boolean);
       const split = splitFourPlayersIntoTeams(four);
       customCourtState.teamA = split.teamA;
       customCourtState.teamB = split.teamB;
@@ -5171,6 +5259,7 @@ function renderCustomCourtPlayersList() {
   }
 
   const filtered = bPlayers.filter(p => {
+    if (!p || p.is_deleted || p.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) return false;
     if (q && !p.name.toLowerCase().includes(q)) return false;
     if (customCourtState.filter === 'resting') {
       const isSelected = customCourtState.selectedPlayerIds.includes(p.id);
@@ -5195,10 +5284,11 @@ function renderCustomCourtPlayersList() {
       statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; padding:2px 6px; border-radius:4px; font-weight:800;">${escapeHtml(playerLocMap[p.id])}</span>`;
     }
 
+    const pIdSafe = escapeHtml(String(p.id));
     return `
-      <div class="custom-player-item ${isSelected ? 'selected' : ''}" onclick="toggleCustomCourtPlayer(${p.id})">
+      <div class="custom-player-item ${isSelected ? 'selected' : ''}" onclick="toggleCustomCourtPlayer('${pIdSafe}')">
         <div style="display:flex; align-items:center; gap:8px;">
-          <input type="checkbox" ${isSelected ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px; accent-color:var(--brand-orange);" onclick="event.stopPropagation(); toggleCustomCourtPlayer(${p.id})">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px; accent-color:var(--brand-orange);" onclick="event.stopPropagation(); toggleCustomCourtPlayer('${pIdSafe}')">
           <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${p.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
             <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</div>
@@ -5223,9 +5313,9 @@ function saveCustomCourt() {
     return;
   }
 
-  // Jika terdapat pelanggaran aturan Intermadiate & Advance pada susunan tim, acak otomatis
+  // Jika terdapat pelanggaran aturan Intermediate & Advance pada susunan tim, acak otomatis
   if (hasInterAndAdvanceTogether(customCourtState.teamA) || hasInterAndAdvanceTogether(customCourtState.teamB)) {
-    const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+    const four = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => String(p.id) === String(id))).filter(Boolean);
     const split = splitFourPlayersIntoTeams(four);
     customCourtState.teamA = split.teamA;
     customCourtState.teamB = split.teamB;
@@ -5239,38 +5329,56 @@ function saveCustomCourt() {
       roundNumber: 1,
       status: 'ongoing',
       courts: [],
+      finishedCourts: [],
       resting: [...bPlayers]
     }];
     bCurrentRoundIndex = 0;
   }
 
-  const round = bSchedule[bCurrentRoundIndex];
+  const round = (bSchedule && bSchedule[bCurrentRoundIndex]) ? bSchedule[bCurrentRoundIndex] : ensureBadmintonCourtsInitialized();
   if (!round) return;
   if (!round.resting) round.resting = [];
   if (!round.courts) round.courts = [];
 
-  const selectedIds = new Set(customCourtState.selectedPlayerIds);
-  const fourPlayers = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => p.id === id)).filter(Boolean);
+  const selectedIds = new Set(customCourtState.selectedPlayerIds.map(String));
+  const fourPlayers = customCourtState.selectedPlayerIds.map(id => bPlayers.find(p => String(p.id) === String(id))).filter(Boolean);
 
   if (customCourtState.targetCourtIdx !== null && round.courts[customCourtState.targetCourtIdx]) {
     // Mode EDIT lapangan yang sudah ada
     const court = round.courts[customCourtState.targetCourtIdx];
-    const oldPlayers = [...court.teamA, ...court.teamB].filter(Boolean);
+    const oldPlayers = [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean);
 
-    // Kembalikan pemain lama yang tidak terpilih ke istirahat
+    // Pemain lama yang tidak terpilih kembali ke status MENUNGGU dan batalkan request rekan
     oldPlayers.forEach(p => {
-      if (!selectedIds.has(p.id) && !round.resting.some(rp => rp.id === p.id)) {
-        round.resting.push(p);
+      if (!selectedIds.has(String(p.id))) {
+        const realP = bPlayers.find(bp => String(bp.id) === String(p.id)) || p;
+        realP.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
+        realP.cooldown_remaining = 0;
+        realP.waitingSince = Date.now();
+        BadmintonService.cancelRequestsForPlayer(p.id, bPlayers, bPartnerRequests);
       }
     });
 
-    // Hapus pemain terpilih dari istirahat
-    round.resting = round.resting.filter(p => !selectedIds.has(p.id));
+    // Bersihkan pemain terpilih jika ada di lapangan lain pada round ini
+    round.courts.forEach((otherC, otherIdx) => {
+      if (otherIdx === customCourtState.targetCourtIdx || !otherC) return;
+      ['teamA', 'teamB'].forEach(tKey => {
+        if (otherC[tKey]) {
+          otherC[tKey] = otherC[tKey].filter(p => p && !selectedIds.has(String(p.id)));
+        }
+      });
+      updateCourtMetadataAfterPlayerChange(otherC);
+    });
 
     court.courtName = courtName;
     court.teamA = customCourtState.teamA;
     court.teamB = customCourtState.teamB;
-    refreshCourtCategory(court);
+    updateCourtMetadataAfterPlayerChange(court);
+
+    // Sinkronkan status pemain dan resting
+    BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
+    syncRoundResting(round);
+
     showToast(`Lapangan ${court.courtName} berhasil diperbarui!`, 'success');
   } else {
     // Mode TAMBAH LAPANGAN PILIHAN BARU
@@ -5288,26 +5396,33 @@ function saveCustomCourt() {
       status: 'pending'
     };
 
-    // Hapus 4 pemain dari resting
-    round.resting = round.resting.filter(p => !selectedIds.has(p.id));
-
     // Jika ada pemain yang sebelumnya di lapangan lain pada round ini, bersihkan dari lapangan lain
     round.courts.forEach(otherC => {
+      if (!otherC) return;
       ['teamA', 'teamB'].forEach(tKey => {
-        otherC[tKey] = otherC[tKey].filter(p => p && !selectedIds.has(p.id));
+        if (otherC[tKey]) {
+          otherC[tKey] = otherC[tKey].filter(p => p && !selectedIds.has(String(p.id)));
+        }
       });
+      updateCourtMetadataAfterPlayerChange(otherC);
     });
 
-    refreshCourtCategory(newCourt);
     round.courts.push(newCourt);
+    updateCourtMetadataAfterPlayerChange(newCourt);
 
     bNumCourts = Math.max(bNumCourts, round.courts.length);
     updateSessionLabels();
+
+    // Sinkronkan status pemain dan resting
+    BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
+    syncRoundResting(round);
+
     showToast(`${newCourt.courtName} berhasil dibuat dengan 4 pemain pilihan!`, 'success');
   }
 
   closeCustomCourtModal();
   renderCourtsView();
+  renderPlayersList();
   renderLeaderboard();
   persistAndBroadcast();
 }
@@ -5326,13 +5441,14 @@ function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, 
     if (!isHost || isLocked) {
       return `<div class="player-cell-pill disabled" style="cursor:default;"><span style="color:var(--text-muted); font-size:0.75rem;">(Kosong)</span></div>`;
     }
-    return `<div class="player-cell-pill" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, 0)" title="Pilih pemain untuk slot ini"><span style="color:var(--brand-orange); font-size:0.75rem; font-weight:700;">+ Pilih Pemain</span></div>`;
+    return `<div class="player-cell-pill" onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, '')" title="Pilih pemain untuk slot ini"><span style="color:var(--brand-orange); font-size:0.75rem; font-weight:700;">+ Pilih Pemain</span></div>`;
   }
   const isMale = p.gender === 'L';
   const canSwap = isHost && !isLocked;
-  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${escapeHtml(p.name)}" style="cursor:pointer;"` : `style="cursor:default;"`;
+  const pIdSafe = escapeHtml(String(p.id));
+  const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, '${pIdSafe}')" title="Klik untuk ganti / tukar pemain ${escapeHtml(p.name)}" style="cursor:pointer;"` : `style="cursor:default;"`;
   const swapBtnHtml = canSwap ? `
-    <span onclick="event.stopPropagation(); handleAutoSwapCourtPlayer(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Ganti pemain otomatis (prioritas main paling sedikit)" style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:2px 7px; border-radius:4px; display:inline-flex; align-items:center; gap:2px; cursor:pointer;">⇄ Ganti</span>` : '';
+    <span onclick="event.stopPropagation(); handleAutoSwapCourtPlayer(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, '${pIdSafe}')" title="Ganti pemain otomatis (prioritas main paling sedikit)" style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:2px 7px; border-radius:4px; display:inline-flex; align-items:center; gap:2px; cursor:pointer;">⇄ Ganti</span>` : '';
 
   return `
     <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" ${clickAttr}>
@@ -5716,6 +5832,22 @@ function renderCourtsView() {
 
       // ── 4. MATCH SELESAI (FINISHED) ──
       if (!isHost) {
+        if (isGuestUser()) {
+          return `
+            <div class="os-card is-finished" style="margin-top:8px; border:1.5px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
+              <div class="card-top-title" style="margin-bottom:6px;">
+                <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
+                <span class="court-status-chip finished" style="background:#E2E8F0; color:#475569;">Selesai</span>
+              </div>
+              <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Pertandingan Telah Selesai</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data skor dan pemain pertandingan selesai tidak tersedia untuk akun Tamu (Guest).</div>
+              <button class="btn-court-action" style="font-size:0.74rem; padding:6px 14px; width:auto; margin:0 auto; font-weight:800; color:var(--brand-blue); border-color:#BFDBFE; background:#EFF6FF;" onclick="openLoginModal()">
+                Masuk / Daftar Akun
+              </button>
+            </div>
+          `;
+        }
+
         return `
           <div class="os-card is-finished" style="margin-top:8px;">
             <div class="card-top-title">
@@ -5847,13 +5979,16 @@ function renderCourtsView() {
       if (waitingPlayers.length === 0) {
         drawerHtml += `<span style="font-size:0.75rem; color:var(--text-muted);">Tidak ada pemain menunggu.</span>`;
       } else {
-        drawerHtml += waitingPlayers.map(p => `
-          <span class="resting-chip" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46;" onclick="openSwapFromResting(${bCurrentRoundIndex}, ${p.id})" title="Klik untuk masukkan ${escapeHtml(p.name)} ke lapangan">
-            <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}">${p.gender}</span>
-            <strong>${escapeHtml(p.name)}</strong>
-            <span class="quota-badge ${p.jumlah_main >= bMinPlays ? 'quota-ok' : (p.jumlah_main > 0 ? 'quota-mid' : 'quota-0')}">${p.jumlah_main || 0}/${bMinPlays}</span>
-          </span>
-        `).join('');
+        drawerHtml += waitingPlayers.map(p => {
+          const pIdSafe = escapeHtml(String(p.id));
+          return `
+            <span class="resting-chip" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46;" onclick="openSwapFromResting(${bCurrentRoundIndex}, '${pIdSafe}')" title="Klik untuk masukkan ${escapeHtml(p.name)} ke lapangan">
+              <span class="gender-badge ${p.gender === 'L' ? 'male' : 'female'}">${p.gender}</span>
+              <strong>${escapeHtml(p.name)}</strong>
+              <span class="quota-badge ${p.jumlah_main >= bMinPlays ? 'quota-ok' : (p.jumlah_main > 0 ? 'quota-mid' : 'quota-0')}">${p.jumlah_main || 0}/${bMinPlays}</span>
+            </span>
+          `;
+        }).join('');
       }
       drawerHtml += `</div>`;
 
@@ -5864,13 +5999,16 @@ function renderCourtsView() {
             Istirahat / Cooldown (${restingPlayers.length} Pemain - Tidak Masuk Antrian)
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
-            ${restingPlayers.map(p => `
-              <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Cooldown: ${p.cooldown_remaining || 1} match lagi">
-                <span>${escapeHtml(p.name)}</span>
-                <span style="font-size:0.65rem; font-weight:800; background:#FEF3C7; padding:1px 5px; border-radius:4px;">${p.cooldown_remaining || 1} match lagi</span>
-                <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly(${p.id})" title="Selesai istirahat sekarang">Siap</span>
-              </span>
-            `).join('')}
+            ${restingPlayers.map(p => {
+              const pIdSafe = escapeHtml(String(p.id));
+              return `
+                <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Cooldown: ${p.cooldown_remaining || 1} match lagi">
+                  <span>${escapeHtml(p.name)}</span>
+                  <span style="font-size:0.65rem; font-weight:800; background:#FEF3C7; padding:1px 5px; border-radius:4px;">${p.cooldown_remaining || 1} match lagi</span>
+                  <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly('${pIdSafe}')" title="Selesai istirahat sekarang">Siap</span>
+                </span>
+              `;
+            }).join('')}
           </div>
         `;
       }
@@ -5918,6 +6056,22 @@ function renderCourtsView() {
     activeCourtsContainer.innerHTML = sMatches.map((m, idx) => {
       const isFinished = m.status === 'finished';
       const isOngoing = m.status === 'ongoing';
+
+      if (isFinished && isGuestUser()) {
+        return `
+          <div class="os-card is-finished" style="margin-top:10px; border:1.5px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
+            <div class="card-top-title" style="margin-bottom:6px;">
+              <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(m.title)}</span>
+              <span class="court-status-chip finished" style="background:#E2E8F0; color:#475569;">Selesai</span>
+            </div>
+            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Match Soccer Telah Selesai</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data skor pertandingan selesai tidak tersedia untuk akun Tamu (Guest).</div>
+            <button class="btn-court-action" style="font-size:0.74rem; padding:6px 14px; width:auto; margin:0 auto; font-weight:800; color:var(--brand-blue); border-color:#BFDBFE; background:#EFF6FF;" onclick="openLoginModal()">
+              Masuk / Daftar Akun
+            </button>
+          </div>
+        `;
+      }
 
       return `
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px;">
@@ -5975,8 +6129,11 @@ function proposeNextCourtMatch(cIdx) {
   }
 
   round.courts[cIdx] = res.court;
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
   BadmintonService.logHostAction(bAuditLog, 'PROPOSE_MATCH', { courtNumber: cIdx + 1 });
   renderCourtsView();
+  renderPlayersList();
   persistAndBroadcast();
   showToast(`Usulan match untuk ${res.court.courtName} siap! Menunggu ACC Host.`, 'info');
 }
@@ -5993,6 +6150,7 @@ function hostAccCourt(cIdx) {
     return;
   }
 
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
   BadmintonService.logHostAction(bAuditLog, 'ACC_MATCH', { courtNumber: cIdx + 1, courtName: court.courtName });
   renderCourtsView();
   renderPlayersList();
@@ -6007,6 +6165,8 @@ function hostRejectCourt(cIdx) {
   if (!court) return;
 
   const res = BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
   BadmintonService.logHostAction(bAuditLog, 'REJECT_MATCH', { courtNumber: cIdx + 1 });
   renderCourtsView();
   renderPlayersList();
@@ -6022,6 +6182,8 @@ function clearCourt(cIdx) {
 
   BadmintonService.rejectCourtProposal(court, bPlayers, bPartnerRequests);
   court.status = BadmintonService.COURT_STATUS.KOSONG;
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
   BadmintonService.logHostAction(bAuditLog, 'CLEAR_COURT', { courtNumber: cIdx + 1 });
   renderCourtsView();
   renderPlayersList();
@@ -6045,6 +6207,8 @@ function cancelOngoingCourt(cIdx) {
   court.scoreA = 0;
   court.scoreB = 0;
   court.winner = null;
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
   BadmintonService.logHostAction(bAuditLog, 'CANCEL_MATCH', { courtNumber: cIdx + 1, courtName: cName });
   renderCourtsView();
   renderPlayersList();
@@ -6078,6 +6242,8 @@ function freeFinishedCourt(cIdx) {
     winner: null,
     shuttlecocks: { baru: 0, bekas_layak: 0, bekas_dihasilkan: 0 }
   };
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
 
   renderCourtsView();
   renderHistory();
@@ -7024,6 +7190,24 @@ function renderLeaderboard() {
 // ── HISTORY ──
 function renderHistory() {
   const container = document.getElementById('historyRoundsContainer');
+  if (isGuestUser()) {
+    container.innerHTML = `
+      <div class="os-card" style="text-align:center; padding:32px 16px; margin-top:8px;">
+        <div style="width:48px; height:48px; border-radius:50%; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div style="font-weight:900; font-size:1.02rem; color:var(--brand-navy-dark); margin-bottom:6px;">Riwayat Pertandingan Terkunci</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); max-width:320px; margin:0 auto 16px auto; line-height:1.45;">
+          Data seluruh pertandingan yang telah selesai tidak dapat diakses oleh akun Tamu (Guest). Silakan Sign In atau Sign Up untuk melihat riwayat lengkap.
+        </div>
+        <button class="btn-os-orange" style="font-size:0.8rem; padding:8px 20px; font-weight:800; width:auto; margin:0 auto;" onclick="openLoginModal()">
+          Masuk / Daftar Akun
+        </button>
+      </div>
+    `;
+    return;
+  }
+
   if (currentSport === 'badminton') {
     const roundsWithMatches = bSchedule.map((r, rIdx) => {
       const finishedMatches = [
@@ -7138,6 +7322,30 @@ function renderFinalPodium() {
   const btnNewMabar = document.getElementById('btnNewMabarSession');
   if (btnNewMabar) {
     btnNewMabar.style.display = (userRole === 'host') ? 'inline-flex' : 'none';
+  }
+
+  if (isGuestUser()) {
+    if (podium) {
+      podium.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align:center; padding:24px 16px; background:#F8FAFC; border:1.5px dashed #CBD5E1; border-radius:var(--radius-lg); margin-bottom:12px;">
+          <div style="font-weight:900; font-size:0.95rem; color:var(--brand-navy-dark); margin-bottom:4px;">Podium & Klasemen Akhir Terkunci</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data podium dan rekapitulasi hasil pertandingan selesai tidak tersedia untuk akun Tamu (Guest).</div>
+          <button class="btn-os-orange" style="font-size:0.75rem; padding:6px 16px; font-weight:800; width:auto; margin:0 auto;" onclick="openLoginModal()">
+            Masuk / Daftar Akun
+          </button>
+        </div>
+      `;
+    }
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+            Klasemen akhir pertandingan hanya tersedia untuk Pengguna terdaftar dan Host.
+          </td>
+        </tr>
+      `;
+    }
+    return;
   }
 
   if (currentSport === 'badminton') {
@@ -7348,6 +7556,7 @@ function startNewMabarSession() {
 
 // ── SETTINGS MODAL & USER PROFILE ──
 function getUserDisplayName() {
+  if (isGuestUser()) return 'Tamu (Penonton)';
   const customName = localStorage.getItem('onesport_user_display_name');
   if (currentUser && currentUser.name) {
     return currentUser.name;
@@ -7389,6 +7598,7 @@ function saveUserNameFromSettings(silent = false) {
 }
 
 function getUserUsername() {
+  if (isGuestUser()) return 'guest';
   if (currentUser) {
     return currentUser.username || currentUser.email || 'user';
   }
@@ -7622,6 +7832,7 @@ function findHistoryItemById(id) {
 }
 
 function updateWatchedRoomLiveRecap(roomId) {
+  if (isGuestUser()) return;
   try {
     if (!roomId) return;
     const currentUname = (getUserUsername() || 'user').toLowerCase();
@@ -7915,7 +8126,63 @@ function renderAccountTab() {
     return;
   }
 
-  // CASE 3: NOT LOGGED IN / GUEST (Tampilkan Form Login)
+  // CASE 3: GUEST USER ACCOUNT
+  if (isGuestUser()) {
+    container.innerHTML = `
+      <div class="os-card" style="margin-bottom: 14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-orange);"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <div style="font-weight:900; font-size:1.15rem; color:var(--brand-navy-dark);">Akun Tamu (Guest)</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <!-- Profile Card Header -->
+          <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:12px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:38px; height:38px; border-radius:50%; background:#FFF7ED; color:var(--brand-orange); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:800; color:var(--brand-navy-dark);">Tamu (Penonton)</div>
+                <div style="font-size:0.72rem; color:var(--text-muted);">Akses Sementara · Hanya Penonton</div>
+              </div>
+            </div>
+            <span class="auth-role-tag" style="font-size:0.65rem; padding:3px 9px; background:var(--brand-orange); color:#FFF; font-weight:800; border-radius:999px;">GUEST</span>
+          </div>
+
+          <!-- Informasi Akses Tamu -->
+          <div style="background:#FFFDF7; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:10px 12px; font-size:0.73rem; color:#92400E; line-height:1.5;">
+            <div>• <strong>Mode Penonton:</strong> Anda hanya dapat memantau siaran langsung pertandingan.</div>
+            <div>• <strong>Tanpa Data Selesai:</strong> Data skor dan rekapan pertandingan yang telah selesai tidak dapat diakses.</div>
+            <div>• <strong>Sesi Sementara:</strong> Jika Anda me-refresh atau keluar dari app/web, Anda akan kembali ke tampilan login.</div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn-os-orange" style="width:100%; padding:10px; font-weight:800; font-size:0.8rem;" onclick="openLoginModal(); switchLoginAuthTab('signin');">
+              Masuk ke Akun (Sign In)
+            </button>
+            <button type="button" class="btn-os-cyan" style="width:100%; padding:10px; font-weight:800; font-size:0.8rem;" onclick="openLoginModal(); switchLoginAuthTab('signup');">
+              Daftar Akun Baru (Sign Up)
+            </button>
+            <button type="button" class="btn-court-action" style="font-size:0.78rem; padding:9px 12px; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer;" onclick="logoutUser()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <span>Keluar dari Mode Tamu</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hak Cipta -->
+        <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:14px; text-align:center;">
+          <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:800;">
+            &copy; 2026 OneSport. Hak Cipta Dilindungi
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // CASE 4: NOT LOGGED IN (Tampilkan Form Login)
   container.innerHTML = `
     <div class="os-card" style="margin-bottom: 14px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
@@ -7924,7 +8191,7 @@ function renderAccountTab() {
       </div>
 
       <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px; line-height:1.45;">
-        Masuk ke akun Host untuk mengatur sesi dan lapangan, atau masuk sebagai Pengguna untuk mengelola profil dan password akun Anda.
+        Silakan masuk dengan akun Anda untuk mengakses fitur lengkap aplikasi.
       </div>
 
       <form onsubmit="event.preventDefault(); submitTabAccountLogin();" style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;">
@@ -7934,7 +8201,7 @@ function renderAccountTab() {
 
         <div>
           <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Username / Email</label>
-          <input type="text" id="tabAccountLoginUsername" class="input-styled-os" placeholder="Contoh: admin atau user" required>
+          <input type="text" id="tabAccountLoginUsername" class="input-styled-os" placeholder="Username atau email..." required>
         </div>
 
         <div>
@@ -7952,11 +8219,13 @@ function renderAccountTab() {
         </button>
       </form>
 
-      <!-- Quick Credential Hints -->
-      <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px 12px; font-size:0.72rem; color:var(--text-secondary); line-height:1.5;">
-        <strong style="color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Pilihan Akun Tersedia:</strong>
-        <div>• <strong>Host (Admin):</strong> Username <code>admin</code> · Password <code>temanmainlebihdekat</code></div>
-        <div>• <strong>User Biasa:</strong> Username <code>user</code> · Password <code>user123</code> (atau username terdaftar Anda)</div>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-court-action" style="flex:1; padding:8px; font-size:0.75rem; font-weight:700;" onclick="openLoginModal(); switchLoginAuthTab('signup');">
+          Daftar Akun Baru
+        </button>
+        <button type="button" class="btn-court-action" style="flex:1; padding:8px; font-size:0.75rem; font-weight:700;" onclick="loginAsGuest();">
+          Masuk Tamu (Guest)
+        </button>
       </div>
 
       <!-- Hak Cipta -->
@@ -8504,18 +8773,86 @@ function refreshCourtCategory(court) {
   }
 }
 
+function updateCourtMetadataAfterPlayerChange(court) {
+  if (!court) return;
+  refreshCourtCategory(court);
+
+  const allPlayers = [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean);
+  court.playerSummaries = allPlayers.map(p => ({
+    id: p.id,
+    name: p.name,
+    role: p.role,
+    gender: p.gender,
+    jumlah_main: p.jumlah_main || 0,
+    quotaMet: (p.jumlah_main || 0) >= (typeof bMinPlays === 'number' ? bMinPlays : 3)
+  }));
+
+  const courtPlayerIdSet = new Set(allPlayers.map(p => String(p.id)));
+
+  // Bersihkan usedRequests jika pemain yang bersangkutan sudah tidak ada di court
+  if (court.usedRequests && Array.isArray(court.usedRequests)) {
+    court.usedRequests = court.usedRequests.filter(r =>
+      courtPlayerIdSet.has(String(r.requesterId)) && courtPlayerIdSet.has(String(r.targetId))
+    );
+  }
+  if (court.usedRequest && (!courtPlayerIdSet.has(String(court.usedRequest.requesterId)) || !courtPlayerIdSet.has(String(court.usedRequest.targetId)))) {
+    court.usedRequest = court.usedRequests && court.usedRequests[0] ? court.usedRequests[0] : null;
+  }
+
+  // Hitung ulang partnerDetails
+  if (court.teamA && court.teamA.length >= 2 && court.teamB && court.teamB.length >= 2 && court.teamA[0] && court.teamA[1] && court.teamB[0] && court.teamB[1]) {
+    const kA = BadmintonService.getPairKey(court.teamA[0].id, court.teamA[1].id);
+    const kB = BadmintonService.getPairKey(court.teamB[0].id, court.teamB[1].id);
+    const historyA = (typeof bPartnerHistory !== 'undefined' && bPartnerHistory && bPartnerHistory[kA]) || 0;
+    const historyB = (typeof bPartnerHistory !== 'undefined' && bPartnerHistory && bPartnerHistory[kB]) || 0;
+    court.partnerDetails = {
+      teamAPairHistory: historyA,
+      teamBPairHistory: historyB,
+      hasRepeatedInTeamA: historyA > 0,
+      hasRepeatedInTeamB: historyB > 0
+    };
+    court.isRepeatedPartner = (historyA > 0 || historyB > 0);
+  }
+}
+
+function syncRoundResting(round) {
+  if (!round) return;
+  if (!round.resting) round.resting = [];
+  const activeCourtPlayerIds = new Set();
+  (round.courts || []).forEach(c => {
+    if (!c || c.status === 'finished' || c.status === BadmintonService.COURT_STATUS.FINISHED) return;
+    [...(c.teamA || []), ...(c.teamB || [])].filter(Boolean).forEach(p => activeCourtPlayerIds.add(String(p.id)));
+  });
+  // Hapus pemain yang sedang aktif di lapangan dari resting
+  round.resting = round.resting.filter(p => p && !activeCourtPlayerIds.has(String(p.id)));
+  // Pastikan pemain bPlayers yang tidak di lapangan dan aktif ada di resting/antrian
+  bPlayers.forEach(p => {
+    if (p && !p.is_deleted && p.status !== BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
+      const pIdStr = String(p.id);
+      if (!activeCourtPlayerIds.has(pIdStr) && !round.resting.some(rp => rp && String(rp.id) === pIdStr)) {
+        round.resting.push(p);
+      }
+    }
+  });
+}
+
 function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
   if (!checkEditPermission()) return;
-  const round = bSchedule[rIdx];
+  const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
   if (!round || !round.courts || !round.courts[cIdx]) {
-    showToast('Jadwal pertandingan tidak ditemukan');
+    showToast('Jadwal pertandingan tidak ditemukan', 'warning');
+    return;
+  }
+
+  const currentCourt = round.courts[cIdx];
+  if (currentCourt.status === 'finished' || currentCourt.status === BadmintonService.COURT_STATUS.FINISHED) {
+    showToast('Pertandingan sudah selesai, pemain tidak dapat diganti.', 'warning');
     return;
   }
 
   const teamProp = (teamKey === 'teamA' || teamKey === 'teamB') ? teamKey : (teamKey === 'A' ? 'teamA' : 'teamB');
   swapContext = { rIdx, cIdx, teamKey: teamProp, pIdx, pId, mode: 'fromCourt' };
 
-  const currentCourt = round.courts[cIdx];
   const sourcePlayer = currentCourt[teamProp] ? currentCourt[teamProp][pIdx] : null;
 
   const nameEl = document.getElementById('swapSourcePlayerName');
@@ -8530,96 +8867,109 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
   const listEl = document.getElementById('swapCandidatesList');
   if (!listEl) return;
 
+  // Sinkronkan bangku resting terlebih dahulu agar bebas duplikasi
+  syncRoundResting(round);
+
+  const allCourtsBusyIds = new Set();
+  round.courts.forEach(c => {
+    if (!c || c.status === 'finished' || c.status === BadmintonService.COURT_STATUS.FINISHED) return;
+    [...(c.teamA || []), ...(c.teamB || [])].filter(Boolean).forEach(p => allCourtsBusyIds.add(String(p.id)));
+  });
+
   let candidates = [];
 
-  // 1. Pemain Istirahat / Cadangan pada ronde ini
-  if (round.resting && round.resting.length > 0) {
-    round.resting.forEach(p => {
-      if (p && (!sourcePlayer || p.id !== sourcePlayer.id)) {
-        candidates.push({
-          player: p,
-          location: 'Bangku Cadangan / Istirahat',
-          targetType: 'resting'
-        });
-      }
+  // 1. Pemain Antrian / Bangku Cadangan (yang TIDAK sedang berada di lapangan mana pun)
+  bPlayers.forEach(p => {
+    if (!p || p.is_deleted || p.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) return;
+    const pIdStr = String(p.id);
+    if (allCourtsBusyIds.has(pIdStr)) return; // Cegah duplikasi dengan pemain di lapangan!
+    if (sourcePlayer && pIdStr === String(sourcePlayer.id)) return;
+
+    const isResting = p.status === BadmintonService.PLAYER_STATUS.ISTIRAHAT || (typeof p.cooldown_remaining === 'number' && p.cooldown_remaining > 0);
+    candidates.push({
+      player: p,
+      location: isResting ? `Istirahat (Cooldown ${p.cooldown_remaining || 1} match)` : 'Antrian Menunggu (Siap Main)',
+      targetType: 'pool'
+    });
+  });
+
+  // 2. Pemain dari Lapangan yang Sama (Tukar Posisi Rekan Tim / Lawan) jika sourcePlayer ada
+  if (sourcePlayer) {
+    ['teamA', 'teamB'].forEach(otherTeamProp => {
+      (currentCourt[otherTeamProp] || []).forEach((otherP, otherPIdx) => {
+        if (!otherP || otherP.is_deleted || otherP.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) return;
+        if (String(otherP.id) === String(sourcePlayer.id)) return;
+        const isSameSlot = (otherTeamProp === teamProp) && (otherPIdx === pIdx);
+        if (!isSameSlot) {
+          const isSameTeam = (otherTeamProp === teamProp);
+          candidates.push({
+            player: otherP,
+            location: isSameTeam ? 'Lapangan yang Sama (Tukar Posisi Rekan Tim)' : 'Lapangan yang Sama (Tukar Tim Lawan)',
+            targetType: 'court',
+            otherCIdx: cIdx,
+            otherTeamKey: otherTeamProp,
+            otherPIdx
+          });
+        }
+      });
     });
   }
 
-  // 2. Pemain dari Lapangan Lain (Ronde ini) atau lapangan sama beda slot
-  round.courts.forEach((c, otherCIdx) => {
-    ['teamA', 'teamB'].forEach(otherTeamProp => {
-      if (c[otherTeamProp]) {
-        c[otherTeamProp].forEach((otherP, otherPIdx) => {
-          if (otherP && (!sourcePlayer || otherP.id !== sourcePlayer.id)) {
-            const isSameCourt = (otherCIdx === cIdx);
-            const isSameSlot = isSameCourt && (otherTeamProp === teamProp) && (otherPIdx === pIdx);
-            if (!isSameSlot) {
-              const courtTitle = c.courtName || `Lapangan ${otherCIdx + 1}`;
-              const teamTitle = otherTeamProp === 'teamA' ? 'Tim A' : 'Tim B';
-              candidates.push({
-                player: otherP,
-                location: isSameCourt ? `Lapangan yang Sama (${teamTitle})` : `${courtTitle} • ${teamTitle}`,
-                targetType: 'court',
-                otherCIdx,
-                otherTeamKey: otherTeamProp,
-                otherPIdx
-              });
-            }
-          }
+  // 3. Pemain dari Lapangan Lain (HANYA jika lapangan lain BELUM mulai / menunggu_acc, dan sourcePlayer ada)
+  if (sourcePlayer) {
+    round.courts.forEach((otherC, otherCIdx) => {
+      if (otherCIdx === cIdx || !otherC) return;
+      const isOngoing = (otherC.status === 'sedang_main' || otherC.status === 'ongoing' || otherC.status === BadmintonService.COURT_STATUS.SEDANG_MAIN);
+      const isFinished = (otherC.status === 'finished' || otherC.status === BadmintonService.COURT_STATUS.FINISHED);
+      if (isOngoing || isFinished) return; // Dilarang menarik pemain dari lapangan yang sedang bertanding live!
+
+      ['teamA', 'teamB'].forEach(otherTeamProp => {
+        (otherC[otherTeamProp] || []).forEach((otherP, otherPIdx) => {
+          if (!otherP || otherP.is_deleted || otherP.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) return;
+          candidates.push({
+            player: otherP,
+            location: `${otherC.courtName || ('Lapangan ' + (otherCIdx + 1))} • ${otherTeamProp === 'teamA' ? 'Tim A' : 'Tim B'}`,
+            targetType: 'court',
+            otherCIdx,
+            otherTeamKey: otherTeamProp,
+            otherPIdx
+          });
         });
-      }
-    });
-  });
-
-  // 3. Pemain terdaftar lainnya di bPlayers yang belum masuk ke ronde ini
-  const scheduledPlayerIds = new Set();
-  round.courts.forEach(c => {
-    (c.teamA || []).forEach(p => p && scheduledPlayerIds.add(p.id));
-    (c.teamB || []).forEach(p => p && scheduledPlayerIds.add(p.id));
-  });
-  (round.resting || []).forEach(p => p && scheduledPlayerIds.add(p.id));
-
-  bPlayers.forEach(p => {
-    if (p && !scheduledPlayerIds.has(p.id)) {
-      candidates.push({
-        player: p,
-        location: 'Pemain Terdaftar (Belum Terjadwal)',
-        targetType: 'pool'
       });
-    }
-  });
+    });
+  }
 
   // Urutkan candidates: prioritas yang main paling sedikit dulu
   candidates.sort((a, b) => ((a.player && a.player.jumlah_main) || 0) - ((b.player && b.player.jumlah_main) || 0));
 
   let autoSwapBannerHtml = '';
-  if (sourcePlayer) {
-    const bestCand = BadmintonService.findBestCourtReplacementPlayer({
-      court: currentCourt,
-      targetPlayerId: sourcePlayer.id,
-      players: bPlayers,
-      minPlays: bMinPlays
-    });
+  const bestCand = BadmintonService.findBestCourtReplacementPlayer({
+    court: currentCourt,
+    targetPlayerId: sourcePlayer ? sourcePlayer.id : '',
+    players: bPlayers,
+    activeCourts: round.courts,
+    minPlays: bMinPlays
+  });
 
-    if (bestCand && bestCand.replacement) {
-      const rep = bestCand.replacement;
-      autoSwapBannerHtml = `
-        <div style="background:linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); border:1.5px solid #FDBA74; border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="handleAutoSwapCourtPlayer(${rIdx}, ${cIdx}, '${teamProp}', ${pIdx}, ${sourcePlayer.id})" title="Ganti otomatis dengan ${escapeHtml(rep.name)} (Prioritas main paling sedikit)">
-          <div>
-            <div style="font-weight:900; font-size:0.85rem; color:#C2410C; display:flex; align-items:center; gap:6px;">
-              <span>⚡ Rekomendasi Prioritas (Main Paling Sedikit)</span>
-            </div>
-            <div style="font-size:0.75rem; color:#9A3412; margin-top:2px;">
-              <strong>${escapeHtml(rep.name)}</strong> (${rep.gender === 'L' ? 'Putra' : 'Putri'} • ${escapeHtml(rep.role)} • Main: ${rep.jumlah_main || 0}x)
-            </div>
+  if (bestCand && bestCand.replacement) {
+    const rep = bestCand.replacement;
+    const srcIdSafe = sourcePlayer ? escapeHtml(String(sourcePlayer.id)) : '';
+    autoSwapBannerHtml = `
+      <div style="background:linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); border:1.5px solid #FDBA74; border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="handleAutoSwapCourtPlayer(${rIdx}, ${cIdx}, '${teamProp}', ${pIdx}, '${srcIdSafe}')" title="Ganti otomatis dengan ${escapeHtml(rep.name)} (Prioritas main paling sedikit)">
+        <div>
+          <div style="font-weight:900; font-size:0.85rem; color:#C2410C; display:flex; align-items:center; gap:6px;">
+            <span>⚡ Rekomendasi Prioritas (Main Paling Sedikit)</span>
           </div>
-          <button type="button" class="btn-court-action" style="font-size:0.75rem; padding:6px 14px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap;">
-            Pilih Ini
-          </button>
+          <div style="font-size:0.75rem; color:#9A3412; margin-top:2px;">
+            <strong>${escapeHtml(rep.name)}</strong> (${rep.gender === 'L' ? 'Putra' : 'Putri'} • ${escapeHtml(rep.role)} • Main: ${rep.jumlah_main || 0}x)
+          </div>
         </div>
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Atau pilih manual dari pemain berikut:</div>
-      `;
-    }
+        <button type="button" class="btn-court-action" style="font-size:0.75rem; padding:6px 14px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap;">
+          Pilih Ini
+        </button>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Atau pilih manual dari pemain berikut:</div>
+    `;
   }
 
   if (candidates.length === 0) {
@@ -8646,13 +8996,14 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
 
 function openSwapFromResting(rIdx, restingPlayerId) {
   if (!checkEditPermission()) return;
-  const round = bSchedule[rIdx];
+  const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
   if (!round || !round.courts) return;
 
-  const restingPlayer = (round.resting || []).find(p => p.id === restingPlayerId) || bPlayers.find(p => p.id === restingPlayerId);
+  const restIdStr = String(restingPlayerId);
+  const restingPlayer = (round.resting || []).find(p => p && String(p.id) === restIdStr) || bPlayers.find(p => p && String(p.id) === restIdStr);
   if (!restingPlayer) return;
 
-  swapContext = { rIdx, restingPlayerId, mode: 'fromResting' };
+  swapContext = { rIdx, restingPlayerId: restIdStr, mode: 'fromResting' };
 
   const nameEl = document.getElementById('swapSourcePlayerName');
   if (nameEl) {
@@ -8664,10 +9015,11 @@ function openSwapFromResting(rIdx, restingPlayerId) {
 
   let candidates = [];
   round.courts.forEach((c, cIdx) => {
+    if (!c || c.status === 'finished' || c.status === BadmintonService.COURT_STATUS.FINISHED) return;
     ['teamA', 'teamB'].forEach(teamProp => {
       if (c[teamProp]) {
         c[teamProp].forEach((courtP, pIdx) => {
-          if (courtP) {
+          if (courtP && !courtP.is_deleted && courtP.status !== BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
             candidates.push({
               player: courtP,
               location: `${c.courtName || ('Lapangan ' + (cIdx + 1))} • ${teamProp === 'teamA' ? 'Tim A' : 'Tim B'}`,
@@ -8711,7 +9063,7 @@ function executeSwapFromResting(candidateIdx) {
   const { restingPlayer, candidates } = window._restingSwapCandidates;
   const target = candidates[candidateIdx];
   const { rIdx } = swapContext || { rIdx: bCurrentRoundIndex };
-  const round = bSchedule[rIdx];
+  const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
   if (!round || !round.courts || !round.courts[target.cIdx]) return;
 
   const targetCourt = round.courts[target.cIdx];
@@ -8720,21 +9072,32 @@ function executeSwapFromResting(candidateIdx) {
   // Masukkan resting player ke slot lapangan
   targetCourt[target.teamKey][target.pIdx] = restingPlayer;
 
-  // Pemain yang tadinya di lapangan dipindah ke bangku istirahat
-  if (round.resting) {
-    const restIdx = round.resting.findIndex(p => p.id === restingPlayer.id);
-    if (restIdx !== -1) {
-      round.resting[restIdx] = playerInCourt;
-    } else {
-      round.resting.push(playerInCourt);
-    }
+  // Pemain lama yang keluar kembali ke antrian menunggu
+  if (playerInCourt) {
+    const realPlayerInCourt = bPlayers.find(p => String(p.id) === String(playerInCourt.id)) || playerInCourt;
+    realPlayerInCourt.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
+    realPlayerInCourt.cooldown_remaining = 0;
+    realPlayerInCourt.waitingSince = Date.now();
+    BadmintonService.cancelRequestsForPlayer(realPlayerInCourt.id, bPlayers, bPartnerRequests);
   }
 
-  refreshCourtCategory(targetCourt);
+  // Update status pemain baru jika court sedang_main
+  const realRestingPlayer = bPlayers.find(p => String(p.id) === String(restingPlayer.id)) || restingPlayer;
+  if (targetCourt.status === BadmintonService.COURT_STATUS.SEDANG_MAIN || targetCourt.status === 'ongoing') {
+    realRestingPlayer.status = BadmintonService.PLAYER_STATUS.DI_LAPANGAN;
+  } else {
+    realRestingPlayer.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
+  }
+
+  updateCourtMetadataAfterPlayerChange(targetCourt);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
+  syncRoundResting(round);
+
   closeSwapModal();
   renderCourtsView();
+  renderPlayersList();
   persistAndBroadcast();
-  showToast(`${restingPlayer.name} berhasil masuk menggantikan ${playerInCourt ? playerInCourt.name : 'pemain'}!`);
+  showToast(`${restingPlayer.name} berhasil masuk menggantikan ${playerInCourt ? playerInCourt.name : 'pemain'}!`, 'success');
 }
 
 function closeSwapModal() {
@@ -8749,43 +9112,59 @@ function executeSwap(candidateIdx) {
   if (!swapContext || !window._swapCandidates || !window._swapCandidates[candidateIdx]) return;
   const cand = window._swapCandidates[candidateIdx];
   const { rIdx, cIdx, teamKey, pIdx } = swapContext;
-  const round = bSchedule[rIdx];
+  const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
   if (!round || !round.courts || !round.courts[cIdx]) return;
 
   const currentCourt = round.courts[cIdx];
   const teamProp = (teamKey === 'teamA' || teamKey === 'teamB') ? teamKey : (teamKey === 'A' ? 'teamA' : 'teamB');
   const sourcePlayer = currentCourt[teamProp][pIdx];
 
-  if (cand.targetType === 'resting') {
-    const restIdx = round.resting.findIndex(p => p.id === cand.player.id);
-    if (restIdx !== -1) {
-      currentCourt[teamProp][pIdx] = cand.player;
-      if (sourcePlayer) {
-        round.resting[restIdx] = sourcePlayer;
-      } else {
-        round.resting.splice(restIdx, 1);
-      }
-    }
-  } else if (cand.targetType === 'court') {
+  if (cand.targetType === 'court') {
     const otherCourt = round.courts[cand.otherCIdx];
     if (otherCourt && otherCourt[cand.otherTeamKey]) {
       otherCourt[cand.otherTeamKey][cand.otherPIdx] = sourcePlayer;
       currentCourt[teamProp][pIdx] = cand.player;
-      refreshCourtCategory(otherCourt);
+      updateCourtMetadataAfterPlayerChange(otherCourt);
     }
-  } else if (cand.targetType === 'pool') {
+  } else {
+    // cand dari pool / bench
     currentCourt[teamProp][pIdx] = cand.player;
-    if (sourcePlayer) {
-      if (!round.resting) round.resting = [];
-      round.resting.push(sourcePlayer);
+  }
+
+  // Update status pemain lama yang keluar: status kembali ke MENUNGGU tanpa cooldown
+  if (sourcePlayer) {
+    const realSourcePlayer = bPlayers.find(p => String(p.id) === String(sourcePlayer.id)) || sourcePlayer;
+    realSourcePlayer.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
+    realSourcePlayer.cooldown_remaining = 0;
+    realSourcePlayer.waitingSince = Date.now();
+    BadmintonService.cancelRequestsForPlayer(realSourcePlayer.id, bPlayers, bPartnerRequests);
+  }
+
+  // Update status pemain baru jika court sudah sedang_main / ongoing
+  if (cand.player) {
+    const realNewPlayer = bPlayers.find(p => String(p.id) === String(cand.player.id)) || cand.player;
+    if (currentCourt.status === BadmintonService.COURT_STATUS.SEDANG_MAIN || currentCourt.status === 'ongoing') {
+      realNewPlayer.status = BadmintonService.PLAYER_STATUS.DI_LAPANGAN;
+    } else {
+      realNewPlayer.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
     }
   }
 
-  refreshCourtCategory(currentCourt);
+  updateCourtMetadataAfterPlayerChange(currentCourt);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
+  syncRoundResting(round);
+
+  BadmintonService.logHostAction(bAuditLog, 'PLAYER_SWAPPED', {
+    courtNumber: cIdx + 1,
+    oldPlayer: sourcePlayer ? sourcePlayer.name : '(Slot Kosong)',
+    newPlayer: cand.player ? cand.player.name : '(Kosong)'
+  });
+
   closeSwapModal();
   renderCourtsView();
+  renderPlayersList();
   persistAndBroadcast();
-  showToast('Pemain berhasil ditukar!');
+  showToast('Pemain berhasil ditukar!', 'success');
 }
 
 function handleAutoSwapCourtPlayer(rIdx, cIdx, teamKey, pIdx, pId) {
@@ -8797,11 +9176,18 @@ function handleAutoSwapCourtPlayer(rIdx, cIdx, teamKey, pIdx, pId) {
   }
 
   const court = round.courts[cIdx];
+  if (court.status === 'finished' || court.status === BadmintonService.COURT_STATUS.FINISHED) {
+    showToast('Pertandingan sudah selesai, pemain tidak dapat diganti.', 'warning');
+    return;
+  }
+
   const res = BadmintonService.replaceCourtPlayerAuto({
     court,
     targetPlayerId: pId,
     players: bPlayers,
     partnerRequests: bPartnerRequests,
+    partnerHistory: bPartnerHistory,
+    activeCourts: round.courts,
     minPlays: bMinPlays,
     setToRest: false
   });
@@ -8812,17 +9198,13 @@ function handleAutoSwapCourtPlayer(rIdx, cIdx, teamKey, pIdx, pId) {
     return;
   }
 
-  // Jika pemain pengganti sebelumnya ada di bangku resting, bersihkan
-  if (round.resting) {
-    const restIdx = round.resting.findIndex(p => p && String(p.id) === String(res.newPlayer.id));
-    if (restIdx !== -1) {
-      round.resting.splice(restIdx, 1);
-    }
-  }
+  updateCourtMetadataAfterPlayerChange(court);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
+  syncRoundResting(round);
 
   BadmintonService.logHostAction(bAuditLog, 'PLAYER_AUTO_REPLACED', {
     courtNumber: cIdx + 1,
-    oldPlayer: res.oldPlayer.name,
+    oldPlayer: res.oldPlayer ? res.oldPlayer.name : '(Slot Kosong)',
     newPlayer: res.newPlayer.name
   });
 
@@ -9198,12 +9580,80 @@ function renderAuthUI() {
   }
 }
 
-function openLoginModal() {
+function switchLoginAuthTab(tab) {
+  const btnSignIn = document.getElementById('loginTabBtnSignIn');
+  const btnSignUp = document.getElementById('loginTabBtnSignUp');
+  const btnGuest = document.getElementById('loginTabBtnGuest');
+  const paneSignIn = document.getElementById('loginAuthPaneSignIn');
+  const paneSignUp = document.getElementById('loginAuthPaneSignUp');
+  const paneGuest = document.getElementById('loginAuthPaneGuest');
+
+  const errLogin = document.getElementById('loginErrorMessage');
+  const errSignUp = document.getElementById('signUpErrorMessage');
+  if (errLogin) errLogin.style.display = 'none';
+  if (errSignUp) errSignUp.style.display = 'none';
+
+  [btnSignIn, btnSignUp, btnGuest].forEach(btn => {
+    if (btn) {
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-muted)';
+      btn.style.boxShadow = 'none';
+      btn.classList.remove('active');
+    }
+  });
+  if (paneSignIn) paneSignIn.style.display = 'none';
+  if (paneSignUp) paneSignUp.style.display = 'none';
+  if (paneGuest) paneGuest.style.display = 'none';
+
+  if (tab === 'signup') {
+    if (btnSignUp) {
+      btnSignUp.style.background = '#FFF';
+      btnSignUp.style.color = 'var(--brand-navy-dark)';
+      btnSignUp.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+      btnSignUp.classList.add('active');
+    }
+    if (paneSignUp) paneSignUp.style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('signUpInputName')?.focus();
+    }, 120);
+  } else if (tab === 'guest') {
+    if (btnGuest) {
+      btnGuest.style.background = '#FFF';
+      btnGuest.style.color = 'var(--brand-navy-dark)';
+      btnGuest.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+      btnGuest.classList.add('active');
+    }
+    if (paneGuest) paneGuest.style.display = 'block';
+  } else {
+    if (btnSignIn) {
+      btnSignIn.style.background = '#FFF';
+      btnSignIn.style.color = 'var(--brand-navy-dark)';
+      btnSignIn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+      btnSignIn.classList.add('active');
+    }
+    if (paneSignIn) paneSignIn.style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('loginInputEmail')?.focus();
+    }, 120);
+  }
+}
+
+function openLoginModal(isInitial = false) {
   const modal = document.getElementById('loginModalOverlay');
+  const closeBtn = document.getElementById('btnLoginModalCloseBtn');
   const inputEmail = document.getElementById('loginInputEmail');
   const inputPass = document.getElementById('loginInputPassword');
   const errEl = document.getElementById('loginErrorMessage');
+  const signErrEl = document.getElementById('signUpErrorMessage');
   if (errEl) errEl.style.display = 'none';
+  if (signErrEl) signErrEl.style.display = 'none';
+
+  if (closeBtn) {
+    closeBtn.style.display = (currentUser || isGuestSession) ? 'block' : 'none';
+  }
+
+  switchLoginAuthTab('signin');
+
   if (modal) {
     modal.classList.add('open');
     if (inputEmail) {
@@ -9217,7 +9667,15 @@ function openLoginModal() {
 function closeLoginModal() {
   const modal = document.getElementById('loginModalOverlay');
   const errEl = document.getElementById('loginErrorMessage');
+  const signErrEl = document.getElementById('signUpErrorMessage');
   if (errEl) errEl.style.display = 'none';
+  if (signErrEl) signErrEl.style.display = 'none';
+
+  if (!currentUser && !isGuestSession) {
+    loginAsGuest();
+    return;
+  }
+
   if (modal) modal.classList.remove('open');
 }
 
@@ -9241,6 +9699,113 @@ function submitLoginForm() {
   loginUser(email, pass);
 }
 
+function submitSignUpForm() {
+  const nameInput = document.getElementById('signUpInputName');
+  const unameInput = document.getElementById('signUpInputUsername');
+  const passInput = document.getElementById('signUpInputPassword');
+  const passConfirmInput = document.getElementById('signUpInputPasswordConfirm');
+  const errEl = document.getElementById('signUpErrorMessage');
+  if (errEl) errEl.style.display = 'none';
+
+  const name = nameInput ? nameInput.value.trim() : '';
+  const uname = unameInput ? unameInput.value.trim() : '';
+  const pass = passInput ? passInput.value.trim() : '';
+  const passConfirm = passConfirmInput ? passConfirmInput.value.trim() : '';
+
+  const showErr = (msg) => {
+    if (errEl) {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+    showToast(msg, 'error');
+  };
+
+  if (!name || !uname || !pass || !passConfirm) {
+    showErr('Semua kolom pendaftaran wajib diisi.');
+    return;
+  }
+
+  if (name.length > 30) {
+    showErr('Nama lengkap maksimal 30 karakter.');
+    return;
+  }
+
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(uname)) {
+    showErr('Username hanya boleh kombinasi huruf, angka, underscore (3-20 karakter).');
+    return;
+  }
+
+  const cleanUname = uname.toLowerCase();
+  if (cleanUname === 'admin' || cleanUname === 'guest' || cleanUname === HOST_EMAIL.toLowerCase()) {
+    showErr('Username tersebut tidak dapat digunakan.');
+    return;
+  }
+
+  if (pass.length < 4) {
+    showErr('Password minimal 4 karakter.');
+    return;
+  }
+
+  if (pass !== passConfirm) {
+    showErr('Konfirmasi password tidak cocok dengan password.');
+    return;
+  }
+
+  const users = getUsersDatabase();
+  const exists = users.some(u => (u.username || '').toLowerCase() === cleanUname);
+  if (exists) {
+    showErr('Username sudah digunakan! Silakan pilih username lain atau Sign In.');
+    return;
+  }
+
+  const newUser = {
+    username: cleanUname,
+    name: name,
+    password: pass,
+    role: 'user',
+    createdAt: Date.now()
+  };
+  users.push(newUser);
+  saveUsersDatabase(users);
+
+  currentUser = {
+    username: newUser.username,
+    name: newUser.name,
+    role: 'user'
+  };
+  userRole = 'spectator';
+  isGuestSession = false;
+  localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+  localStorage.setItem('onesport_user_role', 'spectator');
+  localStorage.setItem('onesport_user_display_name', currentUser.name);
+
+  if (errEl) errEl.style.display = 'none';
+  closeLoginModal();
+  applyRoleUI();
+  if (document.getElementById('tab-akun')?.classList.contains('active')) {
+    renderAccountTab();
+  }
+  showToast(`Pendaftaran berhasil! Selamat datang, ${currentUser.name}.`, 'success');
+}
+
+function loginAsGuest() {
+  isGuestSession = true;
+  currentUser = {
+    role: 'guest',
+    name: 'Tamu (Penonton)',
+    username: 'guest'
+  };
+  userRole = 'spectator';
+  localStorage.removeItem('onesport_auth_user');
+  localStorage.removeItem('onesport_user_role');
+  closeLoginModal();
+  applyRoleUI();
+  if (document.getElementById('tab-akun')?.classList.contains('active')) {
+    renderAccountTab();
+  }
+  showToast('Masuk sebagai Tamu. Mode penonton aktif.', 'info');
+}
+
 function loginUser(email, password) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanPass = (password || '').trim();
@@ -9259,6 +9824,7 @@ function loginUser(email, password) {
       role: 'host'
     };
     userRole = 'host';
+    isGuestSession = false;
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'host');
     if (errEl) errEl.style.display = 'none';
@@ -9282,6 +9848,7 @@ function loginUser(email, password) {
       role: 'user'
     };
     userRole = 'spectator';
+    isGuestSession = false;
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'spectator');
     localStorage.setItem('onesport_user_display_name', currentUser.name);
@@ -9303,6 +9870,7 @@ function loginUser(email, password) {
     saveUsersDatabase(users);
     currentUser = newUser;
     userRole = 'spectator';
+    isGuestSession = false;
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'spectator');
     localStorage.setItem('onesport_user_display_name', currentUser.name);
@@ -9338,6 +9906,7 @@ function loginUser(email, password) {
 function logoutUser() {
   if (confirm('Apakah Anda yakin ingin keluar dari akun?')) {
     currentUser = null;
+    isGuestSession = false;
     userRole = 'spectator';
     localStorage.removeItem('onesport_auth_user');
     localStorage.setItem('onesport_user_role', 'spectator');
@@ -9346,6 +9915,7 @@ function logoutUser() {
       renderAccountTab();
     }
     showToast('Anda telah keluar.', 'info');
+    openLoginModal(true);
   }
 }
 
@@ -9713,6 +10283,11 @@ async function handleIncomingMessage(topic, rawText) {
     }
 
     if (msg.type === 'ROOM_FINALIZED') {
+      if (isGuestUser()) {
+        showToast('Pertandingan siaran langsung telah selesai.', 'info');
+        showLiveEndedNoticeModal(msg.roomId, null);
+        return;
+      }
       if (msg.summary) {
         const currentUname = (getUserUsername() || 'user').toLowerCase();
         const viewerRecord = {
@@ -10447,17 +11022,28 @@ function showLiveEndedNoticeModal(roomId, summary) {
   const box = document.getElementById('endedNoticePodiumBox');
 
   if (codeEl) codeEl.textContent = roomId;
-  if (box && summary) {
-    let podiumHtml = (summary.podium || []).map(p => `
-      <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-        <span>${escapeHtml(p.label)}: <strong>${escapeHtml(p.name)}</strong></span>
-        <span style="color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</span>
-      </div>
-    `).join('');
-    box.innerHTML = podiumHtml || 'Pertandingan selesai dengan sukses.';
+  if (box) {
+    if (isGuestUser()) {
+      box.innerHTML = `
+        <div style="text-align:center; padding:8px 4px;">
+          <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Pertandingan Siaran Selesai</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.45;">
+            Data rekapan dan skor akhir pertandingan yang telah selesai tidak tersedia untuk akun Tamu (Guest). Silakan Sign In atau Sign Up untuk melihat rekapan riwayat pertandingan.
+          </div>
+        </div>
+      `;
+    } else if (summary) {
+      let podiumHtml = (summary.podium || []).map(p => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <span>${escapeHtml(p.label)}: <strong>${escapeHtml(p.name)}</strong></span>
+          <span style="color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</span>
+        </div>
+      `).join('');
+      box.innerHTML = podiumHtml || 'Pertandingan selesai dengan sukses.';
+    }
   }
 
-  window._endedNoticeHistoryId = summary ? summary.id : null;
+  window._endedNoticeHistoryId = (!isGuestUser() && summary) ? summary.id : null;
   if (modal) modal.classList.add('open');
 }
 
@@ -10469,6 +11055,10 @@ function closeLiveEndedNoticeModal() {
 
 function openHistoryFromEndedNotice() {
   closeLiveEndedNoticeModal();
+  if (isGuestUser()) {
+    openLoginModal();
+    return;
+  }
   openOnlineModal();
   switchOnlineTab('history');
 }
@@ -10527,6 +11117,7 @@ function leaveOnlineRoom(keepRoomData = false) {
 
 // ── LIVE HISTORY STORAGE & UI (PERSISTENT IN APK & WEB) ──
 function saveToLiveHistory(record) {
+  if (isGuestUser()) return;
   try {
     const currentUname = (getUserUsername() || 'user').toLowerCase();
     if (!record.viewerUsername && currentUser) {
@@ -10760,6 +11351,11 @@ function shareHistoryItemWA(id) {
 }
 
 function openHistoryDetailModal(id) {
+  if (isGuestUser()) {
+    showToast('Data detail riwayat pertandingan selesai tidak tersedia untuk akun Tamu.', 'warning');
+    openLoginModal();
+    return;
+  }
   const item = findHistoryItemById(id);
   if (!item) return;
 
