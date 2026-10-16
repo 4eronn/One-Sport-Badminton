@@ -1,6 +1,6 @@
 {
   "name": "one-sport-badminton",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Match rotation, live scoring, automatic standings, and Vercel database backend for casual badminton sessions",
   "main": "badminton-service.js",
   "scripts": {
@@ -26,6 +26,6 @@
     "postgres",
     "kv"
   ],
-  "author": "4eronn",
+  "author": "4eronn <mridwaniss06@gmail.com>",
   "license": "MIT"
 }

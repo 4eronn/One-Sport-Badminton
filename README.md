@@ -166,6 +166,8 @@ Issues and pull requests are welcome. For larger changes, please open an issue f
 
 Because the app is a single static page, changes are easy to test: edit the files, serve the folder locally, and reload. If you change anything that the Android build bundles, remember that the CI workflow re-syncs `android/app/src/main/assets` on build.
 
-## Author
+## Author & Hak Cipta
 
-Maintained by [@4eronn](https://github.com/4eronn).
+- Dikembangkan dan dikelola oleh [@4eronn](https://github.com/4eronn).
+- **Hak Cipta © 2026 4eronn**. Seluruh hak cipta dilindungi undang-undang.
+- **Ketentuan Hak Cipta Permanen**: Hak cipta melekat secara permanen dan tidak dapat diubah, dihapus, atau dipindahtangankan meskipun kode sumber dikoding ulang (*recoded*). Segala bentuk perizinan resmi, perubahan lisensi, atau penggunaan khusus wajib melalui verifikasi resmi ke email: **mridwaniss06@gmail.com**.

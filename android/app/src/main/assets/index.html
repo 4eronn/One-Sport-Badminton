@@ -1800,6 +1800,28 @@
   .btn-logout-header:hover {
     color: #DC2626;
   }
+  .app-global-footer {
+    text-align: center;
+    padding: 24px 16px 12px;
+    margin-top: 24px;
+    border-top: 1px solid var(--border-color);
+  }
+  .footer-copyright-text {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+  .footer-copyright-text strong {
+    color: var(--brand-navy-dark);
+    font-weight: 800;
+  }
+  .footer-brand-subtext {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 600;
+  }
   #headerOnlineText {
     display: inline-block;
     max-width: 105px;
@@ -2086,6 +2108,7 @@
       <div class="splash-loader-progress"></div>
     </div>
     <div class="splash-subtext">Memuat Multi-Sport Platform...</div>
+    <div style="font-size:0.68rem; color:rgba(255, 255, 255, 0.85); margin-top:6px; letter-spacing:0.3px;">Hak Cipta &copy; 2026 <strong>4eronn</strong> · Verifikasi: mridwaniss06@gmail.com</div>
   </div>
 </div>
 
@@ -2127,7 +2150,7 @@
       <button class="btn-header-icon" onclick="openRulesModal()" title="Peraturan Penentuan Juara">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
       </button>
-      <button class="btn-header-icon" id="btnHeaderSettings" onclick="openSettingsModal()" title="Pengaturan Sesi">
+      <button class="btn-header-icon" id="btnHeaderSettings" onclick="openSettingsModal()" title="Pengaturan">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </button>
     </div>
@@ -2438,9 +2461,28 @@
       <button class="btn-os-orange" id="btnNewMabarSession" style="background:#10B981; box-shadow:0 4px 14px rgba(16,185,129,0.3);" onclick="startNewMabarSession()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
         <span>Mabar Baru</span>
-      </button>
+    </div>
+
+    <!-- Copyright / Hak Cipta Sesi -->
+    <div style="text-align: center; margin-top: 18px; padding: 10px 0; font-size: 0.72rem; color: var(--text-muted); border-top: 1px dashed var(--border-color);">
+      <div>Hak Cipta &copy; 2026 <strong>4eronn</strong> · All rights reserved.</div>
+      <div style="font-size: 0.67rem; margin-top: 2px;">Hak cipta melekat permanen &amp; tidak dapat diubah. Verifikasi: <a href="mailto:mridwaniss06@gmail.com" style="color:var(--brand-blue); font-weight:700; text-decoration:underline;">mridwaniss06@gmail.com</a></div>
     </div>
   </section>
+
+  <!-- ── APP FOOTER: HAK CIPTA ── -->
+  <footer class="app-global-footer">
+    <div class="footer-copyright-text">
+      Hak Cipta &copy; 2026 <strong>4eronn</strong>. Seluruh hak cipta dilindungi undang-undang.
+    </div>
+    <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; line-height: 1.45;">
+      Hak cipta melekat secara permanen &amp; tidak dapat diubah meskipun dikoding ulang.<br>
+      Verifikasi &amp; izin resmi: <a href="mailto:mridwaniss06@gmail.com" style="color:var(--brand-blue); font-weight:700; text-decoration:underline;">mridwaniss06@gmail.com</a>
+    </div>
+    <div class="footer-brand-subtext" style="margin-top: 6px;">
+      one<span style="color:var(--brand-blue);">sport</span><span style="color:var(--brand-orange);">.id</span> · Teman Main Lebih Dekat
+    </div>
+  </footer>
 
 </main>
 
@@ -2610,57 +2652,119 @@
 
 <!-- ── MODAL: SETTINGS ── -->
 <div class="modal-overlay" id="settingsModalOverlay">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width: 440px;">
     <div class="modal-header">
-      <div class="modal-title">Pengaturan Sesi</div>
+      <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <span>Pengaturan</span>
+      </div>
       <button class="btn-del-player" onclick="closeSettingsModal()">✕</button>
     </div>
     
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-      <div>
-        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Judul / Nama Sesi Mabar</label>
-        <input type="text" id="settingSessionTitle" class="input-styled-os" value="Mabar Sesi">
-      </div>
-      <div id="badmintonSettingsGroup">
-        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Jumlah Lapangan</label>
-        <input type="number" id="settingNumCourts" class="input-styled-os" value="2" min="1" max="8">
-      </div>
-      <div>
-        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Target Minimal Main per Pemain</label>
-        <input type="number" id="settingMinPlays" class="input-styled-os" value="3" min="1" max="10">
-      </div>
-      <div>
-        <label style="font-size: 0.78rem; font-weight: 700; color: var(--brand-navy-soft);">Total Ronde Direncanakan</label>
-        <input type="number" id="settingTotalRounds" class="input-styled-os" value="8" min="1" max="25">
-      </div>
-      <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px;">
-        <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
-          <input type="checkbox" id="settingOfficialScoring" style="margin-top:2px;">
-          <div>
-            <span style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-soft); display:block;">Aturan Skor Resmi (BWF)</span>
-            <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Pemenang minimal 21 poin, selisih minimal 2 poin (deuce), dan maksimal 30 poin. (Default: Nonaktif untuk mabar santai).</span>
+    <div style="display:flex; flex-direction:column; gap:14px; max-height:72vh; overflow-y:auto; padding-right:2px;">
+      <!-- 1. KARTU PENGATURAN USER & AKUN -->
+      <div class="settings-user-card" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:12px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:32px; height:32px; border-radius:50%; background:var(--brand-blue-soft); color:var(--brand-blue); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div>
+              <div style="font-size:0.8rem; font-weight:800; color:var(--brand-navy-dark);">Akun & Profil Pengguna</div>
+              <div style="font-size:0.68rem; color:var(--text-muted);" id="settingUserRoleLabel">Memuat info akun...</div>
+            </div>
           </div>
-        </label>
+          <span id="settingUserRoleBadge" class="auth-role-tag" style="font-size:0.62rem; padding:2px 8px;">HOST</span>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Nama Pengguna / Tampilan</label>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="settingUserName" class="input-styled-os" placeholder="Masukkan nama Anda..." maxlength="30" style="flex:1; padding:7px 10px; font-size:0.8rem;">
+            <button type="button" class="btn-os-cyan" style="padding:6px 12px; font-size:0.74rem; font-weight:800; white-space:nowrap;" onclick="saveUserNameFromSettings()">Simpan Nama</button>
+          </div>
+          <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Nama ini akan tampil di header dan identitas Anda di aplikasi.</div>
+        </div>
+
+        <div id="settingAuthActionRow" style="padding-top:2px;">
+          <!-- Dinamis: Tombol Logout jika login, atau Tombol Masuk jika belum login -->
+        </div>
       </div>
-    </div>
 
-    <button class="btn-os-cyan" style="width: 100%; margin-top: 16px;" onclick="saveSettings()">
-      Simpan Pengaturan
-    </button>
+      <!-- 2. PENGATURAN SESI MABAR -->
+      <div id="settingsSessionSection" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px; border-bottom:1px solid var(--border-color); padding-bottom:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Konfigurasi Sesi Mabar</span>
+        </div>
 
-    <div style="border-top:1px solid var(--border-color); margin-top:14px; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <button class="btn-court-action" style="font-size:0.78rem; padding:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:#FFF1EB; color:#FF5B14; border-color:#FF5B14;" onclick="closeSettingsModal(); openOnlineModal();">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
-        Buka Mode Online & Siaran Live
-      </button>
-      <button class="btn-court-action" id="btnCheckAppUpdateSettings" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan APK (v1.1.0)
-      </button>
-      <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
-      </button>
-      <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding-top:4px;">
-        Database Cloud: <span id="settingDbStatusText" style="font-weight:700; color:var(--brand-blue);">Ready</span>
+        <div id="settingsNonHostNotice" style="display:none; font-size:0.72rem; color:var(--text-muted); background:#F1F5F9; border-radius:var(--radius-sm); padding:8px 10px; line-height:1.4;">
+          ℹ️ Pengaturan sesi pertandingan hanya dapat disesuaikan oleh akun <strong>Host (Admin)</strong>.
+        </div>
+
+        <div id="settingsSessionInputsWrap" style="display:flex; flex-direction:column; gap:10px;">
+          <div>
+            <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Judul / Nama Sesi Mabar</label>
+            <input type="text" id="settingSessionTitle" class="input-styled-os" value="Mabar Sesi">
+          </div>
+          <div id="badmintonSettingsGroup">
+            <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Jumlah Lapangan</label>
+            <input type="number" id="settingNumCourts" class="input-styled-os" value="2" min="1" max="8">
+          </div>
+          <div>
+            <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Target Minimal Main per Pemain</label>
+            <input type="number" id="settingMinPlays" class="input-styled-os" value="3" min="1" max="10">
+          </div>
+          <div>
+            <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Total Ronde Direncanakan</label>
+            <input type="number" id="settingTotalRounds" class="input-styled-os" value="8" min="1" max="25">
+          </div>
+          <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px;">
+            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="settingOfficialScoring" style="margin-top:2px;">
+              <div>
+                <span style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-soft); display:block;">Aturan Skor Resmi (BWF)</span>
+                <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Pemenang minimal 21 poin, selisih minimal 2 poin (deuce), dan maksimal 30 poin.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button id="btnSaveSettingsSession" class="btn-os-cyan" style="width:100%; margin-top:4px;" onclick="saveSettings()">
+          Simpan Pengaturan Sesi
+        </button>
+      </div>
+
+      <!-- 3. AKSI & ALAT TAMBAHAN -->
+      <div style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:#FFF1EB; color:#FF5B14; border-color:#FF5B14;" onclick="closeSettingsModal(); openOnlineModal();">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
+          Buka Mode Online & Siaran Live
+        </button>
+        <button class="btn-court-action" id="btnCheckAppUpdateSettings" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan APK (v1.2.0)
+        </button>
+        <button class="btn-court-action" id="btnSettingsClearPlayers" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
+        </button>
+        <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding-top:2px;">
+          Database Cloud: <span id="settingDbStatusText" style="font-weight:700; color:var(--brand-blue);">Ready</span>
+        </div>
+      </div>
+
+      <!-- 4. HAK CIPTA ATAS NAMA 4ERONN -->
+      <div class="settings-copyright-box" style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:4px; text-align:center;">
+        <div style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span>ONESPORT</span>
+          <span style="font-size:0.65rem; background:var(--brand-blue-soft); color:var(--brand-blue); padding:1px 7px; border-radius:999px; font-weight:800;">v1.2.0</span>
+        </div>
+        <div style="font-size:0.74rem; color:var(--brand-navy-dark); margin-top:4px; font-weight:800;">
+          Hak Cipta &copy; 2026 <strong>4eronn</strong>. Seluruh hak cipta dilindungi.
+        </div>
+        <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px; line-height:1.45;">
+          Hak cipta melekat secara permanen &amp; tidak dapat diubah meskipun dikoding ulang.<br>
+          Verifikasi &amp; izin resmi: <a href="mailto:mridwaniss06@gmail.com" style="color:var(--brand-blue); font-weight:700; text-decoration:underline;">mridwaniss06@gmail.com</a>
+        </div>
       </div>
     </div>
   </div>
@@ -3475,6 +3579,8 @@ try {
     const parsed = JSON.parse(savedUser);
     if (parsed && parsed.email && (parsed.email.toLowerCase() === HOST_EMAIL.toLowerCase() || parsed.email.toLowerCase() === 'admin') && parsed.role === 'host') {
       currentUser = parsed;
+      const customName = localStorage.getItem('onesport_user_display_name');
+      if (customName && customName.trim()) currentUser.name = customName.trim();
     } else {
       currentUser = null;
       localStorage.removeItem('onesport_auth_user');
@@ -7196,18 +7302,146 @@ function startNewMabarSession() {
   showToast('Sesi mabar baru berhasil dimulai. Statistik dan riwayat telah direset.', 'success');
 }
 
-// ── SETTINGS MODAL ──
+// ── SETTINGS MODAL & USER PROFILE ──
+function getUserDisplayName() {
+  const customName = localStorage.getItem('onesport_user_display_name');
+  if (currentUser && currentUser.name) {
+    return currentUser.name;
+  }
+  if (customName && customName.trim()) {
+    return customName.trim();
+  }
+  return isHostUser() ? 'Admin OneSport' : 'Pengguna';
+}
+
+function saveUserNameFromSettings(silent = false) {
+  const input = document.getElementById('settingUserName');
+  if (!input) return false;
+  const newName = input.value.trim();
+  if (!newName) {
+    if (!silent) showToast('Nama pengguna tidak boleh kosong.', 'warning');
+    return false;
+  }
+  if (newName.length > 30) {
+    if (!silent) showToast('Nama pengguna maksimal 30 karakter.', 'warning');
+    return false;
+  }
+
+  localStorage.setItem('onesport_user_display_name', newName);
+  if (currentUser) {
+    currentUser.name = newName;
+    localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+  }
+
+  renderAuthUI();
+  populateSettingsAccountUI();
+  if (!silent) {
+    showToast(`Nama pengguna berhasil diubah menjadi "${newName}".`, 'success');
+  }
+  return true;
+}
+
+function logoutUserFromSettings() {
+  closeSettingsModal();
+  setTimeout(() => {
+    logoutUser();
+  }, 150);
+}
+
+function populateSettingsAccountUI() {
+  const isHost = isHostUser();
+  const userName = getUserDisplayName();
+  
+  const inputName = document.getElementById('settingUserName');
+  if (inputName) inputName.value = userName;
+
+  const roleLabel = document.getElementById('settingUserRoleLabel');
+  if (roleLabel) {
+    roleLabel.textContent = isHost ? 'Masuk sebagai Host (Admin)' : 'Mode Pengguna (Tamu / Penonton)';
+  }
+
+  const roleBadge = document.getElementById('settingUserRoleBadge');
+  if (roleBadge) {
+    if (isHost) {
+      roleBadge.textContent = 'HOST';
+      roleBadge.style.background = 'var(--brand-blue)';
+      roleBadge.style.color = '#FFFFFF';
+    } else {
+      roleBadge.textContent = 'TAMU';
+      roleBadge.style.background = '#94A3B8';
+      roleBadge.style.color = '#FFFFFF';
+    }
+  }
+
+  const authActionRow = document.getElementById('settingAuthActionRow');
+  if (authActionRow) {
+    if (isHost) {
+      authActionRow.innerHTML = `
+        <button type="button" class="btn-court-action" style="font-size:0.78rem; padding:9px 12px; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer;" onclick="logoutUserFromSettings()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Keluar dari Akun (Logout)</span>
+        </button>
+      `;
+    } else {
+      authActionRow.innerHTML = `
+        <button type="button" class="btn-court-action" style="font-size:0.78rem; padding:9px 12px; color:var(--brand-blue); background:var(--brand-blue-soft); border-color:#BFDBFE; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer;" onclick="closeSettingsModal(); openLoginModal();">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+          <span>Masuk ke Akun Host</span>
+        </button>
+      `;
+    }
+  }
+
+  const clearBtn = document.getElementById('btnSettingsClearPlayers');
+  if (clearBtn) {
+    clearBtn.style.display = isHost ? 'flex' : 'none';
+  }
+
+  const sessionInputs = document.querySelectorAll('#settingsSessionInputsWrap input');
+  sessionInputs.forEach(inp => {
+    inp.disabled = !isHost;
+  });
+  const sessionNotice = document.getElementById('settingsNonHostNotice');
+  if (sessionNotice) {
+    sessionNotice.style.display = isHost ? 'none' : 'block';
+  }
+  const btnSaveSession = document.getElementById('btnSaveSettingsSession');
+  if (btnSaveSession) {
+    btnSaveSession.style.display = isHost ? 'block' : 'none';
+  }
+}
+
 function openSettingsModal() {
   if (document.getElementById('settingOfficialScoring')) {
     document.getElementById('settingOfficialScoring').checked = !!bOfficialScoring;
   }
+  if (document.getElementById('settingSessionTitle')) {
+    document.getElementById('settingSessionTitle').value = sessionTitle || 'Mabar Sesi';
+  }
+  if (document.getElementById('settingNumCourts')) {
+    document.getElementById('settingNumCourts').value = bNumCourts || 2;
+  }
+  if (document.getElementById('settingMinPlays')) {
+    document.getElementById('settingMinPlays').value = bMinPlays || 3;
+  }
+  if (document.getElementById('settingTotalRounds')) {
+    document.getElementById('settingTotalRounds').value = plannedRounds || 8;
+  }
+  populateSettingsAccountUI();
   document.getElementById('settingsModalOverlay').classList.add('open');
 }
-function closeSettingsModal() { document.getElementById('settingsModalOverlay').classList.remove('open'); }
+
+function closeSettingsModal() { 
+  document.getElementById('settingsModalOverlay').classList.remove('open'); 
+}
+
 function saveSettings() {
+  saveUserNameFromSettings(true /* silent save of name input */);
+
   if (!checkEditPermission()) return;
   sessionTitle = document.getElementById('settingSessionTitle').value.trim() || sessionTitle;
-  document.getElementById('finalTitleHeader').textContent = sessionTitle;
+  const finalHeader = document.getElementById('finalTitleHeader');
+  if (finalHeader) finalHeader.textContent = sessionTitle;
   if (document.getElementById('settingNumCourts')) bNumCourts = parseInt(document.getElementById('settingNumCourts').value) || bNumCourts;
   if (document.getElementById('settingMinPlays')) bMinPlays = parseInt(document.getElementById('settingMinPlays').value) || bMinPlays;
   if (document.getElementById('settingTotalRounds')) plannedRounds = parseInt(document.getElementById('settingTotalRounds').value) || plannedRounds;
@@ -7217,6 +7451,7 @@ function saveSettings() {
   updateSessionLabels();
   closeSettingsModal();
   persistAndBroadcast();
+  showToast('Pengaturan sesi berhasil disimpan.', 'success');
 }
 
 function exportCSV() {
@@ -8027,10 +8262,10 @@ function applyRoleUI() {
   // 1. Header Auth Container (Masuk / Host / Member)
   renderAuthUI();
 
-  // 2. Header Settings Button (Host only)
+  // 2. Header Settings Button (Always visible for all users)
   const btnSettings = document.getElementById('btnHeaderSettings');
   if (btnSettings) {
-    btnSettings.style.display = isHost ? 'inline-flex' : 'none';
+    btnSettings.style.display = 'inline-flex';
   }
   const btnUpdateSetting = document.getElementById('btnCheckAppUpdateSettings');
   if (btnUpdateSetting) {
@@ -8122,11 +8357,12 @@ function renderAuthUI() {
   if (!container) return;
 
   if (isHostUser()) {
+    const displayName = getUserDisplayName();
     container.innerHTML = `
-      <div class="user-auth-badge is-host" title="Masuk sebagai Host (Admin)">
+      <div class="user-auth-badge is-host" onclick="openSettingsModal()" title="Pengaturan Akun & Profil" style="cursor:pointer;">
         <span class="auth-role-tag">Host</span>
-        <span class="auth-user-name">Admin</span>
-        <button class="btn-logout-header" onclick="logoutUser()" title="Keluar">Keluar</button>
+        <span class="auth-user-name" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>
+        <button class="btn-logout-header" onclick="event.stopPropagation(); logoutUser();" title="Keluar">Keluar</button>
       </div>
     `;
   } else {
@@ -8190,9 +8426,10 @@ function loginUser(email, password) {
   const isHostPassword = (cleanPass === HOST_PASSWORD);
 
   if (isHostUsername && isHostPassword) {
+    const customName = localStorage.getItem('onesport_user_display_name');
     currentUser = {
       email: HOST_EMAIL,
-      name: 'Admin OneSport',
+      name: customName || 'Admin OneSport',
       role: 'host'
     };
     userRole = 'host';
