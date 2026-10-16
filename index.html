@@ -4502,13 +4502,13 @@ function hasInterAndAdvanceTogether(team) {
   return BadmintonService.hasInterAndAdvanceTogether(team);
 }
 
-function splitFourPlayersIntoTeams(fourPlayers, pairHistory = {}) {
-  const res = BadmintonService.splitFourIntoTeamsSmart(fourPlayers, pairHistory, {}, []);
+function splitFourPlayersIntoTeams(fourPlayers, pairHistory = {}, requests = bPartnerRequests) {
+  const res = BadmintonService.splitFourIntoTeamsSmart(fourPlayers, pairHistory, {}, requests);
   return { teamA: res.teamA, teamB: res.teamB };
 }
 
-function pickCompatibleFourPlayers(availablePlayers) {
-  const picked = BadmintonService.pickNextFourPlayersForMatch(availablePlayers, [], {}, availablePlayers);
+function pickCompatibleFourPlayers(availablePlayers, requests = bPartnerRequests) {
+  const picked = BadmintonService.pickNextFourPlayersForMatch(availablePlayers, requests, {}, availablePlayers);
   return picked || (availablePlayers ? availablePlayers.slice(0, 4) : []);
 }
 
@@ -4533,7 +4533,9 @@ function generateInitialBadminton() {
 
   for (let r = 0; r < plannedRounds; r++) {
     const roundNumber = r + 1;
-    const roundData = buildSmartBadmintonRound(bPlayers, effectiveCourts, pairHistory, playCountMap, restCountMap, roundNumber, lastPlayedRoundMap);
+    // Game 1 (r === 0) langsung dipasangkan sesuai request rekan tim; sisanya rondenya diacak
+    const roundRequests = (r === 0) ? bPartnerRequests : [];
+    const roundData = buildSmartBadmintonRound(bPlayers, effectiveCourts, pairHistory, playCountMap, restCountMap, roundNumber, lastPlayedRoundMap, roundRequests);
     if (roundData && roundData.courts.length > 0) {
       roundData.resting.forEach(p => restCountMap[p.id] = (restCountMap[p.id] || 0) + 1);
       roundData.courts.forEach(c => {
@@ -4572,7 +4574,7 @@ function generateInitialBadminton() {
 /**
  * @deprecated [LEGACY]
  */
-function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap, restCountMap, currentRoundNumber = 1, lastPlayedRoundMap = {}) {
+function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap, restCountMap, currentRoundNumber = 1, lastPlayedRoundMap = {}, roundRequests = []) {
   const femaleOnly = roster.filter(p => p.gender === 'P');
   let femaleMatchesCount = Math.floor(femaleOnly.length / 4);
   if (femaleMatchesCount > courtsCount) femaleMatchesCount = courtsCount;
@@ -4602,9 +4604,9 @@ function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap
   for (let f = 0; f < femaleMatchesCount; f++) {
     const avail = femaleOnly.filter(p => !usedPlayerIds.has(p.id)).sort(prioritySort);
     if (avail.length < 4) break;
-    const s4 = pickCompatibleFourPlayers(avail);
+    const s4 = pickCompatibleFourPlayers(avail, roundRequests);
     s4.forEach(p => usedPlayerIds.add(p.id));
-    const split = splitFourPlayersIntoTeams(s4, pairHistory);
+    const split = splitFourPlayersIntoTeams(s4, pairHistory, roundRequests);
     matches.push({
       courtNumber: matches.length + 1,
       courtName: `Lapangan ${matches.length + 1}`,
@@ -4623,9 +4625,9 @@ function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap
   for (let m = 0; m < remaining; m++) {
     const avail = roster.filter(p => !usedPlayerIds.has(p.id)).sort(prioritySort);
     if (avail.length < 4) break;
-    const s4 = pickCompatibleFourPlayers(avail);
+    const s4 = pickCompatibleFourPlayers(avail, roundRequests);
     s4.forEach(p => usedPlayerIds.add(p.id));
-    const split = splitFourPlayersIntoTeams(s4, pairHistory);
+    const split = splitFourPlayersIntoTeams(s4, pairHistory, roundRequests);
     const hasFemale = s4.some(p => p.gender === 'P');
     matches.push({
       courtNumber: matches.length + 1,
@@ -5330,7 +5332,11 @@ function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, 
   const isMale = p.gender === 'L';
   const canSwap = isHost && !isLocked;
   const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${escapeHtml(p.name)}" style="cursor:pointer;"` : `style="cursor:default;"`;
-  const swapBtnHtml = canSwap ? `<span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>` : '';
+  const swapBtnHtml = canSwap ? `
+    <div style="display:inline-flex; align-items:center; gap:3px;">
+      <span onclick="event.stopPropagation(); handleCourtPlayerRest(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Pemain memilih istirahat (Ganti otomatis sesuai regulasi)" style="font-size:0.65rem; font-weight:800; color:#4B5563; background:#F3F4F6; border:1px solid #D1D5DB; padding:1px 5px; border-radius:4px; display:inline-flex; align-items:center; cursor:pointer;">🏖️</span>
+      <span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>
+    </div>` : '';
 
   return `
     <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" ${clickAttr}>
@@ -8593,10 +8599,31 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
     }
   });
 
+  let autoRestBannerHtml = '';
+  if (sourcePlayer) {
+    autoRestBannerHtml = `
+      <div style="background:linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border:1.5px solid #93C5FD; border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="handleCourtPlayerRest(${rIdx}, ${cIdx}, '${teamProp}', ${pIdx}, ${sourcePlayer.id})" title="Klik untuk istirahatkan pemain ini dan auto ganti sesuai regulasi">
+        <div>
+          <div style="font-weight:900; font-size:0.85rem; color:#1E40AF; display:flex; align-items:center; gap:6px;">
+            <span>🏖️ Pemain Memilih Istirahat</span>
+            <span style="font-size:0.68rem; background:#2563EB; color:#fff; padding:1px 6px; border-radius:10px; font-weight:700;">Ganti Otomatis</span>
+          </div>
+          <div style="font-size:0.72rem; color:#1E3A8A; margin-top:2px;">
+            Prioritaskan pemain antrian dengan main paling sedikit & sesuai regulasi gender (Pria/Wanita/Inter).
+          </div>
+        </div>
+        <button type="button" class="btn-court-action" style="font-size:0.75rem; padding:6px 14px; background:#2563EB; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap; box-shadow:0 2px 4px rgba(37,99,235,0.3);">
+          Istirahatkan
+        </button>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Atau pilih manual dari pemain berikut:</div>
+    `;
+  }
+
   if (candidates.length === 0) {
-    listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar.</div>`;
+    listEl.innerHTML = autoRestBannerHtml + `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar secara manual.</div>`;
   } else {
-    listEl.innerHTML = candidates.map((cand, idx) => `
+    listEl.innerHTML = autoRestBannerHtml + candidates.map((cand, idx) => `
       <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwap(${idx})">
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
@@ -8757,6 +8784,53 @@ function executeSwap(candidateIdx) {
   renderCourtsView();
   persistAndBroadcast();
   showToast('Pemain berhasil ditukar!');
+}
+
+function handleCourtPlayerRest(rIdx, cIdx, teamKey, pIdx, pId) {
+  if (!checkEditPermission()) return;
+  const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
+  if (!round || !round.courts || !round.courts[cIdx]) {
+    showToast('Data pertandingan lapangan tidak ditemukan', 'warning');
+    return;
+  }
+
+  const court = round.courts[cIdx];
+  const res = BadmintonService.replaceCourtPlayerWithRest({
+    court,
+    targetPlayerId: pId,
+    players: bPlayers,
+    partnerRequests: bPartnerRequests,
+    minPlays: bMinPlays,
+    restCooldown: 1
+  });
+
+  if (!res.success) {
+    showToast(res.message || 'Tidak dapat mengganti pemain', 'warning');
+    return;
+  }
+
+  // Masukkan pemain yang beristirahat ke daftar round.resting jika belum ada
+  if (round.resting) {
+    if (!round.resting.some(p => p && String(p.id) === String(res.oldPlayer.id))) {
+      round.resting.push(res.oldPlayer);
+    }
+    const restIdx = round.resting.findIndex(p => p && String(p.id) === String(res.newPlayer.id));
+    if (restIdx !== -1) {
+      round.resting.splice(restIdx, 1);
+    }
+  }
+
+  BadmintonService.logHostAction(bAuditLog, 'PLAYER_REST_REPLACED', {
+    courtNumber: cIdx + 1,
+    oldPlayer: res.oldPlayer.name,
+    newPlayer: res.newPlayer.name
+  });
+
+  closeSwapModal();
+  renderCourtsView();
+  renderPlayersList();
+  persistAndBroadcast();
+  showToast(res.message, 'success');
 }
 
 // ── REALTIME ONLINE SYNC ENGINE (SEC-2 & SEC-3 CRYPTO & AUTH) ──

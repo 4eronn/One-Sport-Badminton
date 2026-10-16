@@ -610,24 +610,39 @@
     const queueMap = new Map(eligibleQueue.map(p => [p.id, p]));
     let reqPair = null;
 
-    for (const req of partnerRequests) {
-      if (req.status === REQUEST_STATUS.APPROVED) {
-        // Cek jika requester atau target sudah tidak aktif atau terhapus
-        const reqP = allPlayers.length ? allPlayers.find(p => p.id === req.requesterId) : queueMap.get(req.requesterId);
-        const tgtP = allPlayers.length ? allPlayers.find(p => p.id === req.targetId) : queueMap.get(req.targetId);
-        if ((reqP && (reqP.status === PLAYER_STATUS.TIDAK_AKTIF || reqP.is_deleted)) ||
-            (tgtP && (tgtP.status === PLAYER_STATUS.TIDAK_AKTIF || tgtP.is_deleted))) {
-          req.status = REQUEST_STATUS.CANCELLED;
-          if (reqP && reqP.status !== PLAYER_STATUS.TIDAK_AKTIF && !reqP.is_deleted) {
-            reqP.request_used = false;
-          }
-          continue;
-        }
+    const approvedReqs = (partnerRequests || []).filter(req => req && req.status === REQUEST_STATUS.APPROVED);
 
-        if (queueMap.has(req.requesterId) && queueMap.has(req.targetId)) {
-          reqPair = [queueMap.get(req.requesterId), queueMap.get(req.targetId)];
-          break;
+    // Prioritaskan request game pertama (salah satu pemain jumlah_main === 0)
+    approvedReqs.sort((a, b) => {
+      const pA1 = allPlayers.length ? allPlayers.find(p => String(p.id) === String(a.requesterId)) : queueMap.get(a.requesterId);
+      const pA2 = allPlayers.length ? allPlayers.find(p => String(p.id) === String(a.targetId)) : queueMap.get(a.targetId);
+      const pB1 = allPlayers.length ? allPlayers.find(p => String(p.id) === String(b.requesterId)) : queueMap.get(b.requesterId);
+      const pB2 = allPlayers.length ? allPlayers.find(p => String(p.id) === String(b.targetId)) : queueMap.get(b.targetId);
+      const isGame1A = (pA1 && (pA1.jumlah_main || 0) === 0) || (pA2 && (pA2.jumlah_main || 0) === 0);
+      const isGame1B = (pB1 && (pB1.jumlah_main || 0) === 0) || (pB2 && (pB2.jumlah_main || 0) === 0);
+      if (isGame1A && !isGame1B) return -1;
+      if (!isGame1A && isGame1B) return 1;
+      const minPlayA = Math.min(pA1 ? (pA1.jumlah_main || 0) : 0, pA2 ? (pA2.jumlah_main || 0) : 0);
+      const minPlayB = Math.min(pB1 ? (pB1.jumlah_main || 0) : 0, pB2 ? (pB2.jumlah_main || 0) : 0);
+      return minPlayA - minPlayB;
+    });
+
+    for (const req of approvedReqs) {
+      // Cek jika requester atau target sudah tidak aktif atau terhapus
+      const reqP = allPlayers.length ? allPlayers.find(p => p.id === req.requesterId) : queueMap.get(req.requesterId);
+      const tgtP = allPlayers.length ? allPlayers.find(p => p.id === req.targetId) : queueMap.get(req.targetId);
+      if ((reqP && (reqP.status === PLAYER_STATUS.TIDAK_AKTIF || reqP.is_deleted)) ||
+          (tgtP && (tgtP.status === PLAYER_STATUS.TIDAK_AKTIF || tgtP.is_deleted))) {
+        req.status = REQUEST_STATUS.CANCELLED;
+        if (reqP && reqP.status !== PLAYER_STATUS.TIDAK_AKTIF && !reqP.is_deleted) {
+          reqP.request_used = false;
         }
+        continue;
+      }
+
+      if (queueMap.has(req.requesterId) && queueMap.has(req.targetId)) {
+        reqPair = [queueMap.get(req.requesterId), queueMap.get(req.targetId)];
+        break;
       }
     }
 
@@ -642,20 +657,43 @@
       return selected;
     }
 
+    // Cegah pemain yang memiliki request game 1 terpasang dengan pemain acak
+    // jika pasangannya belum ada di antrian dan masih ada 4 pemain lain yang siap bermain
+    const playersWaitingForPartner = new Set();
+    approvedReqs.forEach(req => {
+      const hasReq = queueMap.has(req.requesterId);
+      const hasTgt = queueMap.has(req.targetId);
+      if (hasReq !== hasTgt) {
+        const waitingId = hasReq ? req.requesterId : req.targetId;
+        const waitingP = queueMap.get(waitingId);
+        if (waitingP && (waitingP.jumlah_main || 0) === 0) {
+          playersWaitingForPartner.add(String(waitingId));
+        }
+      }
+    });
+
+    let availablePool = eligibleQueue;
+    if (playersWaitingForPartner.size > 0) {
+      const filteredPool = eligibleQueue.filter(p => !playersWaitingForPartner.has(String(p.id)));
+      if (filteredPool.length >= 4) {
+        availablePool = filteredPool;
+      }
+    }
+
     // 2. Gender-aware selection (Q-3):
     // a) Bila >= 4 pemain putri menunggu, buat match khusus putri (4 pemain putri)
-    const femalePlayers = eligibleQueue.filter(p => p && p.gender === 'P');
+    const femalePlayers = availablePool.filter(p => p && p.gender === 'P');
     if (femalePlayers.length >= 4) {
       return femalePlayers.slice(0, 4);
     }
 
     // b) Ambil 4 pemain teratas dari antrian yang sudah diprioritaskan
-    let candidateFour = eligibleQueue.slice(0, 4);
+    let candidateFour = availablePool.slice(0, 4);
     const femalesInCandidate = candidateFour.filter(p => p && p.gender === 'P');
 
     // c) Hindari 3 putra + 1 putri jika ada alternatif putra di sisa antrian (kecuali putri berlevel Advance yang dapat masuk match terbuka)
     if (femalesInCandidate.length === 1 && !isAdvanceRole(femalesInCandidate[0])) {
-      const remainingMales = eligibleQueue.slice(4).filter(p => p && p.gender !== 'P');
+      const remainingMales = availablePool.slice(4).filter(p => p && p.gender !== 'P');
       if (remainingMales.length > 0) {
         candidateFour = candidateFour.filter(p => String(p.id) !== String(femalesInCandidate[0].id));
         candidateFour.push(remainingMales[0]);
@@ -880,6 +918,181 @@
     court.usedRequests = [];
 
     return { success: true, court };
+  }
+
+  // ── 6b. PENGGANTIAN PEMAIN ISTIRAHAT DARI ANTRIAN LAPANGAN ──
+  /**
+   * Menemukan pemain pengganti terbaik dari antrian menunggu jika seorang pemain di lapangan memilih istirahat.
+   * Diprioritaskan pemain yang mainnya masih sedikit (prioritizeQueue) dan memenuhi regulasi:
+   * - Wanita diganti dengan wanita.
+   * - Pria diganti dengan pria, terkecuali wanita dengan role Intermediate yang bisa menggantikan pria.
+   * - Jika wanita yang beristirahat memiliki role Intermediate, ia bisa diganti oleh wanita atau pria.
+   * - Tidak melanggar aturan role (Intermediate + Advance dilarang 1 tim).
+   */
+  function findBestRestReplacementPlayer({
+    court,
+    targetPlayerId,
+    players = [],
+    minPlays = 3
+  }) {
+    if (!court || !targetPlayerId) return null;
+
+    const targetIdStr = String(targetPlayerId);
+    let targetTeamKey = null;
+    let targetIdx = -1;
+    let sourcePlayer = null;
+    let teammate = null;
+
+    ['teamA', 'teamB'].forEach(tKey => {
+      const team = court[tKey] || [];
+      const idx = team.findIndex(p => p && String(p.id) === targetIdStr);
+      if (idx !== -1) {
+        targetTeamKey = tKey;
+        targetIdx = idx;
+        sourcePlayer = team[idx];
+        teammate = team.find((p, i) => i !== idx && p);
+      }
+    });
+
+    if (!sourcePlayer) return null;
+
+    const courtPlayerIds = new Set(
+      [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean).map(p => String(p.id))
+    );
+
+    const isSourceInterFemale = sourcePlayer.gender === 'P' && isIntermediateRole(sourcePlayer);
+
+    // Filter kandidat yang berstatus 'menunggu'
+    const eligibleWaiting = players.filter(p => {
+      if (!p || p.is_deleted || p.status === PLAYER_STATUS.TIDAK_AKTIF) return false;
+      const pIdStr = String(p.id);
+      if (courtPlayerIds.has(pIdStr)) return false;
+      if (p.status !== PLAYER_STATUS.MENUNGGU) return false;
+
+      // Regulasi Gender:
+      // 1. Jika wanita yang istirahat adalah Intermediate -> bisa diganti siapa saja (P atau L)
+      // 2. Jika wanita lain (Pemula/Advance) -> wajib diganti wanita (P)
+      // 3. Jika pria -> wajib diganti pria (L) ATAU wanita dengan role Intermediate
+      let genderCompatible = false;
+      if (sourcePlayer.gender === 'P') {
+        if (isSourceInterFemale) {
+          genderCompatible = true;
+        } else {
+          genderCompatible = (p.gender === 'P');
+        }
+      } else { // sourcePlayer pria
+        genderCompatible = (p.gender === 'L') || (p.gender === 'P' && isIntermediateRole(p));
+      }
+
+      if (!genderCompatible) return false;
+
+      // Regulasi Role: Intermediate & Advance tidak boleh 1 tim
+      if (teammate && hasInterAndAdvanceTogether([teammate, p])) {
+        return false;
+      }
+
+      return true;
+    });
+
+    if (eligibleWaiting.length === 0) return null;
+
+    // Urutkan kandidat berdasarkan prioritas main paling sedikit
+    const sorted = prioritizeQueue(eligibleWaiting, minPlays);
+    return {
+      replacement: sorted[0],
+      sourcePlayer,
+      teammate,
+      targetTeamKey,
+      targetIdx
+    };
+  }
+
+  /**
+   * Menjalankan proses penggantian pemain lapangan yang memilih istirahat:
+   * - Menemukan pemain pengganti prioritas (main sedikit & sesuai regulasi)
+   * - Memasukkan pengganti ke slot lapangan
+   * - Mengubah status pemain yang istirahat menjadi 'istirahat' dengan cooldown = 1
+   * - Membatalkan partner request aktif dari pemain yang beristirahat
+   * - Memperbarui kategori dan playerSummaries court
+   */
+  function replaceCourtPlayerWithRest({
+    court,
+    targetPlayerId,
+    players = [],
+    partnerRequests = [],
+    minPlays = 3,
+    restCooldown = 1
+  }) {
+    if (!court) {
+      return { success: false, message: 'Data lapangan tidak ditemukan.' };
+    }
+
+    const targetIdStr = String(targetPlayerId);
+    const searchRes = findBestRestReplacementPlayer({ court, targetPlayerId, players, minPlays });
+
+    if (!searchRes) {
+      const inCourt = [...(court.teamA || []), ...(court.teamB || [])].find(p => p && String(p.id) === targetIdStr);
+      if (!inCourt) {
+        return { success: false, message: 'Pemain tidak ditemukan di lapangan ini.' };
+      }
+      return {
+        success: false,
+        message: 'Tidak ada pemain antrian yang memenuhi kriteria regulasi gender/level untuk menggantikan saat ini.'
+      };
+    }
+
+    const { replacement, sourcePlayer, targetTeamKey, targetIdx } = searchRes;
+
+    // 1. Update court team slot
+    court[targetTeamKey][targetIdx] = replacement;
+
+    // 2. Update status pemain yang memilih istirahat
+    const realSourcePlayer = players.find(p => String(p.id) === targetIdStr) || sourcePlayer;
+    realSourcePlayer.status = PLAYER_STATUS.ISTIRAHAT;
+    realSourcePlayer.cooldown_remaining = restCooldown;
+
+    // 3. Batalkan request pasangan aktif untuk pemain yang istirahat jika ada
+    cancelRequestsForPlayer(realSourcePlayer.id, players, partnerRequests);
+
+    // 4. Bersihkan usedRequest lapangan jika terkait dengan pemain yang istirahat
+    if (court.usedRequests && Array.isArray(court.usedRequests)) {
+      court.usedRequests = court.usedRequests.filter(r =>
+        String(r.requesterId) !== targetIdStr && String(r.targetId) !== targetIdStr
+      );
+    }
+    if (court.usedRequest && (String(court.usedRequest.requesterId) === targetIdStr || String(court.usedRequest.targetId) === targetIdStr)) {
+      court.usedRequest = court.usedRequests && court.usedRequests[0] ? court.usedRequests[0] : null;
+    }
+
+    // 5. Update status pemain pengganti jika court sudah 'sedang_main'
+    const realReplacement = players.find(p => String(p.id) === String(replacement.id)) || replacement;
+    if (court.status === COURT_STATUS.SEDANG_MAIN) {
+      realReplacement.status = PLAYER_STATUS.DI_LAPANGAN;
+    }
+
+    // 6. Perbarui metadata court (category, categoryLabel, playerSummaries)
+    const allFour = [...(court.teamA || []), ...(court.teamB || [])].filter(Boolean);
+    const hasFemale = allFour.some(p => p.gender === 'P');
+    const allFemale = allFour.length === 4 && allFour.every(p => p.gender === 'P');
+    court.category = allFemale ? 'PUTRI' : (hasFemale ? 'CAMPURAN' : 'PUTRA');
+    court.categoryLabel = allFemale ? 'Putri vs Putri' : (hasFemale ? 'Terbuka / Campuran' : 'Ganda Putra');
+
+    court.playerSummaries = allFour.map(p => ({
+      id: p.id,
+      name: p.name,
+      role: p.role,
+      gender: p.gender,
+      jumlah_main: p.jumlah_main || 0,
+      quotaMet: (p.jumlah_main || 0) >= minPlays
+    }));
+
+    return {
+      success: true,
+      court,
+      oldPlayer: realSourcePlayer,
+      newPlayer: realReplacement,
+      message: `${realSourcePlayer.name} memilih istirahat. Digantikan oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
+    };
   }
 
   // ── 7. FITUR 4: INPUT SKOR LANGSUNG & KLASEMEN REAL-TIME ──
@@ -1926,6 +2139,8 @@
     createCourtProposal,
     approveCourtProposal,
     rejectCourtProposal,
+    findBestRestReplacementPlayer,
+    replaceCourtPlayerWithRest,
     validateBadmintonScore,
     recordMatchFinished,
     editFinishedMatchScore,

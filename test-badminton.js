@@ -21,6 +21,8 @@ const {
   createCourtProposal,
   approveCourtProposal,
   rejectCourtProposal,
+  findBestRestReplacementPlayer,
+  replaceCourtPlayerWithRest,
   validateBadmintonScore,
   recordMatchFinished,
   editFinishedMatchScore,
@@ -1340,6 +1342,230 @@ it('pickNextFourPlayersForMatch mengizinkan pemain putri level Advance masuk ke 
   assert.strictEqual(result.length, 4);
   const pickedIds = result.map(p => p.id);
   assert.ok(pickedIds.includes(1), 'Pemain putri Advance harus tetap berada dalam 4 pemain terpilih dan tidak ditukar');
+});
+
+console.log('\n--- 10. Fitur Request Game 1 & Auto-Ganti Pemain Istirahat Sesuai Regulasi ---');
+
+it('Pemain request langsung dipasangkan pada game pertamanya, dan ronde berikutnya diacak', () => {
+  const players = Array.from({ length: 8 }, (_, i) => ({
+    id: i + 1,
+    name: `Player ${i + 1}`,
+    gender: 'L',
+    role: 'Pemula',
+    status: PLAYER_STATUS.MENUNGGU,
+    jumlah_main: 0,
+    waitingSince: i + 1
+  }));
+
+  const partnerRequests = [];
+  const partnerHistory = {};
+  const opponentHistory = {};
+
+  // Player 1 mengajukan request rekan dengan Player 2
+  const reqRes = submitPartnerRequest({
+    requesterId: 1,
+    targetId: 2,
+    players,
+    partnerRequests,
+    partnerHistory
+  });
+  assert.strictEqual(reqRes.success, true);
+  assert.strictEqual(partnerRequests.length, 1);
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.APPROVED);
+
+  // Match pertama (Game 1): Pemain 1 dan 2 WAJIB langsung dipasangkan
+  const prop1 = createCourtProposal({
+    courtNumber: 1,
+    players,
+    partnerHistory,
+    opponentHistory,
+    partnerRequests,
+    minPlays: 3
+  });
+
+  assert.strictEqual(prop1.court.status, COURT_STATUS.MENUNGGU_ACC);
+  // Verifikasi Pemain 1 dan Pemain 2 berada di tim yang sama
+  const inTeamA = prop1.court.teamA.some(p => p.id === 1) && prop1.court.teamA.some(p => p.id === 2);
+  const inTeamB = prop1.court.teamB.some(p => p.id === 1) && prop1.court.teamB.some(p => p.id === 2);
+  assert.ok(inTeamA || inTeamB, 'Pemain 1 dan Pemain 2 wajib dipasangkan di game pertamanya');
+
+  // ACC dan selesaikan match 1
+  approveCourtProposal(prop1.court, players, partnerRequests);
+  recordMatchFinished({
+    court: prop1.court,
+    scoreA: 21,
+    scoreB: 15,
+    winner: 'A',
+    players,
+    partnerHistory,
+    opponentHistory,
+    partnerRequests,
+    defaultCooldown: 1
+  });
+
+  // Request sekarang harus sudah COMPLETED
+  assert.strictEqual(partnerRequests[0].status, REQUEST_STATUS.COMPLETED);
+  assert.strictEqual(players[0].jumlah_main, 1);
+  assert.strictEqual(players[1].jumlah_main, 1);
+
+  // Set semua pemain kembali MENUNGGU untuk ronde berikutnya
+  players.forEach(p => {
+    p.status = PLAYER_STATUS.MENUNGGU;
+    p.cooldown_remaining = 0;
+  });
+
+  // Match kedua (sisanya rondenya): pasangan tidak lagi dipaksa bersama, diacak / rotasi partner berbeda
+  const prop2 = createCourtProposal({
+    courtNumber: 1,
+    players,
+    partnerHistory,
+    opponentHistory,
+    partnerRequests,
+    minPlays: 3
+  });
+
+  assert.strictEqual(prop2.court.status, COURT_STATUS.MENUNGGU_ACC);
+  const inTeamA2 = prop2.court.teamA.some(p => p.id === 1) && prop2.court.teamA.some(p => p.id === 2);
+  const inTeamB2 = prop2.court.teamB.some(p => p.id === 1) && prop2.court.teamB.some(p => p.id === 2);
+  assert.strictEqual(inTeamA2 || inTeamB2, false, 'Setelah game 1 selesai, pasangan request tidak lagi dipaksa bersama');
+});
+
+it('Pemain di antrian lapang memilih istirahat: wanita (Pemula) wajib diganti wanita dan prioritas main paling sedikit', () => {
+  const pCourtFem = { id: 1, name: 'Siti (Pemula)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pCourtTeammate = { id: 2, name: 'Rina (Pemula)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pOpp1 = { id: 3, name: 'Dewi (Pemula)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pOpp2 = { id: 4, name: 'Maya (Pemula)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [pCourtFem, pCourtTeammate],
+    teamB: [pOpp1, pOpp2]
+  };
+
+  const pWaitingMale = { id: 5, name: 'Budi (Pria)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pWaitingFemMany = { id: 6, name: 'Ani (Putri Banyak Main)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 3 };
+  const pWaitingFemFew = { id: 7, name: 'Lia (Putri Sedikit Main)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const players = [pCourtFem, pCourtTeammate, pOpp1, pOpp2, pWaitingMale, pWaitingFemMany, pWaitingFemFew];
+
+  // Siti (id: 1, Wanita Pemula) memilih istirahat
+  const res = replaceCourtPlayerWithRest({
+    court,
+    targetPlayerId: 1,
+    players,
+    partnerRequests: [],
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  // Wanita Pemula TIDAK boleh diganti pria (id: 5), dan harus memprioritaskan yang main lebih sedikit (id: 7 main 1x vs id: 6 main 3x)
+  assert.strictEqual(res.newPlayer.id, 7, 'Pengganti harus Lia (id: 7) karena sesama wanita dengan main paling sedikit');
+  assert.strictEqual(court.teamA[0].id, 7);
+  // Status Siti berubah menjadi ISTIRAHAT
+  assert.strictEqual(pCourtFem.status, PLAYER_STATUS.ISTIRAHAT);
+  assert.strictEqual(pCourtFem.cooldown_remaining, 1);
+});
+
+it('Pemain di antrian lapang memilih istirahat: pria diganti pria atau wanita role Intermediate (prioritas main sedikit)', () => {
+  const pCourtMale = { id: 10, name: 'Joko (Pria)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pCourtTeammate = { id: 11, name: 'Anto (Pria)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pOpp1 = { id: 12, name: 'Bambang', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pOpp2 = { id: 13, name: 'Dedi', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [pCourtMale, pCourtTeammate],
+    teamB: [pOpp1, pOpp2]
+  };
+
+  const pFemPemula = { id: 14, name: 'Putri Pemula', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pFemInter = { id: 15, name: 'Putri Intermediate', gender: 'P', role: 'Intermediate', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pMaleMany = { id: 16, name: 'Pria Banyak Main', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 3 };
+
+  const players = [pCourtMale, pCourtTeammate, pOpp1, pOpp2, pFemPemula, pFemInter, pMaleMany];
+
+  // Joko (id: 10, Pria) memilih istirahat.
+  // Putri Pemula (id: 14) dilarang menggantikan pria.
+  // Putri Intermediate (id: 15, main 1x) dan Pria Banyak Main (id: 16, main 3x) diizinkan.
+  // Karena id: 15 main 1x < id: 16 main 3x, id: 15 yang terpilih!
+  const res = replaceCourtPlayerWithRest({
+    court,
+    targetPlayerId: 10,
+    players,
+    partnerRequests: [],
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.id, 15, 'Putri dengan role Intermediate berhak menggantikan pria jika mainnya lebih sedikit');
+  assert.strictEqual(court.teamA[0].id, 15);
+  assert.strictEqual(pCourtMale.status, PLAYER_STATUS.ISTIRAHAT);
+});
+
+it('Pemain di antrian lapang memilih istirahat: wanita Intermediate bisa diganti pria atau wanita', () => {
+  const pFemInter = { id: 20, name: 'Gita (Inter)', gender: 'P', role: 'Intermediate', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pCourtTeammate = { id: 21, name: 'Rudy (Pria)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pOpp1 = { id: 22, name: 'Hadi', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pOpp2 = { id: 23, name: 'Yanto', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [pFemInter, pCourtTeammate],
+    teamB: [pOpp1, pOpp2]
+  };
+
+  const pMaleFew = { id: 24, name: 'Eko (Pria Main Sedikit)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pFemMany = { id: 25, name: 'Dina (Putri Main Banyak)', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 2 };
+
+  const players = [pFemInter, pCourtTeammate, pOpp1, pOpp2, pMaleFew, pFemMany];
+
+  // Gita (Wanita Intermediate) istirahat. Karena Intermediate, ia bisa diganti pria (id: 24) atau wanita (id: 25).
+  // id: 24 main 0x didahulukan dibanding id: 25 main 2x.
+  const res = replaceCourtPlayerWithRest({
+    court,
+    targetPlayerId: 20,
+    players,
+    partnerRequests: [],
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.id, 24, 'Wanita Intermediate dapat diganti pria yang memiliki jumlah main lebih sedikit');
+});
+
+it('Penggantian pemain istirahat menaati larangan Intermediate + Advance dalam satu tim', () => {
+  const pAdv = { id: 30, name: 'Kevin (Advance)', gender: 'L', role: 'Advance', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pRest = { id: 31, name: 'Marcus (Pemula)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pOpp1 = { id: 32, name: 'Ahsan', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const pOpp2 = { id: 33, name: 'Hendra', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [pRest, pAdv],
+    teamB: [pOpp1, pOpp2]
+  };
+
+  // Kandidat 1: Pria Intermediate main 0x (tidak boleh karena setim dengan Kevin Advance!)
+  const pInter = { id: 34, name: 'Fajar (Inter)', gender: 'L', role: 'Intermediate', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  // Kandidat 2: Pria Pemula main 1x (boleh)
+  const pPemula = { id: 35, name: 'Rian (Pemula)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const players = [pAdv, pRest, pOpp1, pOpp2, pInter, pPemula];
+
+  const res = replaceCourtPlayerWithRest({
+    court,
+    targetPlayerId: 31,
+    players,
+    partnerRequests: [],
+    minPlays: 3
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.id, 35, 'Intermediate dilarang 1 tim dengan Advance, jadi pemain Pemula yang dipilih');
 });
 
 (async () => {
