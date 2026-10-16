@@ -2443,7 +2443,6 @@
             <th class="col-center">WR</th>
             <th class="col-center">Poin</th>
             <th class="col-center">Skor (Diff)</th>
-            <th class="col-left">Penentuan & Catatan</th>
           </tr>
         </thead>
         <tbody id="finalTableBody"></tbody>
@@ -7175,7 +7174,7 @@ function renderFinalPodium() {
     if (list.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+          <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
             Belum ada data pertandingan selesai.
           </td>
         </tr>
@@ -7194,9 +7193,6 @@ function renderFinalPodium() {
         <td class="col-center">${s.winRate}%</td>
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.diff >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.diff >= 0 ? '+'+s.diff : s.diff}</td>
-        <td class="col-left">
-          ${s.tieBreakNote ? `<span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
-        </td>
       </tr>
     `).join('');
   } else {
@@ -7234,7 +7230,7 @@ function renderFinalPodium() {
     if (list.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+          <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
             Belum ada data pertandingan selesai.
           </td>
         </tr>
@@ -7253,9 +7249,6 @@ function renderFinalPodium() {
         <td class="col-center">${s.winRate}%</td>
         <td class="col-center" style="font-weight:700;">${s.totalScore}</td>
         <td class="col-center" style="color:${s.gd >= 0 ? '#059669' : '#DC2626'}; font-weight:900;">${s.gd >= 0 ? '+'+s.gd : s.gd}</td>
-        <td class="col-left">
-          ${s.tieBreakNote ? `<span class="tiebreak-badge">${escapeHtml(s.tieBreakNote)}</span>` : (idx === 0 ? '<span style="color:#B45309; font-weight:800; font-size:0.75rem;">Peringkat 1 Bersih</span>' : '<span style="color:var(--text-muted); font-size:0.75rem;">Peringkat Bersih</span>')}
-        </td>
       </tr>
     `).join('');
   }
