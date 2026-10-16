@@ -1564,8 +1564,8 @@
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 6px 6px;
-    padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+    padding: 5px 3px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
     z-index: 1000;
     box-shadow: 0 -4px 20px rgba(15, 30, 54, 0.06);
   }
@@ -1577,14 +1577,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    font-size: 0.68rem;
+    gap: 2px;
+    font-size: 0.62rem;
     font-weight: 700;
     cursor: pointer;
-    padding: 6px 8px;
-    border-radius: 12px;
-    min-width: 48px;
-    min-height: 44px;
+    padding: 4px 2px;
+    border-radius: 10px;
+    min-width: 40px;
+    min-height: 42px;
     touch-action: manipulation;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -2139,9 +2139,7 @@
       </div>
     </div>
     <div class="header-actions">
-      <div id="headerAuthContainer" style="display:inline-flex; align-items:center;">
-        <!-- Injected by renderAuthUI() -->
-      </div>
+      <div id="headerAuthContainer" style="display:none;"></div>
       <button class="btn-online-pill" id="btnHeaderOnlinePill" onclick="openOnlineModal()" title="Mode Online & Live Sync">
         <span class="online-status-dot" id="headerOnlineDot"></span>
         <span id="headerOnlineText">Siaran Live</span>
@@ -2150,7 +2148,7 @@
       <button class="btn-header-icon" onclick="openRulesModal()" title="Peraturan Penentuan Juara">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
       </button>
-      <button class="btn-header-icon" id="btnHeaderSettings" onclick="openSettingsModal()" title="Pengaturan">
+      <button class="btn-header-icon" id="btnHeaderSettings" onclick="switchTab('tab-akun')" title="Akun & Pengaturan">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </button>
     </div>
@@ -2469,6 +2467,13 @@
     </div>
   </section>
 
+  <!-- ── TAB: AKUN & PENGATURAN ── -->
+  <section id="tab-akun" class="app-tab-pane">
+    <div id="tabAkunContent" style="padding-bottom: 24px;">
+      <!-- Populated dynamically by renderAccountTab() -->
+    </div>
+  </section>
+
   <!-- ── APP FOOTER: HAK CIPTA ── -->
   <footer class="app-global-footer">
     <div class="footer-copyright-text">
@@ -2519,6 +2524,12 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
     </span>
     <span>Selesai</span>
+  </button>
+  <button class="nav-item-btn" id="nav-tab-akun" onclick="switchTab('tab-akun')" title="Akun">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </span>
+    <span>Akun</span>
   </button>
 </nav>
 
@@ -3538,6 +3549,11 @@
         <button type="submit" class="btn-os-orange" style="flex: 2; padding: 10px; font-weight: 800;">Masuk</button>
       </div>
     </form>
+
+    <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.71rem; color:var(--text-secondary); line-height:1.45;">
+      <div>• <strong>Host:</strong> admin · temanmainlebihdekat</div>
+      <div>• <strong>User:</strong> user · user123 (atau akun terdaftar)</div>
+    </div>
   </div>
 </div>
 
@@ -3563,12 +3579,40 @@ let currentSport = 'badminton'; // 'badminton' | 'minisoccer'
 const HOST_EMAIL = 'admin@onesport.co.id';
 const HOST_PASSWORD = 'temanmainlebihdekat';
 
+const DEFAULT_USERS_DB = [
+  { username: 'user', name: 'Pemain OneSport', password: 'user123', role: 'user' }
+];
+
+function getUsersDatabase() {
+  try {
+    const raw = localStorage.getItem('onesport_users_db');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  try {
+    localStorage.setItem('onesport_users_db', JSON.stringify(DEFAULT_USERS_DB));
+  } catch (e) {}
+  return [...DEFAULT_USERS_DB];
+}
+
+function saveUsersDatabase(users) {
+  try {
+    localStorage.setItem('onesport_users_db', JSON.stringify(users));
+  } catch (e) {}
+}
+
 let currentUser = null;
 try {
   const savedUser = localStorage.getItem('onesport_auth_user');
   if (savedUser) {
     const parsed = JSON.parse(savedUser);
-    if (parsed && parsed.email && (parsed.email.toLowerCase() === HOST_EMAIL.toLowerCase() || parsed.email.toLowerCase() === 'admin') && parsed.role === 'host') {
+    if (parsed && (parsed.role === 'host' || (parsed.email && (parsed.email.toLowerCase() === HOST_EMAIL.toLowerCase() || parsed.email.toLowerCase() === 'admin')))) {
+      currentUser = parsed;
+      const customName = localStorage.getItem('onesport_user_display_name');
+      if (customName && customName.trim()) currentUser.name = customName.trim();
+    } else if (parsed && (parsed.role === 'user' || parsed.username)) {
       currentUser = parsed;
       const customName = localStorage.getItem('onesport_user_display_name');
       if (customName && customName.trim()) currentUser.name = customName.trim();
@@ -3583,7 +3627,14 @@ try {
 }
 
 function isHostUser() {
-  return !!(currentUser && currentUser.email && (currentUser.email.toLowerCase() === HOST_EMAIL.toLowerCase() || currentUser.email.toLowerCase() === 'admin') && currentUser.role === 'host');
+  if (!currentUser) return false;
+  if (currentUser.role === 'host') return true;
+  const identifier = (currentUser.email || currentUser.username || '').toLowerCase();
+  return (identifier === HOST_EMAIL.toLowerCase() || identifier === 'admin');
+}
+
+function isRegularUser() {
+  return !!(currentUser && !isHostUser());
 }
 
 let userRole = isHostUser() ? 'host' : 'spectator';
@@ -3698,21 +3749,26 @@ const VercelDbSync = {
   },
 
   updateIndicator(status) {
-    const el = document.getElementById('settingDbStatusText');
-    if (!el) return;
-    if (status === 'postgres') {
-      el.textContent = 'Postgres Connected';
-      el.style.color = '#059669';
-    } else if (status === 'kv') {
-      el.textContent = 'KV Connected';
-      el.style.color = '#7C3AED';
-    } else if (status === 'memory' || status === 'connected') {
-      el.textContent = 'Ready';
-      el.style.color = '#0284C7';
-    } else {
-      el.textContent = 'Offline';
-      el.style.color = '#64748B';
-    }
+    const elements = [
+      document.getElementById('settingDbStatusText'),
+      document.getElementById('tabAccountDbStatusText')
+    ].filter(Boolean);
+    if (elements.length === 0) return;
+    elements.forEach(el => {
+      if (status === 'postgres') {
+        el.textContent = 'Postgres Connected';
+        el.style.color = '#059669';
+      } else if (status === 'kv') {
+        el.textContent = 'KV Connected';
+        el.style.color = '#7C3AED';
+      } else if (status === 'memory' || status === 'connected') {
+        el.textContent = 'Ready';
+        el.style.color = '#0284C7';
+      } else {
+        el.textContent = 'Offline';
+        el.style.color = '#64748B';
+      }
+    });
   }
 };
 
@@ -3886,6 +3942,7 @@ function switchTab(tabId) {
   if (tabId === 'tab-skor') renderLeaderboard();
   if (tabId === 'tab-history') renderHistory();
   if (tabId === 'tab-selesai') renderFinalPodium();
+  if (tabId === 'tab-akun') renderAccountTab();
 }
 
 // ── PRESET DATA LOADERS (DISABLED) ──
@@ -7326,10 +7383,423 @@ function saveUserNameFromSettings(silent = false) {
 
   renderAuthUI();
   populateSettingsAccountUI();
+  if (document.getElementById('tab-akun')?.classList.contains('active')) {
+    renderAccountTab();
+  }
   if (!silent) {
     showToast(`Nama pengguna berhasil diubah menjadi "${newName}".`, 'success');
   }
   return true;
+}
+
+function getUserUsername() {
+  if (currentUser) {
+    return currentUser.username || currentUser.email || 'user';
+  }
+  return 'user';
+}
+
+function getRegularUserCurrentPassword() {
+  if (!currentUser) return '';
+  const users = getUsersDatabase();
+  const uname = (currentUser.username || currentUser.email || '').toLowerCase();
+  const found = users.find(u => u.username.toLowerCase() === uname);
+  return found ? (found.password || '') : 'user123';
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+  } else {
+    input.type = 'password';
+    btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>`;
+  }
+}
+
+function renderAccountTab() {
+  const container = document.getElementById('tabAkunContent');
+  if (!container) return;
+
+  const isHost = isHostUser();
+  const isRegular = isRegularUser();
+
+  // CASE 1: HOST ACCOUNT (Gambar 1)
+  if (isHost) {
+    const displayName = getUserDisplayName();
+    const isApk = typeof isAndroidApk === 'function' && isAndroidApk();
+    container.innerHTML = `
+      <div class="os-card" style="margin-bottom: 14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-navy-dark);"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <div style="font-weight:900; font-size:1.15rem; color:var(--brand-navy-dark);">Pengaturan</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <!-- 1. KARTU PENGATURAN USER & AKUN -->
+          <div class="settings-user-card" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:12px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:34px; height:34px; border-radius:50%; background:var(--brand-blue-soft); color:var(--brand-blue); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div>
+                  <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark);">Akun & Profil Pengguna</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">Masuk sebagai Host (Admin)</div>
+                </div>
+              </div>
+              <span class="auth-role-tag" style="font-size:0.65rem; padding:3px 9px; background:var(--brand-blue); color:#FFF; font-weight:800; border-radius:999px;">HOST</span>
+            </div>
+
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Nama Pengguna / Tampilan</label>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="tabAccountHostName" class="input-styled-os" value="${escapeHtml(displayName)}" maxlength="30" style="flex:1; padding:7px 10px; font-size:0.8rem;">
+                <button type="button" class="btn-os-cyan" style="padding:6px 14px; font-size:0.74rem; font-weight:800; white-space:nowrap;" onclick="saveHostNameFromTab()">Simpan Nama</button>
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Nama ini akan tampil di header dan identitas Anda di aplikasi.</div>
+            </div>
+
+            <div style="padding-top:2px;">
+              <button type="button" class="btn-court-action" style="font-size:0.78rem; padding:9px 12px; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer;" onclick="logoutUser()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <span>Keluar dari Akun (Logout)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. PENGATURAN SESI MABAR -->
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:0.8rem; font-weight:800; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px; border-bottom:1px solid var(--border-color); padding-bottom:6px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              <span>Konfigurasi Sesi Mabar</span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div>
+                <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Judul / Nama Sesi Mabar</label>
+                <input type="text" id="tabAccountSessionTitle" class="input-styled-os" value="${escapeHtml(sessionTitle || 'Mabar Sesi')}">
+              </div>
+              <div>
+                <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Jumlah Lapangan</label>
+                <input type="number" id="tabAccountNumCourts" class="input-styled-os" value="${bNumCourts || 2}" min="1" max="8">
+              </div>
+              <div>
+                <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Target Minimal Main per Pemain</label>
+                <input type="number" id="tabAccountMinPlays" class="input-styled-os" value="${bMinPlays || 3}" min="1" max="10">
+              </div>
+              <div>
+                <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft);">Total Ronde Direncanakan</label>
+                <input type="number" id="tabAccountTotalRounds" class="input-styled-os" value="${plannedRounds || 8}" min="1" max="25">
+              </div>
+              <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px;">
+                <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="tabAccountOfficialScoring" ${bOfficialScoring ? 'checked' : ''} style="margin-top:2px;">
+                  <div>
+                    <span style="font-size:0.78rem; font-weight:800; color:var(--brand-navy-soft); display:block;">Aturan Skor Resmi (BWF)</span>
+                    <span style="font-size:0.7rem; color:var(--text-muted); display:block;">Pemenang minimal 21 poin, selisih minimal 2 poin (deuce), dan maksimal 30 poin.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <button type="button" class="btn-os-cyan" style="width:100%; margin-top:4px;" onclick="saveAccountTabSettings()">
+              Simpan Pengaturan Sesi
+            </button>
+          </div>
+
+          <!-- 3. AKSI & ALAT TAMBAHAN -->
+          <div style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:#FFF1EB; color:#FF5B14; border-color:#FF5B14;" onclick="openOnlineModal();">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
+              Buka Mode Online & Siaran Live
+            </button>
+            <button class="btn-court-action" id="tabBtnCheckAppUpdate" style="font-size:0.76rem; padding:8px; display:${isApk ? 'flex' : 'none'}; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan APK (v1.2.0)
+            </button>
+            <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
+            </button>
+            <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding-top:2px;">
+              Database Cloud: <span id="tabAccountDbStatusText" style="font-weight:700; color:var(--brand-blue);">${VercelDbSync.dbProvider === 'postgres' ? 'Postgres Connected' : (VercelDbSync.dbProvider === 'kv' ? 'KV Connected' : 'Ready')}</span>
+            </div>
+          </div>
+
+          <!-- 4. HAK CIPTA -->
+          <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:4px; text-align:center;">
+            <div style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:flex; align-items:center; justify-content:center; gap:6px;">
+              <span>ONESPORT</span>
+              <span style="font-size:0.65rem; background:var(--brand-blue-soft); color:var(--brand-blue); padding:1px 7px; border-radius:999px; font-weight:800;">v1.2.0</span>
+            </div>
+            <div style="font-size:0.74rem; color:var(--brand-navy-dark); margin-top:5px; font-weight:800;">
+              &copy; 2026 OneSport. Hak Cipta Dilindungi
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // CASE 2: REGULAR USER ACCOUNT (Hanya nama user, username login, password login yang bisa dirubah & tersimpan di database)
+  if (isRegular) {
+    const displayName = getUserDisplayName();
+    const username = getUserUsername();
+    const currentPass = getRegularUserCurrentPassword();
+
+    container.innerHTML = `
+      <div class="os-card" style="margin-bottom: 14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-blue);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <div style="font-weight:900; font-size:1.15rem; color:var(--brand-navy-dark);">Akun Pengguna</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <!-- Profile Card Header -->
+          <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:12px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:38px; height:38px; border-radius:50%; background:var(--brand-blue-soft); color:var(--brand-blue); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(displayName)}</div>
+                <div style="font-size:0.72rem; color:var(--text-muted);">Masuk sebagai Pengguna</div>
+              </div>
+            </div>
+            <span class="auth-role-tag" style="font-size:0.65rem; padding:3px 9px; background:#059669; color:#FFF; font-weight:800; border-radius:999px;">USER</span>
+          </div>
+
+          <!-- Regular User Form: Nama User, Username Login, Password Login -->
+          <form onsubmit="event.preventDefault(); saveRegularUserAccount();" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- 1. Nama User (Bisa dirubah & tersimpan di database) -->
+            <div>
+              <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Nama User</label>
+              <input type="text" id="tabRegularUserName" class="input-styled-os" value="${escapeHtml(displayName)}" maxlength="30" placeholder="Masukkan nama Anda..." required>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Nama tampilan yang dapat Anda ubah dan tersimpan di database.</div>
+            </div>
+
+            <!-- 2. Username Login (Display / Read-only) -->
+            <div>
+              <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Username Login</label>
+              <input type="text" id="tabRegularUserUsername" class="input-styled-os" value="${escapeHtml(username)}" readonly style="background:#F1F5F9; color:var(--text-secondary); cursor:not-allowed;">
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Username akun login Anda untuk masuk ke aplikasi.</div>
+            </div>
+
+            <!-- 3. Password Login (Bisa dirubah & tersimpan di database) -->
+            <div>
+              <label style="font-size:0.76rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Password Login</label>
+              <div style="position:relative;">
+                <input type="password" id="tabRegularUserPassword" class="input-styled-os" value="${escapeHtml(currentPass)}" style="padding-right:42px;" placeholder="Password baru..." required>
+                <button type="button" onclick="togglePasswordVisibility('tabRegularUserPassword', this)" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; display:flex; align-items:center;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
+                </button>
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Password login Anda dapat diubah dan disimpan langsung ke database.</div>
+            </div>
+
+            <!-- Tombol Simpan Perubahan -->
+            <button type="submit" class="btn-os-cyan" style="width:100%; margin-top:4px; font-weight:800; padding:10px;">
+              Simpan Perubahan Akun
+            </button>
+
+            <!-- Tombol Logout -->
+            <button type="button" class="btn-court-action" style="font-size:0.78rem; padding:9px 12px; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer; margin-top:4px;" onclick="logoutUser()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <span>Keluar dari Akun (Logout)</span>
+            </button>
+          </form>
+
+          <!-- Hak Cipta -->
+          <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:4px; text-align:center;">
+            <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:800;">
+              &copy; 2026 OneSport. Hak Cipta Dilindungi
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // CASE 3: NOT LOGGED IN / GUEST (Tampilkan Form Login)
+  container.innerHTML = `
+    <div class="os-card" style="margin-bottom: 14px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-orange);"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <div style="font-weight:900; font-size:1.15rem; color:var(--brand-navy-dark);">Masuk ke Akun</div>
+      </div>
+
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px; line-height:1.45;">
+        Masuk ke akun Host untuk mengatur sesi dan lapangan, atau masuk sebagai Pengguna untuk mengelola profil dan password akun Anda.
+      </div>
+
+      <form onsubmit="event.preventDefault(); submitTabAccountLogin();" style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;">
+        <div id="tabAccountLoginError" style="display:none; background:#FEF2F2; border:1.5px solid #FECACA; color:#DC2626; border-radius:var(--radius-md); padding:8px 12px; font-size:0.74rem; font-weight:700; text-align:center;">
+          Akses ditolak: Username atau password salah!
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Username / Email</label>
+          <input type="text" id="tabAccountLoginUsername" class="input-styled-os" placeholder="Contoh: admin atau user" required>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Password</label>
+          <div style="position:relative;">
+            <input type="password" id="tabAccountLoginPassword" class="input-styled-os" placeholder="Password..." style="padding-right:42px;" required>
+            <button type="button" onclick="togglePasswordVisibility('tabAccountLoginPassword', this)" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; display:flex; align-items:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-os-orange" style="width:100%; padding:10px; font-weight:800; margin-top:4px;">
+          Masuk ke Aplikasi
+        </button>
+      </form>
+
+      <!-- Quick Credential Hints -->
+      <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px 12px; font-size:0.72rem; color:var(--text-secondary); line-height:1.5;">
+        <strong style="color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Pilihan Akun Tersedia:</strong>
+        <div>• <strong>Host (Admin):</strong> Username <code>admin</code> · Password <code>temanmainlebihdekat</code></div>
+        <div>• <strong>User Biasa:</strong> Username <code>user</code> · Password <code>user123</code> (atau username terdaftar Anda)</div>
+      </div>
+
+      <!-- Hak Cipta -->
+      <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:14px; text-align:center;">
+        <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:800;">
+          &copy; 2026 OneSport. Hak Cipta Dilindungi
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function saveHostNameFromTab() {
+  const input = document.getElementById('tabAccountHostName');
+  if (!input) return;
+  const newName = input.value.trim();
+  if (!newName) {
+    showToast('Nama pengguna tidak boleh kosong.', 'warning');
+    return;
+  }
+  if (newName.length > 30) {
+    showToast('Nama pengguna maksimal 30 karakter.', 'warning');
+    return;
+  }
+  localStorage.setItem('onesport_user_display_name', newName);
+  if (currentUser) {
+    currentUser.name = newName;
+    localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+  }
+  renderAuthUI();
+  showToast(`Nama host berhasil diubah menjadi "${newName}".`, 'success');
+}
+
+function saveAccountTabSettings() {
+  saveHostNameFromTab();
+  if (!checkEditPermission()) return;
+
+  const titleInput = document.getElementById('tabAccountSessionTitle');
+  if (titleInput && titleInput.value.trim()) {
+    sessionTitle = titleInput.value.trim();
+    const finalHeader = document.getElementById('finalTitleHeader');
+    if (finalHeader) finalHeader.textContent = sessionTitle;
+  }
+
+  const courtsInput = document.getElementById('tabAccountNumCourts');
+  if (courtsInput) bNumCourts = parseInt(courtsInput.value) || bNumCourts;
+
+  const minPlaysInput = document.getElementById('tabAccountMinPlays');
+  if (minPlaysInput) bMinPlays = parseInt(minPlaysInput.value) || bMinPlays;
+
+  const roundsInput = document.getElementById('tabAccountTotalRounds');
+  if (roundsInput) plannedRounds = parseInt(roundsInput.value) || plannedRounds;
+
+  const scoringInput = document.getElementById('tabAccountOfficialScoring');
+  if (scoringInput) bOfficialScoring = scoringInput.checked;
+
+  updateSessionLabels();
+  persistAndBroadcast();
+  showToast('Pengaturan sesi berhasil disimpan ke database.', 'success');
+}
+
+function saveRegularUserAccount() {
+  if (!currentUser || isHostUser()) return;
+  const nameInput = document.getElementById('tabRegularUserName');
+  const passInput = document.getElementById('tabRegularUserPassword');
+  const newName = nameInput ? nameInput.value.trim() : '';
+  const newPass = passInput ? passInput.value.trim() : '';
+
+  if (!newName) {
+    showToast('Nama user tidak boleh kosong.', 'warning');
+    return;
+  }
+  if (!newPass) {
+    showToast('Password tidak boleh kosong.', 'warning');
+    return;
+  }
+  if (newPass.length < 3) {
+    showToast('Password minimal 3 karakter.', 'warning');
+    return;
+  }
+
+  // Update current user state
+  currentUser.name = newName;
+  localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+  localStorage.setItem('onesport_user_display_name', newName);
+
+  // Update users database
+  const users = getUsersDatabase();
+  const uname = (currentUser.username || currentUser.email || '').toLowerCase();
+  const uIdx = users.findIndex(u => u.username.toLowerCase() === uname);
+  if (uIdx >= 0) {
+    users[uIdx].name = newName;
+    users[uIdx].password = newPass;
+  } else {
+    users.push({
+      username: currentUser.username || 'user',
+      name: newName,
+      password: newPass,
+      role: 'user'
+    });
+  }
+  saveUsersDatabase(users);
+
+  // Synchronize to database
+  if (typeof persistAndBroadcast === 'function') {
+    persistAndBroadcast();
+  }
+
+  showToast('Perubahan nama & password berhasil disimpan ke database!', 'success');
+  renderAccountTab();
+}
+
+function submitTabAccountLogin() {
+  const uInput = document.getElementById('tabAccountLoginUsername');
+  const pInput = document.getElementById('tabAccountLoginPassword');
+  const errEl = document.getElementById('tabAccountLoginError');
+  if (errEl) errEl.style.display = 'none';
+
+  const u = uInput ? uInput.value.trim() : '';
+  const p = pInput ? pInput.value.trim() : '';
+
+  if (!u || !p) {
+    if (errEl) {
+      errEl.textContent = 'Harap masukkan username dan password.';
+      errEl.style.display = 'block';
+    }
+    showToast('Harap masukkan username dan password.', 'error');
+    return;
+  }
+
+  const ok = loginUser(u, p);
+  if (!ok && errEl) {
+    errEl.textContent = 'Akses ditolak: Username atau password salah!';
+    errEl.style.display = 'block';
+  }
 }
 
 function logoutUserFromSettings() {
@@ -8292,6 +8762,9 @@ function applyRoleUI() {
   const navOnline = document.getElementById('nav-tab-online');
   if (navOnline) navOnline.style.display = 'flex';
 
+  const navAkun = document.getElementById('nav-tab-akun');
+  if (navAkun) navAkun.style.display = 'flex';
+
   // 6. Tab Lapangan (Match) Host Controls vs Spectator View
   const actionGridTop = document.querySelector('#tab-match .action-grid-2');
   if (actionGridTop) actionGridTop.style.display = isHost ? 'grid' : 'none';
@@ -8340,28 +8813,16 @@ function applyRoleUI() {
     renderHistory();
   } else if (activeTab === 'tab-selesai') {
     renderFinalPodium();
+  } else if (activeTab === 'tab-akun') {
+    renderAccountTab();
   }
 }
 
 function renderAuthUI() {
   const container = document.getElementById('headerAuthContainer');
-  if (!container) return;
-
-  if (isHostUser()) {
-    const displayName = getUserDisplayName();
-    container.innerHTML = `
-      <div class="user-auth-badge is-host" onclick="openSettingsModal()" title="Pengaturan Akun & Profil" style="cursor:pointer;">
-        <span class="auth-role-tag">Host</span>
-        <span class="auth-user-name" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</span>
-        <button class="btn-logout-header" onclick="event.stopPropagation(); logoutUser();" title="Keluar">Keluar</button>
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <button class="btn-login-header" onclick="openLoginModal()" title="Masuk ke Akun Host">
-        Masuk
-      </button>
-    `;
+  if (container) {
+    container.innerHTML = '';
+    container.style.display = 'none';
   }
 }
 
@@ -8412,6 +8873,7 @@ function loginUser(email, password) {
   const cleanEmail = (email || '').trim().toLowerCase();
   const cleanPass = (password || '').trim();
   const errEl = document.getElementById('loginErrorMessage');
+  const tabErrEl = document.getElementById('tabAccountLoginError');
 
   const isHostUsername = (cleanEmail === HOST_EMAIL.toLowerCase() || cleanEmail === 'admin');
   const isHostPassword = (cleanPass === HOST_PASSWORD);
@@ -8419,6 +8881,7 @@ function loginUser(email, password) {
   if (isHostUsername && isHostPassword) {
     const customName = localStorage.getItem('onesport_user_display_name');
     currentUser = {
+      username: 'admin',
       email: HOST_EMAIL,
       name: customName || 'Admin OneSport',
       role: 'host'
@@ -8427,24 +8890,77 @@ function loginUser(email, password) {
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'host');
     if (errEl) errEl.style.display = 'none';
+    if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
     applyRoleUI();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
     showToast('Berhasil masuk sebagai Host (Admin).', 'success');
     return true;
-  } else {
-    // Akses otomatis ditolak karena salah akun / password
-    if (errEl) {
-      errEl.textContent = 'Akses ditolak: Username atau password salah!';
-      errEl.style.display = 'block';
-    }
-    showToast('Akses ditolak: Username atau password salah!', 'error');
-    const passInput = document.getElementById('loginInputPassword');
-    if (passInput) {
-      passInput.value = '';
-      passInput.focus();
-    }
-    return false;
   }
+
+  // Check regular users database
+  const users = getUsersDatabase();
+  const matchedUser = users.find(u => u.username.toLowerCase() === cleanEmail);
+  if (matchedUser && matchedUser.password === cleanPass) {
+    currentUser = {
+      username: matchedUser.username,
+      name: matchedUser.name || matchedUser.username,
+      role: 'user'
+    };
+    userRole = 'spectator';
+    localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+    localStorage.setItem('onesport_user_role', 'spectator');
+    localStorage.setItem('onesport_user_display_name', currentUser.name);
+    if (errEl) errEl.style.display = 'none';
+    if (tabErrEl) tabErrEl.style.display = 'none';
+    closeLoginModal();
+    applyRoleUI();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
+    showToast(`Berhasil masuk sebagai ${currentUser.name}.`, 'success');
+    return true;
+  }
+
+  // Fallback initial login for user/user123
+  if (cleanEmail === 'user' && cleanPass === 'user123') {
+    const newUser = { username: 'user', name: 'Pemain OneSport', password: 'user123', role: 'user' };
+    users.push(newUser);
+    saveUsersDatabase(users);
+    currentUser = newUser;
+    userRole = 'spectator';
+    localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+    localStorage.setItem('onesport_user_role', 'spectator');
+    localStorage.setItem('onesport_user_display_name', currentUser.name);
+    if (errEl) errEl.style.display = 'none';
+    if (tabErrEl) tabErrEl.style.display = 'none';
+    closeLoginModal();
+    applyRoleUI();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
+    showToast(`Berhasil masuk sebagai ${currentUser.name}.`, 'success');
+    return true;
+  }
+
+  // Akses otomatis ditolak karena salah akun / password
+  if (errEl) {
+    errEl.textContent = 'Akses ditolak: Username atau password salah!';
+    errEl.style.display = 'block';
+  }
+  if (tabErrEl) {
+    tabErrEl.textContent = 'Akses ditolak: Username atau password salah!';
+    tabErrEl.style.display = 'block';
+  }
+  showToast('Akses ditolak: Username atau password salah!', 'error');
+  const passInput = document.getElementById('loginInputPassword');
+  if (passInput) {
+    passInput.value = '';
+    passInput.focus();
+  }
+  return false;
 }
 
 function logoutUser() {
@@ -8454,6 +8970,9 @@ function logoutUser() {
     localStorage.removeItem('onesport_auth_user');
     localStorage.setItem('onesport_user_role', 'spectator');
     applyRoleUI();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
     showToast('Anda telah keluar.', 'info');
   }
 }
