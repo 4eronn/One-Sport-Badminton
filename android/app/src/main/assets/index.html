@@ -7419,6 +7419,256 @@ function togglePasswordVisibility(inputId, btn) {
   }
 }
 
+function renderPodiumRecapHtml(item) {
+  let podium = item.podium;
+  if ((!podium || podium.length === 0) && item.leaderboard && item.leaderboard.length > 0) {
+    podium = item.leaderboard.slice(0, 3).map((s, idx) => ({
+      rank: idx + 1,
+      label: idx === 0 ? 'Juara 1' : (idx === 1 ? 'Juara 2' : 'Juara 3'),
+      name: s.name,
+      score: `${s.wins !== undefined ? s.wins : (s.w || 0)}M · Skor ${s.diff !== undefined ? s.diff : (s.gd || 0)} (${s.totalScore !== undefined ? s.totalScore : (s.score || 0)} Poin)`
+    }));
+  }
+
+  if (!podium || podium.length === 0) {
+    return `
+      <div style="background:#F8FAFC; border:1px dashed var(--border-color); border-radius:var(--radius-sm); padding:8px 10px; font-size:0.72rem; color:var(--text-muted); text-align:center;">
+        Belum ada rekapan juara untuk sesi ini.
+      </div>
+    `;
+  }
+
+  const medals = [
+    { badgeBg: '#FEF3C7', textColor: '#92400E', borderColor: '#FDE68A', icon: '🥇', label: 'Juara 1' },
+    { badgeBg: '#F1F5F9', textColor: '#475569', borderColor: '#E2E8F0', icon: '🥈', label: 'Juara 2' },
+    { badgeBg: '#FFEDD5', textColor: '#9A3412', borderColor: '#FED7AA', icon: '🥉', label: 'Juara 3' }
+  ];
+
+  return `
+    <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 10px; margin-bottom:10px;">
+      <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--brand-navy-dark); margin-bottom:6px; display:flex; align-items:center; gap:5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-orange);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Rekapan Juara &amp; Podium</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:5px;">
+        ${podium.slice(0, 3).map((p, idx) => {
+          const cfg = medals[idx] || medals[2];
+          return `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; background:#FFF; border:1px solid ${cfg.borderColor}; border-radius:6px; padding:5px 8px; font-size:0.73rem;">
+              <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; font-size:0.75rem; border-radius:4px; background:${cfg.badgeBg}; flex-shrink:0;">${cfg.icon}</span>
+                <span style="font-weight:700; color:${cfg.textColor}; font-size:0.68rem; flex-shrink:0;">${escapeHtml(p.label || cfg.label)}:</span>
+                <span style="font-weight:800; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span>
+              </div>
+              ${p.score ? `<span style="font-size:0.65rem; font-weight:700; color:var(--text-muted); background:#F1F5F9; padding:2px 6px; border-radius:4px; flex-shrink:0;">${escapeHtml(p.score)}</span>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderHistoryListForAccountTab(historyList, isHost, emptyMessage) {
+  if (!historyList || historyList.length === 0) {
+    return `
+      <div style="text-align:center; padding:24px 12px; color:var(--text-muted); font-size:0.78rem; line-height:1.5; background:#F8FAFC; border:1.5px dashed var(--border-color); border-radius:var(--radius-md);">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:50%; background:#E2E8F0; color:var(--brand-navy-soft); margin-bottom:6px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        </div>
+        <div style="font-weight:800; color:var(--brand-navy-dark); margin-bottom:2px;">Belum Ada Histori Pertandingan</div>
+        <div>${emptyMessage}</div>
+      </div>
+    `;
+  }
+
+  return historyList.map(item => {
+    const isBadm = item.sport === 'badminton';
+    const podiumHtml = renderPodiumRecapHtml(item);
+    const roleLabel = item.role === 'Host' ? 'Host' : (item.role || 'Penonton');
+
+    return `
+      <div class="history-item-card" style="margin-bottom:12px; background:#FFF; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:12px; box-shadow:0 2px 4px rgba(15,30,54,0.03);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+            <span style="font-family:'Outfit',sans-serif; font-size:0.92rem; font-weight:900; color:var(--brand-navy-dark); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.roomId)}">
+              ${escapeHtml(truncateBroadcastTitle(item.roomId, 14))}
+            </span>
+            <span style="font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:999px; background:${item.role === 'Host' ? '#EAF4FF' : '#ECFDF5'}; color:${item.role === 'Host' ? '#075BB2' : '#047857'}; flex-shrink:0;">
+              ${roleLabel}
+            </span>
+            <span style="font-size:0.62rem; font-weight:800; padding:2px 6px; border-radius:999px; background:#F1F5F9; color:var(--text-muted); flex-shrink:0;">
+              ${isBadm ? 'Badminton' : 'Mini Soccer'}
+            </span>
+          </div>
+          <span style="font-size:0.68rem; font-weight:700; color:var(--text-muted); flex-shrink:0;">
+            ${escapeHtml(item.dateFormatted || '')} · ${escapeHtml(item.timeFormatted || '')}
+          </span>
+        </div>
+
+        <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark); margin-bottom:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.sessionTitle || '-')}">
+          ${escapeHtml(truncateBroadcastTitle(item.sessionTitle || ('Sesi Mabar ' + item.roomId), 32))}
+        </div>
+
+        ${podiumHtml}
+
+        <div style="display:grid; grid-template-columns:${isHost ? '1fr 1fr auto auto' : '1fr 1fr'}; gap:6px; align-items:center;">
+          <button type="button" class="btn-os-cyan" style="font-size:0.72rem; padding:7px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="openHistoryDetailModal('${escapeHtml(item.id)}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
+            <span>Detail</span>
+          </button>
+          <button type="button" class="btn-court-action" style="font-size:0.72rem; padding:7px; font-weight:800; background:#FFF; display:inline-flex; align-items:center; justify-content:center; gap:4px;" onclick="shareHistoryItemWA('${escapeHtml(item.id)}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>Salin WA</span>
+          </button>
+          ${isHost ? `
+            <button type="button" class="btn-court-action" style="font-size:0.72rem; padding:7px 10px; font-weight:800; background:#FFF;" title="Muat ke papan skor utama" onclick="loadHistorySnapshotToApp('${escapeHtml(item.id)}')">
+              Muat
+            </button>
+            <button type="button" class="btn-del-player" style="font-size:0.78rem; width:30px; height:30px;" title="Hapus catatan ini" onclick="deleteLiveHistoryItem('${escapeHtml(item.id)}')">
+              ✕
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function recordRoomJoinedByUser(roomId, info = {}) {
+  try {
+    if (!roomId) return;
+    const currentUname = (getUserUsername() || 'user').toLowerCase();
+    const key = 'onesport_user_joined_rooms_' + currentUname;
+    let list = [];
+    try {
+      list = JSON.parse(localStorage.getItem(key)) || [];
+    } catch(e) { list = []; }
+    
+    const cleanRoomId = roomId.trim().toUpperCase();
+    if (!list.find(r => r.roomId === cleanRoomId)) {
+      list.unshift({
+        roomId: cleanRoomId,
+        joinedAt: Date.now(),
+        sessionTitle: info.sessionTitle || ('Room ' + cleanRoomId),
+        sport: info.sport || currentSport
+      });
+      localStorage.setItem(key, JSON.stringify(list.slice(0, 50)));
+    }
+
+    let hist = getLiveHistory();
+    let updated = false;
+    hist.forEach(h => {
+      if (h.roomId && h.roomId.toUpperCase() === cleanRoomId) {
+        if (!h.watchedBy) h.watchedBy = [];
+        if (!h.watchedBy.includes(currentUname)) {
+          h.watchedBy.push(currentUname);
+          updated = true;
+        }
+      }
+    });
+    if (updated) {
+      localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(hist));
+    }
+  } catch(e){}
+}
+
+function getUserWatchedLiveHistory() {
+  const allList = getLiveHistory();
+  const currentUname = (getUserUsername() || 'user').toLowerCase();
+
+  let joinedRooms = [];
+  try {
+    const raw = localStorage.getItem('onesport_user_joined_rooms_' + currentUname);
+    if (raw) joinedRooms = JSON.parse(raw) || [];
+  } catch(e) { joinedRooms = []; }
+
+  const joinedRoomIds = new Set(joinedRooms.map(r => (r.roomId || '').toUpperCase()));
+
+  const matchedItems = allList.filter(item => {
+    if (item.viewerUsername && item.viewerUsername.toLowerCase() === currentUname) return true;
+    if (Array.isArray(item.watchedBy) && item.watchedBy.some(u => (u || '').toLowerCase() === currentUname)) return true;
+    if (item.roomId && joinedRoomIds.has(item.roomId.toUpperCase())) return true;
+    if (item.role === 'Penonton') return true;
+    return false;
+  });
+
+  const existingRoomIds = new Set(matchedItems.map(m => (m.roomId || '').toUpperCase()));
+  joinedRooms.forEach(jr => {
+    const cleanId = (jr.roomId || '').toUpperCase();
+    if (!existingRoomIds.has(cleanId)) {
+      matchedItems.push({
+        id: 'joined_stub_' + cleanId,
+        roomId: cleanId,
+        sessionTitle: jr.sessionTitle || `Room ${cleanId}`,
+        sport: jr.sport || 'badminton',
+        role: 'Penonton',
+        viewerUsername: currentUname,
+        dateFormatted: jr.joinedAt ? new Date(jr.joinedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Hari Ini',
+        timeFormatted: jr.joinedAt ? new Date(jr.joinedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB' : '',
+        podium: [],
+        leaderboard: [],
+        roundsSummary: []
+      });
+      existingRoomIds.add(cleanId);
+    }
+  });
+
+  return matchedItems;
+}
+
+function findHistoryItemById(id) {
+  const list = getLiveHistory();
+  let found = list.find(h => h.id === id);
+  if (found) return found;
+  const userList = getUserWatchedLiveHistory();
+  return userList.find(h => h.id === id) || null;
+}
+
+function updateWatchedRoomLiveRecap(roomId) {
+  try {
+    if (!roomId) return;
+    const currentUname = (getUserUsername() || 'user').toLowerCase();
+    const cleanRoomId = roomId.trim().toUpperCase();
+    const podium = getPodiumSummaryData();
+    const leaderboard = getLeaderboardSummaryData();
+    const roundsSummary = getRoundsSummaryData();
+    
+    let hist = getLiveHistory();
+    let existing = hist.find(h => h.roomId && h.roomId.toUpperCase() === cleanRoomId && (h.role === 'Penonton' || (h.watchedBy && h.watchedBy.includes(currentUname))));
+    
+    if (existing) {
+      if (podium && podium.length > 0) existing.podium = podium;
+      if (leaderboard && leaderboard.length > 0) existing.leaderboard = leaderboard;
+      if (roundsSummary && roundsSummary.length > 0) existing.roundsSummary = roundsSummary;
+      if (sessionTitle) existing.sessionTitle = sessionTitle;
+      existing.snapshot = getCurrentAppState();
+      if (!existing.watchedBy) existing.watchedBy = [];
+      if (!existing.watchedBy.includes(currentUname)) existing.watchedBy.push(currentUname);
+      localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(hist));
+    } else {
+      const newRecord = {
+        id: 'live_hist_viewer_' + cleanRoomId + '_' + Date.now(),
+        roomId: cleanRoomId,
+        sessionTitle: sessionTitle || `Sesi Mabar ${cleanRoomId}`,
+        sport: currentSport,
+        role: 'Penonton',
+        viewerUsername: currentUname,
+        watchedBy: [currentUname],
+        startTime: roomStartTime || Date.now(),
+        endedAt: Date.now(),
+        dateFormatted: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+        timeFormatted: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+        podium: podium,
+        leaderboard: leaderboard,
+        roundsSummary: roundsSummary,
+        snapshot: getCurrentAppState()
+      };
+      saveToLiveHistory(newRecord);
+    }
+  } catch(e) {}
+}
+
 function renderAccountTab() {
   const container = document.getElementById('tabAkunContent');
   if (!container) return;
@@ -7426,10 +7676,11 @@ function renderAccountTab() {
   const isHost = isHostUser();
   const isRegular = isRegularUser();
 
-  // CASE 1: HOST ACCOUNT (Gambar 1)
+  // CASE 1: HOST ACCOUNT (Gambar 1 + Semua Histori & Rekapan Juara)
   if (isHost) {
     const displayName = getUserDisplayName();
     const isApk = typeof isAndroidApk === 'function' && isAndroidApk();
+    const allHistory = getLiveHistory();
     container.innerHTML = `
       <div class="os-card" style="margin-bottom: 14px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
@@ -7446,7 +7697,7 @@ function renderAccountTab() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 </div>
                 <div>
-                  <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark);">Akun & Profil Pengguna</div>
+                  <div style="font-size:0.82rem; font-weight:800; color:var(--brand-navy-dark);">Akun &amp; Profil Pengguna</div>
                   <div style="font-size:0.7rem; color:var(--text-muted);">Masuk sebagai Host (Admin)</div>
                 </div>
               </div>
@@ -7526,17 +7777,39 @@ function renderAccountTab() {
               Database Cloud: <span id="tabAccountDbStatusText" style="font-weight:700; color:var(--brand-blue);">${VercelDbSync.dbProvider === 'postgres' ? 'Postgres Connected' : (VercelDbSync.dbProvider === 'kv' ? 'KV Connected' : 'Ready')}</span>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- 4. HAK CIPTA -->
-          <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:4px; text-align:center;">
-            <div style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:flex; align-items:center; justify-content:center; gap:6px;">
-              <span>ONESPORT</span>
-              <span style="font-size:0.65rem; background:var(--brand-blue-soft); color:var(--brand-blue); padding:1px 7px; border-radius:999px; font-weight:800;">v1.2.0</span>
+      <!-- KARTU SEMUA HISTORI SIARAN & REKAPAN JUARA (HOST) -->
+      <div class="os-card" style="margin-bottom: 14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:32px; height:32px; border-radius:50%; background:#FFF7ED; color:var(--brand-orange); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
-            <div style="font-size:0.74rem; color:var(--brand-navy-dark); margin-top:5px; font-weight:800;">
-              &copy; 2026 OneSport. Hak Cipta Dilindungi
+            <div>
+              <div style="font-weight:900; font-size:1.02rem; color:var(--brand-navy-dark);">Semua Histori Siaran &amp; Rekapan Juara</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Riwayat seluruh siaran live &amp; podium pemenang (Host)</div>
             </div>
           </div>
+          <span style="font-size:0.65rem; padding:3px 9px; background:var(--brand-blue-soft); color:var(--brand-blue); font-weight:800; border-radius:999px;">
+            ${allHistory.length} Sesi
+          </span>
+        </div>
+
+        <div style="display:flex; flex-direction:column;">
+          ${renderHistoryListForAccountTab(allHistory, true, 'Setiap kali siaran live selesai, rekapitulasi skor dan klasemen juara akan otomatis tersimpan permanen di sini.')}
+        </div>
+      </div>
+
+      <!-- HAK CIPTA -->
+      <div style="text-align:center; padding:10px 0 4px 0;">
+        <div style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span>ONESPORT</span>
+          <span style="font-size:0.65rem; background:var(--brand-blue-soft); color:var(--brand-blue); padding:1px 7px; border-radius:999px; font-weight:800;">v1.2.0</span>
+        </div>
+        <div style="font-size:0.74rem; color:var(--brand-navy-dark); margin-top:5px; font-weight:800;">
+          &copy; 2026 OneSport. Hak Cipta Dilindungi
         </div>
       </div>
     `;
@@ -7548,6 +7821,7 @@ function renderAccountTab() {
     const displayName = getUserDisplayName();
     const username = getUserUsername();
     const currentPass = getRegularUserCurrentPassword();
+    const userWatchedHistory = getUserWatchedLiveHistory();
 
     container.innerHTML = `
       <div class="os-card" style="margin-bottom: 14px;">
@@ -7610,13 +7884,35 @@ function renderAccountTab() {
               <span>Keluar dari Akun (Logout)</span>
             </button>
           </form>
+        </div>
+      </div>
 
-          <!-- Hak Cipta -->
-          <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:4px; text-align:center;">
-            <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:800;">
-              &copy; 2026 OneSport. Hak Cipta Dilindungi
+      <!-- KARTU HISTORI LIVE DITONTON & ROOM DIGABUNG (USER BIASA) -->
+      <div class="os-card" style="margin-bottom: 14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:32px; height:32px; border-radius:50%; background:#ECFDF5; color:#047857; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:900; font-size:1.02rem; color:var(--brand-navy-dark);">Histori Live Ditonton &amp; Room Digabung</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Riwayat room yang Anda tonton / gabung serta rekapan juaranya</div>
             </div>
           </div>
+          <span style="font-size:0.65rem; padding:3px 9px; background:#ECFDF5; color:#047857; font-weight:800; border-radius:999px;">
+            ${userWatchedHistory.length} Sesi
+          </span>
+        </div>
+
+        <div style="display:flex; flex-direction:column;">
+          ${renderHistoryListForAccountTab(userWatchedHistory, false, 'Belum ada riwayat room yang digabung atau siaran live yang ditonton.<br>Bergabunglah ke room live di menu <strong>Mode Online</strong> untuk melihat histori dan rekapan juaranya di sini.')}
+        </div>
+      </div>
+
+      <!-- HAK CIPTA -->
+      <div style="text-align:center; padding:10px 0 4px 0;">
+        <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:800;">
+          &copy; 2026 OneSport. Hak Cipta Dilindungi
         </div>
       </div>
     `;
@@ -8999,6 +9295,7 @@ function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting =
   isHostCreator = !!isCreator;
   isOnlineActive = true;
   saveActiveLiveSession();
+  recordRoomJoinedByUser(cleanRoomId, { sessionTitle: sessionTitle || ('Room ' + cleanRoomId), sport: currentSport });
 
   // Jika masuk ke room yang sudah ada sebagai host (bukan pembuat baru dan bukan reconnect),
   // tahan peran sebagai spectator sementara menunggu verifikasi PIN challenge-response dari host awal.
@@ -9330,18 +9627,23 @@ async function handleIncomingMessage(topic, rawText) {
           showToast('Konflik Host: Terdeteksi perangkat lain mengirim state update sebagai Host.', 'warning');
         }
       }
-      if (userRole === 'spectator' || isCollabMode) {
-        applyReceivedState(msg.payload || msg);
-        showToast('Data pertandingan diperbarui langsung oleh Host');
+      if (msg.type !== 'ROOM_FINALIZED') {
+        if (userRole === 'spectator' || isCollabMode) {
+          applyReceivedState(msg.payload || msg);
+          showToast('Data pertandingan diperbarui langsung oleh Host');
+        }
+        return;
       }
-      return;
     }
 
     if (msg.type === 'ROOM_FINALIZED') {
       if (msg.summary) {
+        const currentUname = (getUserUsername() || 'user').toLowerCase();
         const viewerRecord = {
           ...msg.summary,
-          role: userRole === 'host' ? 'Host' : 'Penonton'
+          role: userRole === 'host' ? 'Host' : 'Penonton',
+          viewerUsername: currentUname,
+          watchedBy: [currentUname]
         };
         saveToLiveHistory(viewerRecord);
       }
@@ -9420,6 +9722,9 @@ function applyReceivedState(incomingData) {
   renderLeaderboard();
   renderHistory();
   renderFinalPodium();
+  if (userRole === 'spectator' && currentRoomId) {
+    updateWatchedRoomLiveRecap(currentRoomId);
+  }
 }
 
 function truncateBroadcastTitle(str, maxLen = 16) {
@@ -10147,6 +10452,16 @@ function leaveOnlineRoom(keepRoomData = false) {
 // ── LIVE HISTORY STORAGE & UI (PERSISTENT IN APK & WEB) ──
 function saveToLiveHistory(record) {
   try {
+    const currentUname = (getUserUsername() || 'user').toLowerCase();
+    if (!record.viewerUsername && currentUser) {
+      record.viewerUsername = currentUname;
+    }
+    if (!record.watchedBy) {
+      record.watchedBy = [];
+    }
+    if (!record.watchedBy.includes(currentUname)) {
+      record.watchedBy.push(currentUname);
+    }
     let list = getLiveHistory();
     list = list.filter(item => item.id !== record.id);
     list.unshift(record);
@@ -10154,6 +10469,9 @@ function saveToLiveHistory(record) {
     localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(list));
     renderLiveHistoryList();
     updateLiveHistoryBadges();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
   } catch(e) {
     console.warn('Failed saving live history:', e);
   }
@@ -10262,6 +10580,9 @@ function deleteLiveHistoryItem(id) {
     localStorage.setItem(STORAGE_LIVE_HISTORY, JSON.stringify(list));
     renderLiveHistoryList();
     updateLiveHistoryBadges();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
     showToast('Riwayat pertandingan berhasil dihapus');
   } catch(e){}
 }
@@ -10276,6 +10597,9 @@ function clearAllLiveHistory() {
     localStorage.removeItem(STORAGE_LIVE_HISTORY);
     renderLiveHistoryList();
     updateLiveHistoryBadges();
+    if (document.getElementById('tab-akun')?.classList.contains('active')) {
+      renderAccountTab();
+    }
     showToast('Semua histori berhasil dibersihkan');
   } catch(e){}
 }
@@ -10285,8 +10609,7 @@ function loadHistorySnapshotToApp(id) {
     showToast('Hanya akun Host yang dapat memuat riwayat ke papan skor.', 'error');
     return;
   }
-  const list = getLiveHistory();
-  const item = list.find(h => h.id === id);
+  const item = findHistoryItemById(id);
   if (!item || !item.snapshot) {
     alert('Data snapshot tidak ditemukan untuk pertandingan ini.');
     return;
@@ -10303,8 +10626,7 @@ function loadHistorySnapshotToApp(id) {
 }
 
 function shareHistoryItemWA(id) {
-  const list = getLiveHistory();
-  const item = list.find(h => h.id === id);
+  const item = findHistoryItemById(id);
   if (!item) return;
 
   let text = `*REKAP HASIL SIARAN LIVE ONESPORT*\n`;
@@ -10312,9 +10634,19 @@ function shareHistoryItemWA(id) {
   text += `Waktu: ${item.dateFormatted} (${item.timeFormatted || ''})\n`;
   text += `Olahraga: ${item.sport === 'badminton' ? 'Badminton' : 'Mini Soccer'}\n\n`;
 
-  if (item.podium && item.podium.length > 0) {
+  const podiumList = (item.podium && item.podium.length > 0)
+    ? item.podium
+    : (item.leaderboard && item.leaderboard.length > 0
+        ? item.leaderboard.slice(0, 3).map((s, idx) => ({
+            label: idx === 0 ? 'Juara 1' : (idx === 1 ? 'Juara 2' : 'Juara 3'),
+            name: s.name,
+            score: `${s.wins !== undefined ? s.wins : (s.w || 0)}M · Skor ${s.diff || 0} (${s.totalScore || 0} Poin)`
+          }))
+        : []);
+
+  if (podiumList.length > 0) {
     text += `*PODIUM JUARA:*\n`;
-    item.podium.forEach(p => {
+    podiumList.forEach(p => {
       text += `${p.label}: *${p.name}* (${p.score || ''})\n`;
     });
     text += `\n`;
@@ -10352,8 +10684,7 @@ function shareHistoryItemWA(id) {
 }
 
 function openHistoryDetailModal(id) {
-  const list = getLiveHistory();
-  const item = list.find(h => h.id === id);
+  const item = findHistoryItemById(id);
   if (!item) return;
 
   const modal = document.getElementById('historyDetailModalOverlay');
