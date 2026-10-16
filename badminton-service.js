@@ -920,16 +920,16 @@
     return { success: true, court };
   }
 
-  // ── 6b. PENGGANTIAN PEMAIN ISTIRAHAT DARI ANTRIAN LAPANGAN ──
+  // ── 6b. PENGGANTIAN PEMAIN OTOMATIS DARI ANTRIAN LAPANGAN (PRIORITAS MAIN SEDIKIT & REGULASI GENDER) ──
   /**
-   * Menemukan pemain pengganti terbaik dari antrian menunggu jika seorang pemain di lapangan memilih istirahat.
+   * Menemukan pemain pengganti terbaik dari antrian menunggu jika seorang pemain di lapangan diganti.
    * Diprioritaskan pemain yang mainnya masih sedikit (prioritizeQueue) dan memenuhi regulasi:
    * - Wanita diganti dengan wanita.
    * - Pria diganti dengan pria, terkecuali wanita dengan role Intermediate yang bisa menggantikan pria.
-   * - Jika wanita yang beristirahat memiliki role Intermediate, ia bisa diganti oleh wanita atau pria.
+   * - Jika wanita yang diganti memiliki role Intermediate, ia bisa diganti oleh wanita atau pria.
    * - Tidak melanggar aturan role (Intermediate + Advance dilarang 1 tim).
    */
-  function findBestRestReplacementPlayer({
+  function findBestCourtReplacementPlayer({
     court,
     targetPlayerId,
     players = [],
@@ -970,7 +970,7 @@
       if (p.status !== PLAYER_STATUS.MENUNGGU) return false;
 
       // Regulasi Gender:
-      // 1. Jika wanita yang istirahat adalah Intermediate -> bisa diganti siapa saja (P atau L)
+      // 1. Jika wanita yang diganti adalah Intermediate -> bisa diganti siapa saja (P atau L)
       // 2. Jika wanita lain (Pemula/Advance) -> wajib diganti wanita (P)
       // 3. Jika pria -> wajib diganti pria (L) ATAU wanita dengan role Intermediate
       let genderCompatible = false;
@@ -1007,20 +1007,23 @@
     };
   }
 
+  const findBestRestReplacementPlayer = findBestCourtReplacementPlayer;
+
   /**
-   * Menjalankan proses penggantian pemain lapangan yang memilih istirahat:
-   * - Menemukan pemain pengganti prioritas (main sedikit & sesuai regulasi)
+   * Menjalankan proses penggantian pemain lapangan secara otomatis:
+   * - Menemukan pemain pengganti prioritas (main paling sedikit & sesuai regulasi gender/level)
    * - Memasukkan pengganti ke slot lapangan
-   * - Mengubah status pemain yang istirahat menjadi 'istirahat' dengan cooldown = 1
-   * - Membatalkan partner request aktif dari pemain yang beristirahat
+   * - Status pemain yang diganti kembali ke 'menunggu' (atau 'istirahat' jika setToRest = true)
+   * - Membatalkan partner request aktif dari pemain yang diganti
    * - Memperbarui kategori dan playerSummaries court
    */
-  function replaceCourtPlayerWithRest({
+  function replaceCourtPlayerAuto({
     court,
     targetPlayerId,
     players = [],
     partnerRequests = [],
     minPlays = 3,
+    setToRest = false,
     restCooldown = 1
   }) {
     if (!court) {
@@ -1028,7 +1031,7 @@
     }
 
     const targetIdStr = String(targetPlayerId);
-    const searchRes = findBestRestReplacementPlayer({ court, targetPlayerId, players, minPlays });
+    const searchRes = findBestCourtReplacementPlayer({ court, targetPlayerId, players, minPlays });
 
     if (!searchRes) {
       const inCourt = [...(court.teamA || []), ...(court.teamB || [])].find(p => p && String(p.id) === targetIdStr);
@@ -1046,15 +1049,21 @@
     // 1. Update court team slot
     court[targetTeamKey][targetIdx] = replacement;
 
-    // 2. Update status pemain yang memilih istirahat
+    // 2. Update status pemain yang diganti
     const realSourcePlayer = players.find(p => String(p.id) === targetIdStr) || sourcePlayer;
-    realSourcePlayer.status = PLAYER_STATUS.ISTIRAHAT;
-    realSourcePlayer.cooldown_remaining = restCooldown;
+    if (setToRest) {
+      realSourcePlayer.status = PLAYER_STATUS.ISTIRAHAT;
+      realSourcePlayer.cooldown_remaining = restCooldown;
+    } else {
+      realSourcePlayer.status = PLAYER_STATUS.MENUNGGU;
+      realSourcePlayer.cooldown_remaining = 0;
+      realSourcePlayer.waitingSince = Date.now();
+    }
 
-    // 3. Batalkan request pasangan aktif untuk pemain yang istirahat jika ada
+    // 3. Batalkan request pasangan aktif untuk pemain yang diganti jika ada
     cancelRequestsForPlayer(realSourcePlayer.id, players, partnerRequests);
 
-    // 4. Bersihkan usedRequest lapangan jika terkait dengan pemain yang istirahat
+    // 4. Bersihkan usedRequest lapangan jika terkait dengan pemain yang diganti
     if (court.usedRequests && Array.isArray(court.usedRequests)) {
       court.usedRequests = court.usedRequests.filter(r =>
         String(r.requesterId) !== targetIdStr && String(r.targetId) !== targetIdStr
@@ -1091,8 +1100,14 @@
       court,
       oldPlayer: realSourcePlayer,
       newPlayer: realReplacement,
-      message: `${realSourcePlayer.name} memilih istirahat. Digantikan oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
+      message: setToRest
+        ? `${realSourcePlayer.name} memilih istirahat. Digantikan oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
+        : `${realSourcePlayer.name} berhasil diganti oleh ${realReplacement.name} (main: ${realReplacement.jumlah_main || 0}x).`
     };
+  }
+
+  function replaceCourtPlayerWithRest(options) {
+    return replaceCourtPlayerAuto({ ...options, setToRest: true });
   }
 
   // ── 7. FITUR 4: INPUT SKOR LANGSUNG & KLASEMEN REAL-TIME ──
@@ -2139,7 +2154,9 @@
     createCourtProposal,
     approveCourtProposal,
     rejectCourtProposal,
+    findBestCourtReplacementPlayer,
     findBestRestReplacementPlayer,
+    replaceCourtPlayerAuto,
     replaceCourtPlayerWithRest,
     validateBadmintonScore,
     recordMatchFinished,

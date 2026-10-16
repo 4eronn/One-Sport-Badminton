@@ -5333,10 +5333,7 @@ function renderPlayerPillButton(p, rIdx, cIdx, teamKey, pIdx, isLocked = false, 
   const canSwap = isHost && !isLocked;
   const clickAttr = canSwap ? `onclick="openSwapModal(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Klik untuk ganti / tukar pemain ${escapeHtml(p.name)}" style="cursor:pointer;"` : `style="cursor:default;"`;
   const swapBtnHtml = canSwap ? `
-    <div style="display:inline-flex; align-items:center; gap:3px;">
-      <span onclick="event.stopPropagation(); handleCourtPlayerRest(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Pemain memilih istirahat (Ganti otomatis sesuai regulasi)" style="font-size:0.65rem; font-weight:800; color:#4B5563; background:#F3F4F6; border:1px solid #D1D5DB; padding:1px 5px; border-radius:4px; display:inline-flex; align-items:center; cursor:pointer;">🏖️</span>
-      <span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:1px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:2px;">⇄ Ganti</span>
-    </div>` : '';
+    <span onclick="event.stopPropagation(); handleAutoSwapCourtPlayer(${rIdx}, ${cIdx}, '${teamKey}', ${pIdx}, ${p.id})" title="Ganti pemain otomatis (prioritas main paling sedikit)" style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); background:var(--brand-orange-light); padding:2px 7px; border-radius:4px; display:inline-flex; align-items:center; gap:2px; cursor:pointer;">⇄ Ganti</span>` : '';
 
   return `
     <div class="player-cell-pill ${isWinner ? 'is-winner' : ''}" ${clickAttr}>
@@ -8599,36 +8596,48 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
     }
   });
 
-  let autoRestBannerHtml = '';
+  // Urutkan candidates: prioritas yang main paling sedikit dulu
+  candidates.sort((a, b) => ((a.player && a.player.jumlah_main) || 0) - ((b.player && b.player.jumlah_main) || 0));
+
+  let autoSwapBannerHtml = '';
   if (sourcePlayer) {
-    autoRestBannerHtml = `
-      <div style="background:linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border:1.5px solid #93C5FD; border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="handleCourtPlayerRest(${rIdx}, ${cIdx}, '${teamProp}', ${pIdx}, ${sourcePlayer.id})" title="Klik untuk istirahatkan pemain ini dan auto ganti sesuai regulasi">
-        <div>
-          <div style="font-weight:900; font-size:0.85rem; color:#1E40AF; display:flex; align-items:center; gap:6px;">
-            <span>🏖️ Pemain Memilih Istirahat</span>
-            <span style="font-size:0.68rem; background:#2563EB; color:#fff; padding:1px 6px; border-radius:10px; font-weight:700;">Ganti Otomatis</span>
+    const bestCand = BadmintonService.findBestCourtReplacementPlayer({
+      court: currentCourt,
+      targetPlayerId: sourcePlayer.id,
+      players: bPlayers,
+      minPlays: bMinPlays
+    });
+
+    if (bestCand && bestCand.replacement) {
+      const rep = bestCand.replacement;
+      autoSwapBannerHtml = `
+        <div style="background:linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%); border:1.5px solid #FDBA74; border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);" onclick="handleAutoSwapCourtPlayer(${rIdx}, ${cIdx}, '${teamProp}', ${pIdx}, ${sourcePlayer.id})" title="Ganti otomatis dengan ${escapeHtml(rep.name)} (Prioritas main paling sedikit)">
+          <div>
+            <div style="font-weight:900; font-size:0.85rem; color:#C2410C; display:flex; align-items:center; gap:6px;">
+              <span>⚡ Rekomendasi Prioritas (Main Paling Sedikit)</span>
+            </div>
+            <div style="font-size:0.75rem; color:#9A3412; margin-top:2px;">
+              <strong>${escapeHtml(rep.name)}</strong> (${rep.gender === 'L' ? 'Putra' : 'Putri'} • ${escapeHtml(rep.role)} • Main: ${rep.jumlah_main || 0}x)
+            </div>
           </div>
-          <div style="font-size:0.72rem; color:#1E3A8A; margin-top:2px;">
-            Prioritaskan pemain antrian dengan main paling sedikit & sesuai regulasi gender (Pria/Wanita/Inter).
-          </div>
+          <button type="button" class="btn-court-action" style="font-size:0.75rem; padding:6px 14px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap;">
+            Pilih Ini
+          </button>
         </div>
-        <button type="button" class="btn-court-action" style="font-size:0.75rem; padding:6px 14px; background:#2563EB; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap; box-shadow:0 2px 4px rgba(37,99,235,0.3);">
-          Istirahatkan
-        </button>
-      </div>
-      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Atau pilih manual dari pemain berikut:</div>
-    `;
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Atau pilih manual dari pemain berikut:</div>
+      `;
+    }
   }
 
   if (candidates.length === 0) {
-    listEl.innerHTML = autoRestBannerHtml + `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar secara manual.</div>`;
+    listEl.innerHTML = autoSwapBannerHtml + `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar secara manual.</div>`;
   } else {
-    listEl.innerHTML = autoRestBannerHtml + candidates.map((cand, idx) => `
+    listEl.innerHTML = autoSwapBannerHtml + candidates.map((cand, idx) => `
       <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwap(${idx})">
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
           <div>
-            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)}</div>
+            <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)} <span style="font-size:0.75rem; color:var(--brand-orange); font-weight:800;">(Main: ${cand.player.jumlah_main || 0}x)</span></div>
             <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
           </div>
         </div>
@@ -8786,7 +8795,7 @@ function executeSwap(candidateIdx) {
   showToast('Pemain berhasil ditukar!');
 }
 
-function handleCourtPlayerRest(rIdx, cIdx, teamKey, pIdx, pId) {
+function handleAutoSwapCourtPlayer(rIdx, cIdx, teamKey, pIdx, pId) {
   if (!checkEditPermission()) return;
   const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
   if (!round || !round.courts || !round.courts[cIdx]) {
@@ -8795,32 +8804,30 @@ function handleCourtPlayerRest(rIdx, cIdx, teamKey, pIdx, pId) {
   }
 
   const court = round.courts[cIdx];
-  const res = BadmintonService.replaceCourtPlayerWithRest({
+  const res = BadmintonService.replaceCourtPlayerAuto({
     court,
     targetPlayerId: pId,
     players: bPlayers,
     partnerRequests: bPartnerRequests,
     minPlays: bMinPlays,
-    restCooldown: 1
+    setToRest: false
   });
 
   if (!res.success) {
-    showToast(res.message || 'Tidak dapat mengganti pemain', 'warning');
+    showToast(res.message || 'Tidak ada pemain antrian yang memenuhi kriteria regulasi. Membuka opsi manual...', 'warning');
+    openSwapModal(rIdx, cIdx, teamKey, pIdx, pId);
     return;
   }
 
-  // Masukkan pemain yang beristirahat ke daftar round.resting jika belum ada
+  // Jika pemain pengganti sebelumnya ada di bangku resting, bersihkan
   if (round.resting) {
-    if (!round.resting.some(p => p && String(p.id) === String(res.oldPlayer.id))) {
-      round.resting.push(res.oldPlayer);
-    }
     const restIdx = round.resting.findIndex(p => p && String(p.id) === String(res.newPlayer.id));
     if (restIdx !== -1) {
       round.resting.splice(restIdx, 1);
     }
   }
 
-  BadmintonService.logHostAction(bAuditLog, 'PLAYER_REST_REPLACED', {
+  BadmintonService.logHostAction(bAuditLog, 'PLAYER_AUTO_REPLACED', {
     courtNumber: cIdx + 1,
     oldPlayer: res.oldPlayer.name,
     newPlayer: res.newPlayer.name
@@ -8832,6 +8839,8 @@ function handleCourtPlayerRest(rIdx, cIdx, teamKey, pIdx, pId) {
   persistAndBroadcast();
   showToast(res.message, 'success');
 }
+
+const handleCourtPlayerRest = handleAutoSwapCourtPlayer;
 
 // ── REALTIME ONLINE SYNC ENGINE (SEC-2 & SEC-3 CRYPTO & AUTH) ──
 let currentHmacKey = null;

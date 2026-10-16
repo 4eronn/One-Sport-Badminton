@@ -21,7 +21,9 @@ const {
   createCourtProposal,
   approveCourtProposal,
   rejectCourtProposal,
+  findBestCourtReplacementPlayer,
   findBestRestReplacementPlayer,
+  replaceCourtPlayerAuto,
   replaceCourtPlayerWithRest,
   validateBadmintonScore,
   recordMatchFinished,
@@ -1566,6 +1568,42 @@ it('Penggantian pemain istirahat menaati larangan Intermediate + Advance dalam s
 
   assert.strictEqual(res.success, true);
   assert.strictEqual(res.newPlayer.id, 35, 'Intermediate dilarang 1 tim dengan Advance, jadi pemain Pemula yang dipilih');
+});
+
+it('Ganti pemain otomatis langsung memilih prioritas main paling sedikit dan status pemain yang diganti tetap menunggu (tanpa status istirahat)', () => {
+  const p1 = { id: 40, name: 'Tono (Pria Main 2x)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 2 };
+  const p2 = { id: 41, name: 'Teammate', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p3 = { id: 42, name: 'Opp1', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+  const p4 = { id: 43, name: 'Opp2', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 1 };
+
+  const court = {
+    courtNumber: 1,
+    status: COURT_STATUS.MENUNGGU_ACC,
+    teamA: [p1, p2],
+    teamB: [p3, p4]
+  };
+
+  const pCandFew = { id: 44, name: 'Bambang (Main 0x)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 };
+  const pCandMany = { id: 45, name: 'Dodi (Main 3x)', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 3 };
+
+  const players = [p1, p2, p3, p4, pCandFew, pCandMany];
+
+  // Ganti Tono secara otomatis
+  const res = replaceCourtPlayerAuto({
+    court,
+    targetPlayerId: 40,
+    players,
+    partnerRequests: [],
+    minPlays: 3,
+    setToRest: false
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.id, 44, 'Pemain pengganti harus yang mainnya paling sedikit (id 44, main 0x)');
+  assert.strictEqual(court.teamA[0].id, 44);
+  // Status Tono (yang diganti) HARUS MENUNGGU, bukan ISTIRAHAT, dan cooldown_remaining === 0
+  assert.strictEqual(p1.status, PLAYER_STATUS.MENUNGGU, 'Status pemain yang diganti tetap menunggu (bukan istirahat)');
+  assert.strictEqual(p1.cooldown_remaining, 0);
 });
 
 (async () => {
