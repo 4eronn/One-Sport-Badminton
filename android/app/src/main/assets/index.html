@@ -2216,6 +2216,7 @@
       <div class="add-player-form-box">
         <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Ketik nama pemain..." onkeypress="if(event.key==='Enter')addNewPlayer()">
         <div class="add-player-options-row">
+          <select id="inputSoccerTeamSelect" class="input-styled-os soccer-team-picker" style="display:none; font-weight:800; min-width:130px; background:#F0FDF4; border-color:#86EFAC; color:#166534;" title="Pilih tim pemain"></select>
           <select id="inputPlayerGender" class="input-styled-os">
             <option value="L">Putra (L)</option>
             <option value="P">Putri (P)</option>
@@ -2241,6 +2242,10 @@
 
       <!-- Quick Action Buttons -->
       <div class="quick-actions-row">
+        <button class="btn-quick-pill" id="btnSoccerShuffleRoster" onclick="shuffleSoccerTeamsFromRoster()" style="display:none; background:var(--brand-orange); color:#ffffff; font-weight:800; border-color:var(--brand-orange);" title="Acak susunan pemain ke seluruh tim">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+          <span id="btnSoccerShuffleRosterLabel">🎲 Acak Tim</span>
+        </button>
         <button class="btn-quick-pill" onclick="exportCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>Export CSV</span>
@@ -3630,6 +3635,56 @@
   </div>
 </div>
 
+<!-- ── MODAL: INPUT ROSTER MASSAL MINI SOCCER ── -->
+<div class="modal-overlay" id="soccerBulkAddModalOverlay" style="z-index: 99990;">
+  <div class="modal-box" style="max-width: 440px; text-align: left;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div>
+        <div style="font-weight:900; font-size:1.05rem; color:var(--brand-navy-dark);" id="soccerBulkModalTitle">Input Roster Tim Sekaligus</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Tempel daftar nama (1 nama per baris atau pisahkan koma)</div>
+      </div>
+      <button class="btn-modal-close" onclick="closeSoccerBulkAddModal()">✕</button>
+    </div>
+    <input type="hidden" id="soccerBulkTargetTeamIdx" value="0">
+    <div style="margin-bottom:10px;">
+      <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Posisi Default:</label>
+      <select id="soccerBulkDefaultRole" class="input-styled-os" style="font-weight:700;">
+        <option value="GK">GK (Kiper)</option>
+        <option value="DF">DF (Bek)</option>
+        <option value="MF" selected>MF (Gelandang)</option>
+        <option value="FW">FW (Penyerang)</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px;">Daftar Nama Pemain:</label>
+      <textarea id="soccerBulkInputText" class="input-styled-os" rows="6" style="resize:vertical; font-family:inherit; font-size:0.82rem; line-height:1.4;" placeholder="Contoh:&#10;1. Budi Santoso (GK)&#10;2. Rian Kurniawan&#10;3. Ahmad Dani&#10;4. Joko Susilo&#10;5. Gilang Ramadhan"></textarea>
+      <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Tip: Nomor urut otomatis dibersihkan. Anda juga bisa menyertakan posisi seperti (GK) atau (DF).</div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="btn-court-action" style="flex:1; padding:9px;" onclick="closeSoccerBulkAddModal()">Batal</button>
+      <button type="button" class="btn-os-orange" style="flex:1; padding:9px;" onclick="submitSoccerBulkAdd()">Simpan ke Tim</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: TUKAR PEMAIN MINI SOCCER ── -->
+<div class="modal-overlay" id="soccerSwapModalOverlay" style="z-index: 99990;">
+  <div class="modal-box" style="max-width: 440px; text-align: left;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div>
+        <div style="font-weight:900; font-size:1.05rem; color:var(--brand-navy-dark);">Tukar Pemain Antar Tim</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);" id="soccerSwapSourcePlayerSub">Pilih pemain lawan untuk ditukar</div>
+      </div>
+      <button class="btn-modal-close" onclick="closeSoccerSwapModal()">✕</button>
+    </div>
+    <input type="hidden" id="soccerSwapSourcePlayerId" value="">
+    <div id="soccerSwapCandidatesList" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+      <!-- Populated dynamically with swap candidates -->
+    </div>
+    <button type="button" class="btn-court-action" style="width:100%; padding:9px;" onclick="closeSoccerSwapModal()">Tutup</button>
+  </div>
+</div>
+
 <script>
 // ============================================================================
 //  ONESPORT UNIFIED MULTI-SPORT ENGINE (Badminton & Mini Soccer in One File)
@@ -3966,6 +4021,11 @@ function switchSport(sport) {
     document.querySelectorAll('.soccer-role-opt').forEach(el => el.style.display = 'none');
     document.getElementById('inputPlayerRole').value = 'Intermadiate';
 
+    const sTeamSelect = document.getElementById('inputSoccerTeamSelect');
+    if (sTeamSelect) sTeamSelect.style.display = 'none';
+    const btnShuffle = document.getElementById('btnSoccerShuffleRoster');
+    if (btnShuffle) btnShuffle.style.display = 'none';
+
     bNextSection.style.display = 'block';
     sTeamsSection.style.display = 'none';
     document.getElementById('btnAddMatchLabel').textContent = '+ Tambah Lapangan';
@@ -3980,15 +4040,24 @@ function switchSport(sport) {
     document.getElementById('navMatchLabel').textContent = 'Pertandingan';
     document.getElementById('rosterTitleText').textContent = 'Daftar Pemain Mini Soccer';
     document.getElementById('sportInfoBanner').innerHTML = `
-      <strong style="color: var(--brand-navy-dark);">Aturan Mini Soccer:</strong>
-      <div>• <strong>Smart Team Balancer:</strong> Pembagian tim merata otomatis berdasarkan posisi (Kiper, Bek, Gelandang, Penyerang) & skill level.</div>
-      <div>• <strong>Round Robin / Rotasi Tim:</strong> Jadwal match teratur dengan rotasi main & istirahat seimbang.</div>
-      <div>• <strong>Klasemen Otomatis:</strong> Menghitung Poin, Gol Masuk, Gol Kebobolan, dan Selisih Gol secara live.</div>
+      <strong style="color: var(--brand-navy-dark);">Manajemen Tim Mini Soccer:</strong>
+      <div>• <strong>Input Pemain per Tim:</strong> Tambahkan pemain langsung ke tim masing-masing di bawah, atau paste roster massal sekaligus.</div>
+      <div>• <strong>Bisa Diganti Manual:</strong> Pindahkan pemain antar tim atau tukar pemain langsung dengan sekali klik.</div>
+      <div>• <strong>Tombol Acak Tim:</strong> Gunakan tombol <strong>🎲 Acak Tim</strong> untuk membagi dan menyeimbangkan susunan pemain secara otomatis.</div>
     `;
 
     document.querySelectorAll('.badminton-role-opt').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.soccer-role-opt').forEach(el => el.style.display = 'block');
     document.getElementById('inputPlayerRole').value = 'MF';
+
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    const sTeamSelect = document.getElementById('inputSoccerTeamSelect');
+    if (sTeamSelect) {
+      sTeamSelect.style.display = 'block';
+      if (typeof updateSoccerTeamSelectOptions === 'function') updateSoccerTeamSelectOptions();
+    }
+    const btnShuffle = document.getElementById('btnSoccerShuffleRoster');
+    if (btnShuffle) btnShuffle.style.display = 'inline-flex';
 
     bNextSection.style.display = 'none';
     sTeamsSection.style.display = 'block';
@@ -4049,6 +4118,7 @@ function clearAllPlayers() {
     sPlayers = [];
     sTeams = [];
     sMatches = [];
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
   }
   updateSessionLabels();
   renderPlayersList();
@@ -4084,6 +4154,7 @@ function updateSessionLabels() {
         else btn.classList.remove('active');
       }
     }
+    if (typeof updateSoccerTeamSelectOptions === 'function') updateSoccerTeamSelectOptions();
   }
 }
 
@@ -4099,9 +4170,12 @@ function setCourtsCount(count) {
 function setSoccerTeamCount(count) {
   if (!checkEditPermission()) return;
   sTeamCount = count;
+  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+  if (typeof generateSoccerMatchSchedule === 'function') generateSoccerMatchSchedule();
   updateSessionLabels();
-  generateSoccerTeams();
+  renderPlayersList();
   renderCourtsView();
+  renderLeaderboard();
   persistAndBroadcast();
 }
 
@@ -4128,16 +4202,27 @@ function addNewPlayer() {
       showToast(`${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
     }
   } else {
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    const teamSelect = document.getElementById('inputSoccerTeamSelect');
+    let targetTeamIdx = teamSelect ? parseInt(teamSelect.value, 10) : 0;
+    if (isNaN(targetTeamIdx) || targetTeamIdx < 0 || targetTeamIdx >= sTeams.length) targetTeamIdx = 0;
+
     const newP = {
       id: Date.now() + Math.floor(Math.random() * 1000),
       name: name,
-      gender: genderInput.value,
-      role: roleInput.value,
-      paid: true
+      gender: genderInput ? genderInput.value : 'L',
+      role: roleInput ? (roleInput.value || 'MF') : 'MF',
+      paid: true,
+      teamIndex: targetTeamIdx,
+      teamKey: sTeams[targetTeamIdx].key,
+      teamName: sTeams[targetTeamIdx].name
     };
-    sPlayers.push(newP);
+
+    sTeams[targetTeamIdx].players.push(newP);
+    if (typeof syncSoccerPlayersFromTeams === 'function') syncSoccerPlayersFromTeams();
+    if (typeof ensureSoccerMatchesInitialized === 'function') ensureSoccerMatchesInitialized();
     VercelDbSync.savePlayer(currentRoomId, newP);
-    generateSoccerTeams();
+    showToast(`${newP.name} berhasil ditambahkan ke ${sTeams[targetTeamIdx].name}!`, 'success');
   }
 
   nameInput.value = '';
@@ -4151,26 +4236,31 @@ function addNewPlayer() {
 
 function updatePlayerRole(id, newRole) {
   if (!checkEditPermission()) return;
-  const list = currentSport === 'badminton' ? bPlayers : sPlayers;
-  const p = list.find(p => p.id === id);
-  if (p) {
-    p.role = newRole;
-    renderPlayersList();
-    if (currentSport === 'badminton') renderCourtsView();
-    else generateSoccerTeams();
-    persistAndBroadcast();
+  if (currentSport === 'badminton') {
+    const p = bPlayers.find(p => p.id === id);
+    if (p) {
+      p.role = newRole;
+      renderPlayersList();
+      renderCourtsView();
+      persistAndBroadcast();
+    }
+  } else {
+    if (typeof updateSoccerPlayerRole === 'function') updateSoccerPlayerRole(id, newRole);
   }
 }
 
 function updatePlayerGender(id, newGender) {
   if (!checkEditPermission()) return;
-  const list = currentSport === 'badminton' ? bPlayers : sPlayers;
-  const p = list.find(p => p.id === id);
-  if (p) {
-    p.gender = newGender;
-    renderPlayersList();
-    if (currentSport === 'badminton') renderCourtsView();
-    persistAndBroadcast();
+  if (currentSport === 'badminton') {
+    const p = bPlayers.find(p => p.id === id);
+    if (p) {
+      p.gender = newGender;
+      renderPlayersList();
+      renderCourtsView();
+      persistAndBroadcast();
+    }
+  } else {
+    if (typeof updateSoccerPlayerGender === 'function') updateSoccerPlayerGender(id, newGender);
   }
 }
 
@@ -4185,14 +4275,13 @@ function removePlayer(id) {
       return;
     }
     showToast(res.message, res.mode === 'leave_after_match' ? 'warning' : 'info');
+    updateSessionLabels();
+    renderPlayersList();
+    renderCourtsView();
+    persistAndBroadcast();
   } else {
-    sPlayers = sPlayers.filter(p => p.id !== id);
-    generateSoccerTeams();
+    if (typeof removeSoccerPlayer === 'function') removeSoccerPlayer(id);
   }
-  updateSessionLabels();
-  renderPlayersList();
-  renderCourtsView();
-  persistAndBroadcast();
 }
 
 function restorePlayer(id) {
@@ -4226,6 +4315,13 @@ function endCooldownEarly(id) {
 function renderPlayersList() {
   const container = document.getElementById('playerRosterList');
   if (!container) return;
+
+  if (currentSport === 'minisoccer') {
+    if (typeof renderSoccerTeamRoster === 'function') {
+      renderSoccerTeamRoster(container);
+    }
+    return;
+  }
 
   const list = currentSport === 'badminton' ? bPlayers : sPlayers;
 
@@ -4734,47 +4830,103 @@ function buildSmartBadmintonRound(roster, courtsCount, pairHistory, playCountMap
 //  MINI SOCCER ENGINE
 // ============================================================================
 
-function generateSoccerTeams() {
-  if (sPlayers.length < sTeamCount * 5) return;
+const SOCCER_DEFAULT_TEAMS = [
+  { name: 'Tim Garuda (A)', key: 'team-a' },
+  { name: 'Tim Rajawali (B)', key: 'team-b' },
+  { name: 'Tim Harimau (C)', key: 'team-c' },
+  { name: 'Tim Singa (D)', key: 'team-d' }
+];
 
-  const teamNames = ['Tim Garuda (A)', 'Tim Rajawali (B)', 'Tim Harimau (C)', 'Tim Singa (D)'];
-  const teamKeys = ['team-a', 'team-b', 'team-c', 'team-d'];
-  
-  sTeams = [];
-  for (let i = 0; i < sTeamCount; i++) {
+function ensureSoccerTeamsInitialized() {
+  if (!Array.isArray(sTeams)) sTeams = [];
+  if (typeof sTeamCount !== 'number' || sTeamCount < 2 || sTeamCount > 4) {
+    sTeamCount = 2;
+  }
+
+  // Ensure sTeams has exactly sTeamCount teams
+  while (sTeams.length < sTeamCount) {
+    const idx = sTeams.length;
+    const def = SOCCER_DEFAULT_TEAMS[idx] || { name: `Tim ${String.fromCharCode(65 + idx)}`, key: `team-${String.fromCharCode(97 + idx)}` };
     sTeams.push({
-      name: teamNames[i],
-      key: teamKeys[i],
+      name: def.name,
+      key: def.key,
       players: []
     });
   }
 
-  // Sort players by position & skill for even distribution
-  const gks = sPlayers.filter(p => p.role === 'GK');
-  const dfs = sPlayers.filter(p => p.role === 'DF');
-  const mfs = sPlayers.filter(p => p.role === 'MF');
-  const fws = sPlayers.filter(p => p.role === 'FW');
-  const others = sPlayers.filter(p => !['GK','DF','MF','FW'].includes(p.role));
-
-  const distribute = (arr) => {
-    arr.forEach((p, idx) => {
-      sTeams[idx % sTeamCount].players.push(p);
+  // If sTeams has more than sTeamCount teams, move players from removed teams to remaining teams
+  if (sTeams.length > sTeamCount) {
+    const removed = sTeams.splice(sTeamCount);
+    removed.forEach(rem => {
+      (rem.players || []).forEach((p, pIdx) => {
+        sTeams[pIdx % sTeamCount].players.push(p);
+      });
     });
-  };
+  }
 
-  distribute(gks);
-  distribute(dfs);
-  distribute(mfs);
-  distribute(fws);
-  distribute(others);
+  // Ensure every team has valid key, name, and players array
+  sTeams.forEach((t, i) => {
+    if (!t.key) t.key = (SOCCER_DEFAULT_TEAMS[i] && SOCCER_DEFAULT_TEAMS[i].key) || `team-${i}`;
+    if (!t.name) t.name = (SOCCER_DEFAULT_TEAMS[i] && SOCCER_DEFAULT_TEAMS[i].name) || `Tim ${i + 1}`;
+    if (!Array.isArray(t.players)) t.players = [];
+  });
 
-  // Generate Match Schedule
+  // If sTeams has 0 total players but sPlayers has items (e.g. from older state)
+  const totalInTeams = sTeams.reduce((sum, t) => sum + (t.players ? t.players.length : 0), 0);
+  if (totalInTeams === 0 && Array.isArray(sPlayers) && sPlayers.length > 0) {
+    sPlayers.forEach((p, idx) => {
+      const targetIdx = (typeof p.teamIndex === 'number' && p.teamIndex < sTeamCount) ? p.teamIndex : (idx % sTeamCount);
+      sTeams[targetIdx].players.push(p);
+    });
+  }
+
+  syncSoccerPlayersFromTeams();
+  ensureSoccerMatchesInitialized();
+}
+
+function syncSoccerPlayersFromTeams() {
+  sPlayers = [];
+  if (!Array.isArray(sTeams)) return;
+  sTeams.forEach((t, tIdx) => {
+    (t.players || []).forEach(p => {
+      p.teamIndex = tIdx;
+      p.teamKey = t.key;
+      p.teamName = t.name;
+      sPlayers.push(p);
+    });
+  });
+}
+
+function ensureSoccerMatchesInitialized() {
+  if (!Array.isArray(sTeams) || sTeams.length < 2) return;
+  if (Array.isArray(sMatches) && sMatches.length > 0) {
+    sMatches.forEach(m => {
+      if (m.teamA && m.teamA.key) {
+        const foundA = sTeams.find(t => t.key === m.teamA.key);
+        if (foundA) m.teamA = foundA;
+      }
+      if (m.teamB && m.teamB.key) {
+        const foundB = sTeams.find(t => t.key === m.teamB.key);
+        if (foundB) m.teamB = foundB;
+      }
+      if (m.restTeam && m.restTeam.key) {
+        const foundRest = sTeams.find(t => t.key === m.restTeam.key);
+        if (foundRest) m.restTeam = foundRest;
+      }
+    });
+    return;
+  }
+  generateSoccerMatchSchedule();
+}
+
+function generateSoccerMatchSchedule() {
+  if (!Array.isArray(sTeams) || sTeams.length < 2) return;
   sMatches = [];
   if (sTeamCount === 2) {
     for (let r = 1; r <= 3; r++) {
       sMatches.push({
         roundNumber: r,
-        title: `Babak ${r} • Tim A vs Tim B`,
+        title: `Babak ${r} • ${sTeams[0].name} vs ${sTeams[1].name}`,
         teamA: sTeams[0],
         teamB: sTeams[1],
         scoreA: null,
@@ -4785,26 +4937,460 @@ function generateSoccerTeams() {
     }
   } else if (sTeamCount === 3) {
     sMatches = [
-      { roundNumber: 1, title: 'Match 1 • Tim A vs Tim B', teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'ongoing', restTeam: sTeams[2] },
-      { roundNumber: 2, title: 'Match 2 • Tim B vs Tim C', teamA: sTeams[1], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending', restTeam: sTeams[0] },
-      { roundNumber: 3, title: 'Match 3 • Tim A vs Tim C', teamA: sTeams[0], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending', restTeam: sTeams[1] }
+      { roundNumber: 1, title: `Match 1 • ${sTeams[0].name} vs ${sTeams[1].name}`, teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'ongoing', restTeam: sTeams[2] },
+      { roundNumber: 2, title: `Match 2 • ${sTeams[1].name} vs ${sTeams[2].name}`, teamA: sTeams[1], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending', restTeam: sTeams[0] },
+      { roundNumber: 3, title: `Match 3 • ${sTeams[0].name} vs ${sTeams[2].name}`, teamA: sTeams[0], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending', restTeam: sTeams[1] }
     ];
   } else {
     sMatches = [
-      { roundNumber: 1, title: 'Semifinal 1 • Tim A vs Tim B', teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'ongoing' },
-      { roundNumber: 2, title: 'Semifinal 2 • Tim C vs Tim D', teamA: sTeams[2], teamB: sTeams[3], scoreA: null, scoreB: null, winner: null, status: 'pending' },
-      { roundNumber: 3, title: 'Final Perebutan Juara', teamA: sTeams[0], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending' }
+      { roundNumber: 1, title: `Semifinal 1 • ${sTeams[0].name} vs ${sTeams[1].name}`, teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'ongoing' },
+      { roundNumber: 2, title: `Semifinal 2 • ${sTeams[2].name} vs ${sTeams[3].name}`, teamA: sTeams[2], teamB: sTeams[3], scoreA: null, scoreB: null, winner: null, status: 'pending' },
+      { roundNumber: 3, title: `Final Perebutan Juara • ${sTeams[0].name} vs ${sTeams[2].name}`, teamA: sTeams[0], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending' }
     ];
   }
-
   sCurrentMatchIndex = 0;
-  renderSoccerTeams();
+}
+
+function updateSoccerTeamSelectOptions() {
+  const sel = document.getElementById('inputSoccerTeamSelect');
+  if (!sel || !Array.isArray(sTeams)) return;
+  const currentVal = sel.value;
+  sel.innerHTML = sTeams.map((t, idx) => `<option value="${idx}">${escapeHtml(t.name)}</option>`).join('');
+  if (currentVal !== '' && parseInt(currentVal, 10) < sTeams.length) {
+    sel.value = currentVal;
+  }
+}
+
+function addSoccerPlayerToTeam(teamIdx) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+  if (!sTeams[teamIdx]) return;
+
+  const nameInput = document.getElementById(`inlineSoccerPlayerName_${teamIdx}`);
+  const roleInput = document.getElementById(`inlineSoccerPlayerRole_${teamIdx}`);
+  const genderInput = document.getElementById(`inlineSoccerPlayerGender_${teamIdx}`);
+
+  const name = nameInput ? nameInput.value.trim() : '';
+  if (!name) {
+    if (nameInput) nameInput.focus();
+    return;
+  }
+
+  const role = roleInput ? (roleInput.value || 'MF') : 'MF';
+  const gender = genderInput ? (genderInput.value || 'L') : 'L';
+
+  const newP = {
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    name: name,
+    gender: gender,
+    role: role,
+    paid: true,
+    teamIndex: teamIdx,
+    teamKey: sTeams[teamIdx].key,
+    teamName: sTeams[teamIdx].name
+  };
+
+  sTeams[teamIdx].players.push(newP);
+  syncSoccerPlayersFromTeams();
+  ensureSoccerMatchesInitialized();
+  VercelDbSync.savePlayer(currentRoomId, newP);
+
+  if (nameInput) {
+    nameInput.value = '';
+    nameInput.focus();
+  }
+
+  updateSessionLabels();
+  renderPlayersList();
   renderCourtsView();
+  persistAndBroadcast();
+  showToast(`${newP.name} berhasil ditambahkan ke ${sTeams[teamIdx].name}!`, 'success');
+}
+
+function openSoccerBulkAddModal(teamIdx) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+  if (!sTeams[teamIdx]) return;
+  document.getElementById('soccerBulkTargetTeamIdx').value = teamIdx;
+  document.getElementById('soccerBulkModalTitle').textContent = `Input Roster: ${sTeams[teamIdx].name}`;
+  document.getElementById('soccerBulkInputText').value = '';
+  const modal = document.getElementById('soccerBulkAddModalOverlay');
+  if (modal) modal.classList.add('open');
+  setTimeout(() => {
+    document.getElementById('soccerBulkInputText')?.focus();
+  }, 100);
+}
+
+function closeSoccerBulkAddModal() {
+  const modal = document.getElementById('soccerBulkAddModalOverlay');
+  if (modal) modal.classList.remove('open');
+}
+
+function submitSoccerBulkAdd() {
+  if (!checkEditPermission()) return;
+  const teamIdx = parseInt(document.getElementById('soccerBulkTargetTeamIdx').value, 10);
+  if (isNaN(teamIdx) || !sTeams[teamIdx]) return;
+
+  const rawText = document.getElementById('soccerBulkInputText').value.trim();
+  if (!rawText) {
+    showToast('Ketik atau tempel nama pemain terlebih dahulu.', 'warning');
+    return;
+  }
+
+  const defaultRole = document.getElementById('soccerBulkDefaultRole').value || 'MF';
+  const rawItems = rawText.split(/[\r\n,]+/);
+  let addedCount = 0;
+
+  rawItems.forEach(item => {
+    let line = item.trim();
+    if (!line) return;
+    line = line.replace(/^[\d\s\.\-#\)]+/, '').trim();
+    if (!line) return;
+
+    let role = defaultRole;
+    const roleMatch = line.match(/[\(\[]\s*(GK|DF|MF|FW|Kiper|Bek|Gelandang|Penyerang)\s*[\)\]]/i);
+    if (roleMatch) {
+      const rText = roleMatch[1].toUpperCase();
+      if (rText === 'KIPER' || rText === 'GK') role = 'GK';
+      else if (rText === 'BEK' || rText === 'DF') role = 'DF';
+      else if (rText === 'GELANDANG' || rText === 'MF') role = 'MF';
+      else if (rText === 'PENYERANG' || rText === 'FW') role = 'FW';
+      line = line.replace(roleMatch[0], '').trim();
+    }
+    if (!line) return;
+
+    const newP = {
+      id: Date.now() + Math.floor(Math.random() * 10000) + addedCount,
+      name: line,
+      gender: 'L',
+      role: role,
+      paid: true,
+      teamIndex: teamIdx,
+      teamKey: sTeams[teamIdx].key,
+      teamName: sTeams[teamIdx].name
+    };
+
+    sTeams[teamIdx].players.push(newP);
+    VercelDbSync.savePlayer(currentRoomId, newP);
+    addedCount++;
+  });
+
+  if (addedCount > 0) {
+    syncSoccerPlayersFromTeams();
+    ensureSoccerMatchesInitialized();
+    updateSessionLabels();
+    renderPlayersList();
+    renderCourtsView();
+    persistAndBroadcast();
+    closeSoccerBulkAddModal();
+    showToast(`${addedCount} pemain berhasil ditambahkan ke ${sTeams[teamIdx].name}!`, 'success');
+  } else {
+    showToast('Tidak ada nama valid yang ditemukan.', 'warning');
+  }
+}
+
+function openSoccerSwapModal(playerId) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+
+  let sourcePlayer = null;
+  let sourceTeamIdx = -1;
+
+  for (let t = 0; t < sTeams.length; t++) {
+    const p = (sTeams[t].players || []).find(x => x.id === playerId);
+    if (p) {
+      sourcePlayer = p;
+      sourceTeamIdx = t;
+      break;
+    }
+  }
+
+  if (!sourcePlayer) return;
+
+  document.getElementById('soccerSwapSourcePlayerId').value = sourcePlayer.id;
+  document.getElementById('soccerSwapSourcePlayerSub').textContent = 
+    `Pemain yang ditukar: ${sourcePlayer.name} (${sTeams[sourceTeamIdx].name} • ${sourcePlayer.role || 'MF'})`;
+
+  const container = document.getElementById('soccerSwapCandidatesList');
+  if (!container) return;
+
+  const candidateItems = [];
+  sTeams.forEach((t, tIdx) => {
+    if (tIdx === sourceTeamIdx) return;
+    (t.players || []).forEach(cand => {
+      candidateItems.push({
+        player: cand,
+        teamIdx: tIdx,
+        teamName: t.name
+      });
+    });
+  });
+
+  if (candidateItems.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:24px 12px; color:var(--text-muted); font-size:0.8rem;">
+        Belum ada pemain di tim lain untuk ditukar. Tambahkan pemain ke tim lain terlebih dahulu.
+      </div>
+    `;
+  } else {
+    container.innerHTML = candidateItems.map(c => `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 12px;">
+        <div style="min-width:0; flex:1;">
+          <div style="font-weight:800; font-size:0.85rem; color:var(--brand-navy-dark);">${escapeHtml(c.player.name)}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">
+            ${escapeHtml(c.teamName)} · <span class="pos-badge pos-${(c.player.role || 'MF').toLowerCase()}">${escapeHtml(c.player.role || 'MF')}</span> · ${c.player.gender === 'P' ? 'Putri' : 'Putra'}
+          </div>
+        </div>
+        <button type="button" class="btn-court-quick-action" style="background:var(--brand-orange); color:#FFF; border:none; font-weight:800; font-size:0.75rem; padding:5px 12px;" onclick="swapSoccerPlayers(${sourcePlayer.id}, ${c.player.id})">
+          Tukar ⇄
+        </button>
+      </div>
+    `).join('');
+  }
+
+  const modal = document.getElementById('soccerSwapModalOverlay');
+  if (modal) modal.classList.add('open');
+}
+
+function closeSoccerSwapModal() {
+  const modal = document.getElementById('soccerSwapModalOverlay');
+  if (modal) modal.classList.remove('open');
+}
+
+function swapSoccerPlayers(playerAId, playerBId) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+
+  let teamAIdx = -1, pAIdx = -1, playerA = null;
+  let teamBIdx = -1, pBIdx = -1, playerB = null;
+
+  for (let t = 0; t < sTeams.length; t++) {
+    const idxA = (sTeams[t].players || []).findIndex(p => p.id === playerAId);
+    if (idxA !== -1) { teamAIdx = t; pAIdx = idxA; playerA = sTeams[t].players[idxA]; }
+    const idxB = (sTeams[t].players || []).findIndex(p => p.id === playerBId);
+    if (idxB !== -1) { teamBIdx = t; pBIdx = idxB; playerB = sTeams[t].players[idxB]; }
+  }
+
+  if (!playerA || !playerB || teamAIdx === teamBIdx) {
+    showToast('Pilih dua pemain dari tim berbeda untuk ditukar.', 'warning');
+    return;
+  }
+
+  sTeams[teamAIdx].players[pAIdx] = playerB;
+  sTeams[teamBIdx].players[pBIdx] = playerA;
+
+  playerA.teamIndex = teamBIdx;
+  playerA.teamKey = sTeams[teamBIdx].key;
+  playerA.teamName = sTeams[teamBIdx].name;
+
+  playerB.teamIndex = teamAIdx;
+  playerB.teamKey = sTeams[teamAIdx].key;
+  playerB.teamName = sTeams[teamAIdx].name;
+
+  syncSoccerPlayersFromTeams();
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  persistAndBroadcast();
+  closeSoccerSwapModal();
+  showToast(`Berhasil menukar ${playerA.name} (${sTeams[teamBIdx].name}) ⇄ ${playerB.name} (${sTeams[teamAIdx].name})!`, 'success');
+}
+
+function moveSoccerPlayerToTeam(playerId, newTeamIdx) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+  if (isNaN(newTeamIdx) || newTeamIdx < 0 || newTeamIdx >= sTeams.length) return;
+
+  let foundPlayer = null;
+  let oldTeamIdx = -1;
+
+  for (let t = 0; t < sTeams.length; t++) {
+    const idx = (sTeams[t].players || []).findIndex(p => p.id === playerId);
+    if (idx !== -1) {
+      foundPlayer = sTeams[t].players[idx];
+      oldTeamIdx = t;
+      sTeams[t].players.splice(idx, 1);
+      break;
+    }
+  }
+
+  if (!foundPlayer) return;
+
+  foundPlayer.teamIndex = newTeamIdx;
+  foundPlayer.teamKey = sTeams[newTeamIdx].key;
+  foundPlayer.teamName = sTeams[newTeamIdx].name;
+  sTeams[newTeamIdx].players.push(foundPlayer);
+
+  syncSoccerPlayersFromTeams();
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  persistAndBroadcast();
+  showToast(`${foundPlayer.name} dipindahkan dari ${sTeams[oldTeamIdx].name} ke ${sTeams[newTeamIdx].name}.`, 'info');
+}
+
+function updateSoccerPlayerRole(playerId, newRole) {
+  if (!checkEditPermission()) return;
+  for (const t of sTeams) {
+    const p = (t.players || []).find(x => x.id === playerId);
+    if (p) {
+      p.role = newRole;
+      break;
+    }
+  }
+  syncSoccerPlayersFromTeams();
+  renderPlayersList();
+  renderCourtsView();
+  persistAndBroadcast();
+}
+
+function updateSoccerPlayerGender(playerId, newGender) {
+  if (!checkEditPermission()) return;
+  for (const t of sTeams) {
+    const p = (t.players || []).find(x => x.id === playerId);
+    if (p) {
+      p.gender = newGender;
+      break;
+    }
+  }
+  syncSoccerPlayersFromTeams();
+  renderPlayersList();
+  persistAndBroadcast();
+}
+
+function removeSoccerPlayer(playerId) {
+  if (!checkEditPermission()) return;
+  let removedName = '';
+  for (const t of sTeams) {
+    const idx = (t.players || []).findIndex(p => p.id === playerId);
+    if (idx !== -1) {
+      removedName = t.players[idx].name;
+      t.players.splice(idx, 1);
+      break;
+    }
+  }
+  syncSoccerPlayersFromTeams();
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  persistAndBroadcast();
+  if (removedName) showToast(`${removedName} dihapus dari tim.`, 'info');
+}
+
+function renameSoccerTeam(teamIdx) {
+  if (!checkEditPermission()) return;
+  if (!sTeams[teamIdx]) return;
+  const currentName = sTeams[teamIdx].name;
+  const newName = prompt(`Ubah nama untuk ${currentName}:`, currentName);
+  if (!newName || !newName.trim() || newName.trim() === currentName) return;
+
+  sTeams[teamIdx].name = newName.trim();
+  (sTeams[teamIdx].players || []).forEach(p => { p.teamName = newName.trim(); });
+
+  if (Array.isArray(sMatches)) {
+    sMatches.forEach(m => {
+      if (m.teamA && m.teamA.key === sTeams[teamIdx].key) m.teamA.name = newName.trim();
+      if (m.teamB && m.teamB.key === sTeams[teamIdx].key) m.teamB.name = newName.trim();
+      if (m.restTeam && m.restTeam.key === sTeams[teamIdx].key) m.restTeam.name = newName.trim();
+      if (m.teamA && m.teamB) {
+        const parts = m.title.split('•');
+        const prefix = parts.length > 1 ? parts[0] + '• ' : '';
+        m.title = `${prefix}${m.teamA.name} vs ${m.teamB.name}`;
+      }
+    });
+  }
+
+  syncSoccerPlayersFromTeams();
+  updateSoccerTeamSelectOptions();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`Nama tim diperbarui menjadi ${newName.trim()}!`, 'success');
+}
+
+function shuffleSoccerTeamsFromRoster(askConfirm = true) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+
+  const allPlayers = [];
+  sTeams.forEach(t => {
+    (t.players || []).forEach(p => allPlayers.push({ ...p }));
+  });
+
+  if (allPlayers.length < 2) {
+    showToast('Minimal 2 pemain terdaftar untuk mengacak susunan tim.', 'warning');
+    return;
+  }
+
+  if (askConfirm) {
+    const hasFinishedMatches = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+    const msg = hasFinishedMatches
+      ? 'Acak susunan pemain ke setiap tim? Pertandingan yang sudah ada akan disesuaikan dengan susunan baru.'
+      : 'Acak ulang susunan pemain ke seluruh tim secara merata?';
+    if (!confirm(msg)) return;
+  }
+
+  sTeams.forEach(t => { t.players = []; });
+
+  const shuffleArray = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  const gks = shuffleArray(allPlayers.filter(p => p.role === 'GK'));
+  const dfs = shuffleArray(allPlayers.filter(p => p.role === 'DF'));
+  const mfs = shuffleArray(allPlayers.filter(p => p.role === 'MF'));
+  const fws = shuffleArray(allPlayers.filter(p => p.role === 'FW'));
+  const others = shuffleArray(allPlayers.filter(p => !['GK', 'DF', 'MF', 'FW'].includes(p.role)));
+
+  let targetIdx = 0;
+  const distribute = (arr) => {
+    arr.forEach(p => {
+      p.teamIndex = targetIdx;
+      p.teamKey = sTeams[targetIdx].key;
+      p.teamName = sTeams[targetIdx].name;
+      sTeams[targetIdx].players.push(p);
+      targetIdx = (targetIdx + 1) % sTeamCount;
+    });
+  };
+
+  distribute(gks);
+  distribute(dfs);
+  distribute(mfs);
+  distribute(fws);
+  distribute(others);
+
+  syncSoccerPlayersFromTeams();
+  generateSoccerMatchSchedule();
+
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast('🎲 Pemain berhasil diacak merata ke setiap tim!', 'success');
+}
+
+function generateSoccerTeams() {
+  ensureSoccerTeamsInitialized();
+  const total = sTeams.reduce((sum, t) => sum + (t.players ? t.players.length : 0), 0);
+  if (total >= 2) {
+    shuffleSoccerTeamsFromRoster(false);
+  } else {
+    ensureSoccerMatchesInitialized();
+    renderSoccerTeams();
+    renderCourtsView();
+  }
 }
 
 function renderSoccerTeams() {
   const container = document.getElementById('soccerTeamsGrid');
   if (!container) return;
+  ensureSoccerTeamsInitialized();
 
   if (sTeams.length === 0) {
     container.innerHTML = `
@@ -4819,10 +5405,10 @@ function renderSoccerTeams() {
     <div style="margin-bottom:10px;">
       <div class="team-card-header ${t.key}">
         <span>${escapeHtml(t.name)}</span>
-        <span style="font-size:0.75rem; font-weight:800;">${t.players.length} Pemain</span>
+        <span style="font-size:0.75rem; font-weight:800;">${(t.players || []).length} Pemain</span>
       </div>
       <div class="team-members-list">
-        ${t.players.map(p => `
+        ${(t.players || []).length === 0 ? `<div style="padding:6px; font-size:0.78rem; color:var(--text-muted); font-style:italic;">Belum ada pemain di tim ini.</div>` : t.players.map(p => `
           <div class="team-member-item">
             <span style="font-weight:700; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</span>
             <span class="pos-badge pos-${(p.role||'MF').toLowerCase()}">${escapeHtml(p.role || 'MF')}</span>
@@ -4831,6 +5417,121 @@ function renderSoccerTeams() {
       </div>
     </div>
   `).join('');
+}
+
+function renderSoccerTeamRoster(container) {
+  ensureSoccerTeamsInitialized();
+  updateSoccerTeamSelectOptions();
+
+  const teamTheme = {
+    0: { border: '#CBD5E1', headerBg: 'var(--brand-navy-dark)', headerColor: '#FFF', badgeBg: 'var(--brand-navy-light)', badgeColor: 'var(--brand-navy)' },
+    1: { border: '#FED7AA', headerBg: 'var(--brand-orange)', headerColor: '#FFF', badgeBg: 'var(--brand-orange-light)', badgeColor: 'var(--brand-orange)' },
+    2: { border: '#A7F3D0', headerBg: '#059669', headerColor: '#FFF', badgeBg: '#ECFDF5', badgeColor: '#065F46' },
+    3: { border: '#DDD6FE', headerBg: '#7C3AED', headerColor: '#FFF', badgeBg: '#F5F3FF', badgeColor: '#5B21B6' }
+  };
+
+  const html = `
+    <div style="display:flex; flex-direction:column; gap:14px; margin-top:8px;">
+      ${sTeams.map((team, tIdx) => {
+        const theme = teamTheme[tIdx] || teamTheme[0];
+        const players = team.players || [];
+        return `
+          <div class="os-card" style="padding:0; overflow:hidden; border:1.5px solid ${theme.border}; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:0;">
+            <!-- Team Header -->
+            <div style="background:${theme.headerBg}; color:${theme.headerColor}; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                <span style="font-weight:900; font-size:0.95rem; letter-spacing:-0.2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  ${escapeHtml(team.name)}
+                </span>
+                <button type="button" onclick="renameSoccerTeam(${tIdx})" title="Ubah nama tim" style="background:rgba(255,255,255,0.22); border:none; color:#FFF; border-radius:4px; padding:2px 7px; font-size:0.68rem; font-weight:800; cursor:pointer;">
+                  ✎ Ubah Nama
+                </button>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                <span style="font-size:0.75rem; font-weight:800; background:rgba(255,255,255,0.25); padding:3px 9px; border-radius:var(--radius-pill); color:#FFF;">
+                  ${players.length} Pemain
+                </span>
+              </div>
+            </div>
+
+            <!-- Direct Inline Input for this Team -->
+            <div style="background:#F8FAFC; padding:10px 12px; border-bottom:1px solid var(--border-color); display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+              <input type="text" id="inlineSoccerPlayerName_${tIdx}" class="input-styled-os" placeholder="+ Ketik nama pemain..." style="flex:1; min-width:140px; font-size:0.8rem; padding:6px 10px;" onkeypress="if(event.key==='Enter')addSoccerPlayerToTeam(${tIdx})">
+              <select id="inlineSoccerPlayerRole_${tIdx}" class="input-styled-os" style="width:auto; font-weight:700; font-size:0.78rem; padding:6px 8px;">
+                <option value="GK">GK (Kiper)</option>
+                <option value="DF">DF (Bek)</option>
+                <option value="MF" selected>MF (Gelandang)</option>
+                <option value="FW">FW (Penyerang)</option>
+              </select>
+              <select id="inlineSoccerPlayerGender_${tIdx}" class="input-styled-os" style="width:auto; font-size:0.78rem; padding:6px 8px;">
+                <option value="L">Putra (L)</option>
+                <option value="P">Putri (P)</option>
+              </select>
+              <button class="btn-court-quick-action" onclick="addSoccerPlayerToTeam(${tIdx})" style="background:var(--brand-blue); color:#FFF; border:none; font-weight:800; padding:6px 12px; font-size:0.76rem;" title="Tambah pemain langsung ke tim ini">
+                + Tambah
+              </button>
+              <button class="btn-court-quick-action" onclick="openSoccerBulkAddModal(${tIdx})" style="background:#FFFFFF; color:var(--text-secondary); border:1px solid var(--border-color); font-weight:700; padding:6px 10px; font-size:0.74rem;" title="Paste banyak nama sekaligus dari WhatsApp/catatan">
+                📋 Roster Massal
+              </button>
+            </div>
+
+            <!-- Team Player Members List -->
+            <div style="padding:8px 10px; display:flex; flex-direction:column; gap:6px; min-height:46px;">
+              ${players.length === 0 ? `
+                <div style="text-align:center; padding:16px 8px; color:var(--text-muted); font-size:0.78rem; font-style:italic;">
+                  Belum ada pemain di ${escapeHtml(team.name)}. Ketik nama di atas untuk menambah pemain.
+                </div>
+              ` : players.map((p, pIdx) => {
+                const isMale = p.gender === 'L';
+                return `
+                  <div class="player-roster-card" style="margin-bottom:0; padding:8px 10px; background:#FFF; border:1px solid var(--border-color); border-radius:var(--radius-md);">
+                    <div class="player-roster-left" style="gap:8px; align-items:center; flex:1; min-width:0;">
+                      <select class="select-role-inline" onchange="updateSoccerPlayerGender(${p.id}, this.value)" style="color:${isMale ? 'var(--gender-male)' : 'var(--gender-female)'}; font-weight:800; font-size:0.72rem; padding:2px 4px;">
+                        <option value="L" ${isMale ? 'selected' : ''}>L</option>
+                        <option value="P" ${!isMale ? 'selected' : ''}>P</option>
+                      </select>
+
+                      <div style="min-width:0; flex:1;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                          <span style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:3px;">
+                          <select class="select-role-inline" onchange="updateSoccerPlayerRole(${p.id}, this.value)" style="font-size:0.72rem; padding:2px 6px; font-weight:700;">
+                            <option value="GK" ${p.role === 'GK' ? 'selected' : ''}>GK (Kiper)</option>
+                            <option value="DF" ${p.role === 'DF' ? 'selected' : ''}>DF (Bek)</option>
+                            <option value="MF" ${p.role === 'MF' || !p.role ? 'selected' : ''}>MF (Gelandang)</option>
+                            <option value="FW" ${p.role === 'FW' ? 'selected' : ''}>FW (Penyerang)</option>
+                          </select>
+
+                          <select class="select-role-inline" onchange="moveSoccerPlayerToTeam(${p.id}, parseInt(this.value, 10))" title="Pindahkan pemain ke tim lain" style="font-size:0.72rem; padding:2px 6px; font-weight:700; background:#F0FDF4; border-color:#86EFAC; color:#166534;">
+                            ${sTeams.map((otherTeam, oIdx) => `
+                              <option value="${oIdx}" ${oIdx === tIdx ? 'selected' : ''}>
+                                ${oIdx === tIdx ? '✓ ' + escapeHtml(otherTeam.name) : '➜ Pindah ke ' + escapeHtml(otherTeam.name)}
+                              </option>
+                            `).join('')}
+                          </select>
+
+                          <button type="button" class="btn-court-quick-action" onclick="openSoccerSwapModal(${p.id})" style="font-size:0.68rem; padding:2px 7px;" title="Tukar posisi dengan pemain tim lain">
+                            ⇄ Tukar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <button class="btn-del-player" onclick="removeSoccerPlayer(${p.id})" title="Hapus pemain dari tim">✕</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  container.innerHTML = html;
 }
 
 // ── SMART REBALANCE / GENERATE ──
@@ -8475,18 +9176,39 @@ function saveSettings() {
 }
 
 function exportCSV() {
-  const list = currentSport === 'badminton' ? bPlayers : sPlayers;
-  const header = ['No', 'Nama Pemain', 'Gender', 'Role'];
-  const rows = list.map((p, idx) => [idx + 1, `"${p.name}"`, p.gender, p.role]);
-  const csv = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ONESPORT-${currentSport}-${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if (currentSport === 'badminton') {
+    const list = bPlayers;
+    const header = ['No', 'Nama Pemain', 'Gender', 'Role'];
+    const rows = list.map((p, idx) => [idx + 1, `"${p.name}"`, p.gender, p.role]);
+    const csv = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ONESPORT-badminton-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } else {
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    const header = ['No', 'Nama Pemain', 'Tim', 'Posisi', 'Gender'];
+    const rows = [];
+    let no = 1;
+    sTeams.forEach(t => {
+      (t.players || []).forEach(p => {
+        rows.push([no++, `"${p.name}"`, `"${t.name}"`, p.role || 'MF', p.gender || 'L']);
+      });
+    });
+    const csv = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ONESPORT-minisoccer-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 // ============================================================================
@@ -8694,6 +9416,10 @@ function loadFromLocalStorage() {
     if (Array.isArray(data.sTeams)) sTeams = data.sTeams;
     if (Array.isArray(data.sMatches)) sMatches = data.sMatches;
     if (typeof data.sCurrentMatchIndex === 'number') sCurrentMatchIndex = data.sCurrentMatchIndex;
+
+    if (currentSport === 'minisoccer' && typeof ensureSoccerTeamsInitialized === 'function') {
+      ensureSoccerTeamsInitialized();
+    }
 
     // Migrasi data aman & backfill statistik tanpa merusak data lama
     if (window.BadmintonService) {
@@ -10356,6 +11082,10 @@ function applyReceivedState(incomingData) {
   if (Array.isArray(data.sTeams)) sTeams = data.sTeams;
   if (Array.isArray(data.sMatches)) sMatches = data.sMatches;
   if (typeof data.sCurrentMatchIndex === 'number') sCurrentMatchIndex = data.sCurrentMatchIndex;
+
+  if (currentSport === 'minisoccer' && typeof ensureSoccerTeamsInitialized === 'function') {
+    ensureSoccerTeamsInitialized();
+  }
 
   if (currentRoomId) {
     try {
