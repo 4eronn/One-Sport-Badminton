@@ -169,4 +169,4 @@ Because the app is a single static page, changes are easy to test: edit the file
 ## Author & Hak Cipta
 
 - Dikembangkan dan dikelola oleh [@4eronn](https://github.com/4eronn).
-- **© 2026 Pancong Donto. Hak Cipta Dilindungi.**
+- **© 2026 OneSport. Hak Cipta Dilindungi.**
