@@ -169,5 +169,4 @@ Because the app is a single static page, changes are easy to test: edit the file
 ## Author & Hak Cipta
 
 - Dikembangkan dan dikelola oleh [@4eronn](https://github.com/4eronn).
-- **Hak Cipta © 2026 4eronn**. Seluruh hak cipta dilindungi undang-undang.
-- **Ketentuan Hak Cipta Permanen**: Hak cipta melekat secara permanen dan tidak dapat diubah, dihapus, atau dipindahtangankan meskipun kode sumber dikoding ulang (*recoded*). Segala bentuk perizinan resmi, perubahan lisensi, atau penggunaan khusus wajib melalui verifikasi resmi ke email: **mridwaniss06@gmail.com**.
+- **© 2026 Pancong Donto. Hak Cipta Dilindungi.**
