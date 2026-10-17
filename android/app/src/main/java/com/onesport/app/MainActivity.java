@@ -84,6 +84,14 @@ public class MainActivity extends AppCompatActivity {
                     swipeRefresh.setRefreshing(false);
                 }
             }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                super.onReceivedError(view, errorCode, description, failingUrl);
+                if (swipeRefresh != null) {
+                    swipeRefresh.setRefreshing(false);
+                }
+            }
         });
 
         webView.setWebChromeClient(new WebChromeClient() {
@@ -107,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (swipeRefresh != null) {
-            swipeRefresh.setColorSchemeColors(0xFFFF5B14, 0xFF0F1E36);
+            swipeRefresh.setColorSchemeColors(0xFF0B74DE, 0xFF071A33);
             swipeRefresh.setOnRefreshListener(() -> webView.reload());
             webView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
                 swipeRefresh.setEnabled(scrollY == 0);

@@ -22,18 +22,24 @@
 
 <!-- Realtime WebSockets & QR Code Libraries -->
 <script src="vendor/mqtt.min.js"></script>
-<script>
-  if (typeof mqtt === 'undefined') {
-    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.5.0/mqtt.min.js" integrity="sha384-GLyCRwP9wS/3t9rdDG04aQg9t7VDXSfsn/ydplydbJREUD0LbPjKHxoIV+s7rsyt" crossorigin="anonymous"><\/script>');
-  }
-</script>
 <script src="vendor/qrcode.min.js"></script>
-<script>
-  if (typeof QRCode === 'undefined') {
-    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"><\/script>');
-  }
-</script>
 <script src="badminton-service.js"></script>
+<script>
+  window.addEventListener('load', function() {
+    if (typeof mqtt === 'undefined') {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.5.0/mqtt.min.js';
+      s.crossOrigin = 'anonymous';
+      document.head.appendChild(s);
+    }
+    if (typeof QRCode === 'undefined') {
+      var q = document.createElement('script');
+      q.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      q.crossOrigin = 'anonymous';
+      document.head.appendChild(q);
+    }
+  });
+</script>
 
 <style>
   :root {
@@ -257,13 +263,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+    transition: opacity 0.35s ease, visibility 0.35s;
     overflow: hidden;
   }
   #splashScreen.hide {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    display: none !important;
   }
   .splash-content {
     display: flex;
@@ -2160,10 +2167,10 @@
 <body>
 
 <!-- ── SPLASH / LOADING SCREEN (onesport.id Hero Asset & Glassmorphism) ── -->
-<div id="splashScreen">
+<div id="splashScreen" onclick="dismissSplashScreen()" title="Ketuk untuk langsung masuk">
   <div class="splash-content">
     <div class="splash-kicker">ONESPORT.ID · KOMUNITAS OLAHRAGA</div>
-    <img src="logo.png" alt="ONESPORT" class="splash-logo" onerror="this.src='https://one-sport-badminton.vercel.app/logo.png'">
+    <img src="logo.png" alt="ONESPORT" class="splash-logo" onerror="this.src='logo-icon.png'">
     <div class="splash-brand-title">one<span>sport</span><span class="splash-brand-dot">.id</span></div>
     <div class="splash-tagline">Teman Main Lebih Dekat · #WaktunyaMainLagi</div>
     <div class="splash-loader-bar">
@@ -4153,91 +4160,118 @@ const VercelDbSync = {
   }
 };
 
-// ── INITIALIZATION ──
-window.addEventListener('DOMContentLoaded', () => {
-  // Pembaruan versi bersih: hapus cache lokal lama dan sesi live usang agar murni kosong untuk input manual
-  if (!localStorage.getItem('onesport_v3_clean_start_v3')) {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STORAGE_ACTIVE_LIVE_SESSION);
-    localStorage.removeItem(STORAGE_OFFLINE_BACKUP);
-    localStorage.removeItem('onesport_user_role');
-    Object.keys(localStorage).forEach(k => {
-      if (k.startsWith('onesport_room_cache_') || k.startsWith('onesport_host_pin_')) {
-        localStorage.removeItem(k);
-      }
-    });
-    if (window.history && window.history.replaceState) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('room');
-      url.searchParams.delete('role');
-      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-    }
-    localStorage.setItem('onesport_v3_clean_start_v3', 'true');
+// ── SPLASH SCREEN DISMISSAL & APP INITIALIZATION ──
+function dismissSplashScreen() {
+  const splash = document.getElementById('splashScreen');
+  if (splash && !splash.classList.contains('hide')) {
+    splash.classList.add('hide');
+    setTimeout(() => {
+      if (splash) splash.style.display = 'none';
+    }, 400);
   }
+}
 
-  const hasSaved = loadFromLocalStorage();
-  if (!hasSaved) {
-    bPlayers = [];
-    sPlayers = [];
-    bSchedule = [];
-    sTeams = [];
-    sMatches = [];
-    bPartnerRequests = [];
-    bPartnerHistory = {};
-    bOpponentHistory = {};
-    bAuditLog = [];
-  }
+// Fail-safe timeout mutlak: splash screen dijamin tertutup maksimal 1.5 detik
+setTimeout(dismissSplashScreen, 1500);
 
-  // Sinkronisasi data dari Database Vercel
-  VercelDbSync.loadInitialState();
+let isAppInitialized = false;
+function initApp() {
+  if (isAppInitialized) return;
+  isAppInitialized = true;
 
-  document.getElementById('finalTitleHeader').textContent = sessionTitle;
-  document.getElementById('settingSessionTitle').value = sessionTitle;
-  if (document.getElementById('settingNumCourts')) document.getElementById('settingNumCourts').value = bNumCourts;
-  if (document.getElementById('settingMinPlays')) document.getElementById('settingMinPlays').value = bMinPlays;
-  if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
-
-  // Peran ditentukan oleh status login (Host: admin@onesport.co.id, lainnya spectator)
-  userRole = isHostUser() ? 'host' : 'spectator';
-
-  // Sinkronkan preferensi olahraga dari parameter URL (?sport=minisoccer) atau penyimpanan lokal
   try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sportParam = urlParams.get('sport');
-    if (sportParam === 'minisoccer' || sportParam === 'badminton') {
-      currentSport = sportParam;
-    } else {
-      const savedSport = localStorage.getItem('onesport_last_sport');
-      if (savedSport === 'minisoccer' || savedSport === 'badminton') {
-        currentSport = savedSport;
+    // Pembaruan versi bersih: bersihkan cache lokal lama jika belum diperbarui
+    try {
+      if (!localStorage.getItem('onesport_v3_clean_start_v3')) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_ACTIVE_LIVE_SESSION);
+        localStorage.removeItem(STORAGE_OFFLINE_BACKUP);
+        localStorage.removeItem('onesport_user_role');
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('onesport_room_cache_') || k.startsWith('onesport_host_pin_')) {
+            localStorage.removeItem(k);
+          }
+        });
+        if (window.history && window.history.replaceState) {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('room');
+          url.searchParams.delete('role');
+          window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+        }
+        localStorage.setItem('onesport_v3_clean_start_v3', 'true');
       }
+    } catch (e) {}
+
+    const hasSaved = loadFromLocalStorage();
+    if (!hasSaved) {
+      bPlayers = [];
+      sPlayers = [];
+      bSchedule = [];
+      sTeams = [];
+      sMatches = [];
+      bPartnerRequests = [];
+      bPartnerHistory = {};
+      bOpponentHistory = {};
+      bAuditLog = [];
     }
-  } catch (e) {}
 
-  switchSport(currentSport);
-  switchTab('tab-match');
-  applyRoleUI();
-  initMqttDiscovery();
-  renderLiveHistoryList();
-  updateLiveHistoryBadges();
+    // Sinkronisasi data dari Database Vercel (non-blocking)
+    try {
+      if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.loadInitialState === 'function') {
+        VercelDbSync.loadInitialState();
+      }
+    } catch(e) {}
 
-  // Restore live session hanya jika aktif tersimpan sebelumnya
-  const isRestoredLive = restoreActiveLiveSessionIfAny();
-  if (!isRestoredLive) {
-    checkUrlParamsAndAutoJoin();
+    const elFinalHeader = document.getElementById('finalTitleHeader');
+    if (elFinalHeader) elFinalHeader.textContent = sessionTitle;
+    const elSettingTitle = document.getElementById('settingSessionTitle');
+    if (elSettingTitle) elSettingTitle.value = sessionTitle;
+    if (document.getElementById('settingNumCourts')) document.getElementById('settingNumCourts').value = bNumCourts;
+    if (document.getElementById('settingMinPlays')) document.getElementById('settingMinPlays').value = bMinPlays;
+    if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
+
+    // Peran ditentukan oleh status login (Host: admin@onesport.co.id, lainnya spectator)
+    userRole = isHostUser() ? 'host' : 'spectator';
+
+    // Sinkronkan preferensi olahraga dari parameter URL (?sport=minisoccer) atau penyimpanan lokal
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sportParam = urlParams.get('sport');
+      if (sportParam === 'minisoccer' || sportParam === 'badminton') {
+        currentSport = sportParam;
+      } else {
+        const savedSport = localStorage.getItem('onesport_last_sport');
+        if (savedSport === 'minisoccer' || savedSport === 'badminton') {
+          currentSport = savedSport;
+        }
+      }
+    } catch (e) {}
+
+    switchSport(currentSport);
+    switchTab('tab-match');
+    applyRoleUI();
+    initMqttDiscovery();
+    renderLiveHistoryList();
+    updateLiveHistoryBadges();
+
+    // Restore live session hanya jika aktif tersimpan sebelumnya
+    const isRestoredLive = restoreActiveLiveSessionIfAny();
+    if (!isRestoredLive) {
+      checkUrlParamsAndAutoJoin();
+    }
+    registerPwaServiceWorker();
+
+  } catch(err) {
+    console.error('[ONESPORT] App initialization caught error:', err);
+  } finally {
+    // Apapun yang terjadi (sukses maupun error), selalu tutup splash screen
+    setTimeout(() => {
+      dismissSplashScreen();
+      if (!currentUser && !isGuestSession) {
+        openLoginModal(true);
+      }
+    }, 600);
   }
-  registerPwaServiceWorker();
-
-  setTimeout(() => {
-    const splash = document.getElementById('splashScreen');
-    if (splash) splash.classList.add('hide');
-
-    // Jika pengguna belum login (tidak ada akun tersimpan atau guest setelah refresh/keluar),
-    // langsung tampilkan modal login dengan pilihan Sign In, Sign Up, dan Guest.
-    if (!currentUser && !isGuestSession) {
-      openLoginModal(true);
-    }
-  }, 750);
 
   // Auto detect updates in background (Hanya untuk aplikasi Android APK, Web tidak pakai)
   if (typeof isAndroidApk === 'function' && isAndroidApk()) {
@@ -4255,6 +4289,16 @@ window.addEventListener('DOMContentLoaded', () => {
         : 'Unduh / Periksa Pembaruan APK (v1.2.0)';
     }
   }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+
+window.addEventListener('load', () => {
+  dismissSplashScreen();
 });
 
 // ── SPORT SWITCHER ──
