@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#152B52">
+<meta name="theme-color" content="#071A33">
 <meta name="apple-mobile-web-app-title" content="ONESPORT">
 <meta name="description" content="ONESPORT Multi-Sport Match & Tournament Online. Rotasi pemain badminton, mini soccer, live score, dan klasemen otomatis realtime.">
 <title>ONESPORT · Multi-Sport Match & Tournament (Online Live)</title>
@@ -168,7 +168,7 @@
   /* ── MOBILE APP CONTAINER / SHELL ── */
   .mobile-app-shell {
     width: 100%;
-    max-width: 440px;
+    max-width: 460px;
     min-height: 100vh;
     background: var(--bg-page);
     display: flex;
@@ -2849,12 +2849,13 @@
 
       <!-- 3. AKSI & ALAT TAMBAHAN -->
       <div style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
-        <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:#FFF1EB; color:#FF5B14; border-color:#FF5B14;" onclick="closeSettingsModal(); openOnlineModal();">
+        <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--brand-blue-soft); color:var(--brand-blue); border-color:var(--brand-blue);" onclick="closeSettingsModal(); openOnlineModal();">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
           Buka Mode Online & Siaran Live
         </button>
         <button class="btn-court-action" id="btnCheckAppUpdateSettings" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan APK (v1.2.0)
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span id="btnCheckAppUpdateSettingsLabel">Unduh / Periksa Pembaruan APK (v1.2.0)</span>
         </button>
         <button class="btn-court-action" id="btnSettingsClearPlayers" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
@@ -4198,6 +4199,21 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Peran ditentukan oleh status login (Host: admin@onesport.co.id, lainnya spectator)
   userRole = isHostUser() ? 'host' : 'spectator';
+
+  // Sinkronkan preferensi olahraga dari parameter URL (?sport=minisoccer) atau penyimpanan lokal
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sportParam = urlParams.get('sport');
+    if (sportParam === 'minisoccer' || sportParam === 'badminton') {
+      currentSport = sportParam;
+    } else {
+      const savedSport = localStorage.getItem('onesport_last_sport');
+      if (savedSport === 'minisoccer' || savedSport === 'badminton') {
+        currentSport = savedSport;
+      }
+    }
+  } catch (e) {}
+
   switchSport(currentSport);
   switchTab('tab-match');
   applyRoleUI();
@@ -4230,14 +4246,31 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 2500);
   }
   const btnUp = document.getElementById('btnCheckAppUpdateSettings');
+  const btnUpLbl = document.getElementById('btnCheckAppUpdateSettingsLabel');
   if (btnUp) {
-    btnUp.style.display = (typeof isAndroidApk === 'function' && isAndroidApk()) ? 'flex' : 'none';
+    btnUp.style.display = 'flex';
+    if (btnUpLbl) {
+      btnUpLbl.textContent = (typeof isAndroidApk === 'function' && isAndroidApk())
+        ? 'Periksa Pembaruan APK (v1.2.0)'
+        : 'Unduh / Periksa Pembaruan APK (v1.2.0)';
+    }
   }
 });
 
 // ── SPORT SWITCHER ──
 function switchSport(sport) {
   currentSport = sport;
+
+  try {
+    localStorage.setItem('onesport_last_sport', sport);
+    if (window.history && window.history.replaceState) {
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.get('sport') !== sport) {
+        currentUrl.searchParams.set('sport', sport);
+        window.history.replaceState(null, '', currentUrl.toString());
+      }
+    }
+  } catch (e) {}
 
   const btnB = document.getElementById('sportBtnBadminton');
   const btnS = document.getElementById('sportBtnSoccer');
@@ -9677,12 +9710,12 @@ function renderAccountTab() {
 
           <!-- 3. AKSI & ALAT TAMBAHAN -->
           <div style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
-            <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:#FFF1EB; color:#FF5B14; border-color:#FF5B14;" onclick="openOnlineModal();">
+            <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--brand-blue-soft); color:var(--brand-blue); border-color:var(--brand-blue);" onclick="openOnlineModal();">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
               Buka Mode Online & Siaran Live
             </button>
-            <button class="btn-court-action" id="tabBtnCheckAppUpdate" style="font-size:0.76rem; padding:8px; display:${isApk ? 'flex' : 'none'}; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Periksa Pembaruan APK (v1.2.0)
+            <button class="btn-court-action" id="tabBtnCheckAppUpdate" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> ${isApk ? 'Periksa Pembaruan APK (v1.2.0)' : 'Unduh / Periksa Pembaruan APK (v1.2.0)'}
             </button>
             <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
@@ -12054,9 +12087,13 @@ function applyReceivedState(incomingData) {
       console.warn(`Mengabaikan state usang: rev masuk ${data.rev} < rev lokal ${currentRev}`);
       return;
     }
-    currentRev = Math.max(currentRev, data.rev);
+  if (data.currentSport) {
+    if (data.currentSport !== currentSport) {
+      switchSport(data.currentSport);
+    } else {
+      currentSport = data.currentSport;
+    }
   }
-  if (data.currentSport) currentSport = data.currentSport;
   if (data.sessionTitle) sessionTitle = data.sessionTitle;
   if (data.plannedRounds) plannedRounds = data.plannedRounds;
   if (Array.isArray(data.bPlayers)) bPlayers = data.bPlayers;
