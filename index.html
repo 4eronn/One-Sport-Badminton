@@ -4108,7 +4108,12 @@ const VercelDbSync = {
   },
 
   async loadInitialState(optRoomId) {
-    const roomId = String(optRoomId || currentRoomId || 'DEFAULT').trim().toUpperCase() || 'DEFAULT';
+    const rawRoom = optRoomId || currentRoomId;
+    if (!rawRoom) {
+      // Tidak sedang di dalam room: jangan muat data apapun agar data pengguna baru tetap kosong
+      return;
+    }
+    const roomId = String(rawRoom).trim().toUpperCase();
     try {
       const baseUrl = this.getBaseApiUrl();
       const res = await fetch(`${baseUrl}/api/state?roomId=${encodeURIComponent(roomId)}`);
@@ -4374,25 +4379,9 @@ function initApp() {
       }
     } catch (e) {}
 
-    const hasSaved = loadFromLocalStorage();
-    if (!hasSaved) {
-      bPlayers = [];
-      sPlayers = [];
-      bSchedule = [];
-      sTeams = [];
-      sMatches = [];
-      bPartnerRequests = [];
-      bPartnerHistory = {};
-      bOpponentHistory = {};
-      bAuditLog = [];
-    }
-
-    // Sinkronisasi data dari Database Vercel (non-blocking)
-    try {
-      if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.loadInitialState === 'function') {
-        VercelDbSync.loadInitialState();
-      }
-    } catch(e) {}
+    // Bagi pengguna baru / belum masuk room: data harus kosongan.
+    // Data pertandingan hanya akan muncul ketika pengguna masuk ke dalam room online.
+    resetToCleanEmptyState();
 
     const elFinalHeader = document.getElementById('finalTitleHeader');
     if (elFinalHeader) elFinalHeader.textContent = sessionTitle;
@@ -4628,29 +4617,43 @@ function loadPresetBadminton() {}
 function loadPresetSoccer() {}
 function loadPresetPlayers() {}
 
-function clearAllPlayers() {
-  if (!checkEditPermission()) return;
-  if (!confirm('Hapus semua data pemain dan reset jadwal? Data akan dikosongkan untuk input manual baru.')) return;
+function resetToCleanEmptyState() {
+  bPlayers = [];
+  bSchedule = [];
+  bCurrentRoundIndex = 0;
+  bPartnerRequests = [];
+  bPartnerHistory = {};
+  bOpponentHistory = {};
+  bAuditLog = [];
+  bSessionId = 'sess_' + Date.now();
+  bAwardedSessionIds = [];
+
+  sPlayers = [];
+  sTeams = [];
+  sMatches = [];
+  sCurrentMatchIndex = 0;
+
+  currentRev = 0;
   if (currentSport === 'badminton') {
-    bPlayers = [];
-    bSchedule = [];
-    bPartnerRequests = [];
-    bPartnerHistory = {};
-    bOpponentHistory = {};
-    bAuditLog = [];
     ensureBadmintonCourtsInitialized();
   } else {
-    sPlayers = [];
-    sTeams = [];
-    sMatches = [];
-    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    if (typeof ensureSoccerTeamsInitialized === 'function') {
+      ensureSoccerTeamsInitialized();
+    }
   }
+
   updateSessionLabels();
   renderPlayersList();
   renderCourtsView();
   renderLeaderboard();
   renderHistory();
   renderFinalPodium();
+}
+
+function clearAllPlayers() {
+  if (!checkEditPermission()) return;
+  if (!confirm('Hapus semua data pemain dan reset jadwal? Data akan dikosongkan untuk input manual baru.')) return;
+  resetToCleanEmptyState();
   persistAndBroadcast();
   showToast('Semua data pemain telah dihapus (kosong) dan disinkronkan ke Database Vercel.', 'info');
 }
@@ -11842,6 +11845,10 @@ function submitSignUpForm() {
   localStorage.setItem('onesport_user_role', 'spectator');
   localStorage.setItem('onesport_user_display_name', currentUser.name);
 
+  if (!isOnlineActive && !currentRoomId) {
+    resetToCleanEmptyState();
+  }
+
   if (errEl) errEl.style.display = 'none';
   closeLoginModal();
   applyRoleUI();
@@ -11861,6 +11868,9 @@ function loginAsGuest() {
   userRole = 'spectator';
   localStorage.removeItem('onesport_auth_user');
   localStorage.removeItem('onesport_user_role');
+  if (!isOnlineActive && !currentRoomId) {
+    resetToCleanEmptyState();
+  }
   closeLoginModal();
   applyRoleUI();
   if (document.getElementById('tab-akun')?.classList.contains('active')) {
@@ -11891,6 +11901,9 @@ function loginUser(email, password) {
     isGuestSession = false;
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'host');
+    if (!isOnlineActive && !currentRoomId) {
+      resetToCleanEmptyState();
+    }
     if (errEl) errEl.style.display = 'none';
     if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
@@ -11921,6 +11934,9 @@ function loginUser(email, password) {
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'spectator');
     localStorage.setItem('onesport_user_display_name', currentUser.name);
+    if (!isOnlineActive && !currentRoomId) {
+      resetToCleanEmptyState();
+    }
     if (errEl) errEl.style.display = 'none';
     if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
@@ -11943,6 +11959,9 @@ function loginUser(email, password) {
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'spectator');
     localStorage.setItem('onesport_user_display_name', currentUser.name);
+    if (!isOnlineActive && !currentRoomId) {
+      resetToCleanEmptyState();
+    }
     if (errEl) errEl.style.display = 'none';
     if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
@@ -11971,6 +11990,9 @@ function loginUser(email, password) {
           localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
           localStorage.setItem('onesport_user_role', 'host');
           localStorage.setItem('onesport_user_display_name', currentUser.name);
+          if (!isOnlineActive && !currentRoomId) {
+            resetToCleanEmptyState();
+          }
           if (errEl) errEl.style.display = 'none';
           if (tabErrEl) tabErrEl.style.display = 'none';
           closeLoginModal();
@@ -11994,6 +12016,9 @@ function loginUser(email, password) {
           if (!localUsers.some(u => u.username.toLowerCase() === res.user.username.toLowerCase())) {
             localUsers.push({ username: res.user.username, name: currentUser.name, password: cleanPass, role: 'user' });
             saveUsersDatabase(localUsers);
+          }
+          if (!isOnlineActive && !currentRoomId) {
+            resetToCleanEmptyState();
           }
           if (errEl) errEl.style.display = 'none';
           if (tabErrEl) tabErrEl.style.display = 'none';
@@ -13221,10 +13246,9 @@ function leaveOnlineRoom(keepRoomData = false) {
 
   if (!keepRoomData) {
     try {
-      const backupRaw = localStorage.getItem(STORAGE_OFFLINE_BACKUP);
-      if (backupRaw) {
-        applyReceivedState(JSON.parse(backupRaw));
-      }
+      resetToCleanEmptyState();
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_OFFLINE_BACKUP);
       if (leftRoomId) {
         localStorage.removeItem('onesport_room_cache_' + leftRoomId);
       }
