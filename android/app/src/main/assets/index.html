@@ -4072,10 +4072,33 @@ const ROLE_SCORES = {
 const VercelDbSync = {
   dbProvider: 'standby',
 
+  getBaseApiUrl() {
+    try {
+      const custom = localStorage.getItem('onesport_backend_url');
+      if (custom && custom.trim()) {
+        return custom.trim().replace(/\/+$/, '');
+      }
+      if (typeof window !== 'undefined' && window.location) {
+        const host = window.location.hostname || '';
+        const proto = window.location.protocol || '';
+        // Jika berjalan di localhost dev server atau langsung di backend Vercel
+        if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('vercel.app')) {
+          return '';
+        }
+        // Jika di Android APK, GitHub Pages, atau file protocol
+        if (host === 'appassets.androidplatform.net' || host.endsWith('github.io') || proto === 'file:' || (typeof isAndroidApk === 'function' && isAndroidApk())) {
+          return 'https://one-sport-badminton.vercel.app';
+        }
+      }
+    } catch (e) {}
+    return '';
+  },
+
   async loadInitialState() {
     const roomId = currentRoomId || 'DEFAULT';
     try {
-      const res = await fetch(`/api/state?roomId=${encodeURIComponent(roomId)}`);
+      const baseUrl = this.getBaseApiUrl();
+      const res = await fetch(`${baseUrl}/api/state?roomId=${encodeURIComponent(roomId)}`);
       if (!res.ok) {
         this.updateIndicator('standby');
         return;
@@ -4099,7 +4122,8 @@ const VercelDbSync = {
   async saveState(roomId, payload) {
     const targetRoom = roomId || currentRoomId || 'DEFAULT';
     try {
-      const res = await fetch('/api/state', {
+      const baseUrl = this.getBaseApiUrl();
+      const res = await fetch(`${baseUrl}/api/state`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId: targetRoom, payload })
@@ -4119,7 +4143,8 @@ const VercelDbSync = {
   async savePlayer(roomId, player) {
     const targetRoom = roomId || currentRoomId || 'DEFAULT';
     try {
-      await fetch('/api/players', {
+      const baseUrl = this.getBaseApiUrl();
+      await fetch(`${baseUrl}/api/players`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId: targetRoom, player })
@@ -4130,7 +4155,8 @@ const VercelDbSync = {
   async deletePlayer(roomId, playerId) {
     const targetRoom = roomId || currentRoomId || 'DEFAULT';
     try {
-      await fetch(`/api/players?id=${encodeURIComponent(playerId)}&roomId=${encodeURIComponent(targetRoom)}`, {
+      const baseUrl = this.getBaseApiUrl();
+      await fetch(`${baseUrl}/api/players?id=${encodeURIComponent(playerId)}&roomId=${encodeURIComponent(targetRoom)}`, {
         method: 'DELETE'
       });
     } catch (e) {}
@@ -4663,6 +4689,9 @@ function removePlayer(id) {
       return;
     }
     showToast(res.message, res.mode === 'leave_after_match' ? 'warning' : 'info');
+    if (res.mode === 'removed') {
+      VercelDbSync.deletePlayer(currentRoomId, id);
+    }
     updateSessionLabels();
     renderPlayersList();
     renderCourtsView();

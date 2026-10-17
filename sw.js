@@ -1,5 +1,5 @@
 // Service Worker for ONESPORT PWA
-const CACHE_NAME = 'onesport-cache-v4';
+const CACHE_NAME = 'onesport-cache-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -35,6 +35,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Hanya proses request GET
   if (event.request.method !== 'GET') return;
+
+  // Jangan cache API endpoints (/api/) atau external non-http
+  try {
+    const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/api/') || url.pathname.includes('/api/')) {
+      return;
+    }
+  } catch (e) {}
 
   // Network first, fallback to cache for HTML navigation
   if (event.request.mode === 'navigate') {

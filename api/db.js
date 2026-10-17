@@ -32,20 +32,27 @@ async function getPgClient() {
   if (pgPool) return pgPool;
 
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  if (!connectionString) return null;
+
   try {
-    // Coba gunakan @vercel/postgres terlebih dahulu
+    // 1. Coba gunakan @vercel/postgres pool terlebih dahulu
     try {
       const vercelPg = require('@vercel/postgres');
-      if (vercelPg && vercelPg.sql) {
-        return vercelPg;
+      if (vercelPg && typeof vercelPg.createPool === 'function') {
+        const pool = vercelPg.createPool({ connectionString });
+        if (pool && typeof pool.query === 'function') {
+          pgPool = pool;
+          return pgPool;
+        }
       }
     } catch (e) {}
 
-    // Fallback ke standar node-postgres (pg)
+    // 2. Fallback ke driver standar node-postgres (pg)
     const { Pool } = require('pg');
+    const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
     pgPool = new Pool({
       connectionString,
-      ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false }
+      ssl: isLocal ? false : { rejectUnauthorized: false }
     });
     return pgPool;
   } catch (err) {
@@ -55,27 +62,24 @@ async function getPgClient() {
 }
 
 async function ensurePgTables(client) {
-  if (tablesInitialized) return;
-  const createSql = `
-    CREATE TABLE IF NOT EXISTS onesport_state (
-      room_id VARCHAR(100) PRIMARY KEY,
-      state_data JSONB NOT NULL,
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-    );
-    CREATE TABLE IF NOT EXISTS onesport_players (
-      room_id VARCHAR(100) NOT NULL,
-      player_id VARCHAR(100) NOT NULL,
-      player_data JSONB NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (room_id, player_id)
-    );
-  `;
+  if (tablesInitialized || !client) return;
   try {
-    if (client.sql) {
-      await client.sql.query(createSql);
-    } else if (typeof client.query === 'function') {
-      await client.query(createSql);
-    }
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS onesport_state (
+        room_id VARCHAR(100) PRIMARY KEY,
+        state_data JSONB NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS onesport_players (
+        room_id VARCHAR(100) NOT NULL,
+        player_id VARCHAR(100) NOT NULL,
+        player_data JSONB NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (room_id, player_id)
+      );
+    `);
     tablesInitialized = true;
   } catch (err) {
     console.warn('[ONESPORT DB] Init Postgres tables warning:', err.message);
@@ -91,6 +95,16 @@ function getKvClient() {
     kvClient = kv;
     return kvClient;
   } catch (e) {
+    try {
+      const { Redis } = require('@upstash/redis');
+      if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        kvClient = new Redis({
+          url: process.env.KV_REST_API_URL,
+          token: process.env.KV_REST_API_TOKEN
+        });
+        return kvClient;
+      }
+    } catch (err) {}
     return null;
   }
 }
@@ -106,14 +120,13 @@ async function getState(roomId = 'DEFAULT') {
       if (client) {
         await ensurePgTables(client);
         const query = 'SELECT state_data FROM onesport_state WHERE room_id = $1 LIMIT 1';
-        let res;
-        if (client.sql) {
-          res = await client.sql.query(query, [normRoom]);
-        } else {
-          res = await client.query(query, [normRoom]);
-        }
+        const res = await client.query(query, [normRoom]);
         if (res && res.rows && res.rows.length > 0) {
-          return { data: res.rows[0].state_data, provider: 'postgres' };
+          let val = res.rows[0].state_data;
+          if (typeof val === 'string') {
+            try { val = JSON.parse(val); } catch (e) {}
+          }
+          return { data: val, provider: 'postgres' };
         }
       }
     } catch (e) {
@@ -159,11 +172,7 @@ async function saveState(roomId = 'DEFAULT', stateData) {
           DO UPDATE SET state_data = $2, updated_at = CURRENT_TIMESTAMP
         `;
         const stateJson = JSON.stringify(stateData);
-        if (client.sql) {
-          await client.sql.query(query, [normRoom, stateJson]);
-        } else {
-          await client.query(query, [normRoom, stateJson]);
-        }
+        await client.query(query, [normRoom, stateJson]);
         return { success: true, provider: 'postgres' };
       }
     } catch (e) {
@@ -197,14 +206,15 @@ async function getPlayers(roomId = 'DEFAULT') {
       if (client) {
         await ensurePgTables(client);
         const query = 'SELECT player_data FROM onesport_players WHERE room_id = $1 ORDER BY created_at ASC';
-        let res;
-        if (client.sql) {
-          res = await client.sql.query(query, [normRoom]);
-        } else {
-          res = await client.query(query, [normRoom]);
-        }
+        const res = await client.query(query, [normRoom]);
         if (res && res.rows) {
-          const list = res.rows.map(r => r.player_data);
+          const list = res.rows.map(r => {
+            let pd = r.player_data;
+            if (typeof pd === 'string') {
+              try { pd = JSON.parse(pd); } catch (e) {}
+            }
+            return pd;
+          });
           return { players: list, provider: 'postgres' };
         }
       }
@@ -251,11 +261,7 @@ async function savePlayer(roomId = 'DEFAULT', player) {
           DO UPDATE SET player_data = $3
         `;
         const pJson = JSON.stringify(player);
-        if (client.sql) {
-          await client.sql.query(query, [normRoom, playerId, pJson]);
-        } else {
-          await client.query(query, [normRoom, playerId, pJson]);
-        }
+        await client.query(query, [normRoom, playerId, pJson]);
         return { success: true, provider: 'postgres' };
       }
     } catch (e) {
@@ -280,11 +286,7 @@ async function deletePlayer(roomId = 'DEFAULT', playerId) {
       if (client) {
         await ensurePgTables(client);
         const query = 'DELETE FROM onesport_players WHERE room_id = $1 AND player_id = $2';
-        if (client.sql) {
-          await client.sql.query(query, [normRoom, pIdStr]);
-        } else {
-          await client.query(query, [normRoom, pIdStr]);
-        }
+        await client.query(query, [normRoom, pIdStr]);
         return { success: true, provider: 'postgres' };
       }
     } catch (e) {
