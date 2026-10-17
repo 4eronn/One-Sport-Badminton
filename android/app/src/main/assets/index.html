@@ -1437,10 +1437,13 @@
   }
   .btn-add-player-submit:active { transform: scale(0.96); }
   .quick-actions-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 6px;
+    display: flex;
+    gap: 8px;
     margin-bottom: 12px;
+  }
+  .quick-actions-row .btn-quick-pill {
+    flex: 1;
+    min-width: 0;
   }
   .btn-quick-pill {
     background: #F1F5F9;
@@ -2326,34 +2329,32 @@
         </div>
       </div>
 
-      <!-- Add Team Form (Mini Soccer - Cukup Tim Saja) -->
-      <div class="add-player-form-box" id="soccerAddTeamForm" style="display:none; gap:8px;">
-        <input type="text" id="inputSoccerTeamName" class="input-styled-os" placeholder="Ketik nama tim (cth: Tim Garuda, Tim Elang, Tim C)..." style="flex:1;" onkeypress="if(event.key==='Enter')addNewSoccerTeam()">
-        <button class="btn-add-player-submit" onclick="addNewSoccerTeam()" style="background:#059669; border-color:#059669; padding:9px 16px; white-space:nowrap; display:inline-flex; align-items:center; gap:6px;" title="Tambah Tim">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          <span>Tambah Tim</span>
-        </button>
+      <!-- Add Team Form (Mini Soccer - Cukup Tim Saja, Clean Inline Row) -->
+      <div id="soccerAddTeamForm" style="display:none; margin-bottom:12px;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="inputSoccerTeamName" class="input-styled-os" placeholder="Ketik nama tim baru (cth: Garuda FC, Singa FC)..." style="flex:1; height:42px; font-size:0.86rem; box-sizing:border-box;" onkeypress="if(event.key==='Enter')addNewSoccerTeam()">
+          <button type="button" class="btn-add-player-submit" onclick="addNewSoccerTeam()" style="background:#059669; border-color:#059669; height:42px; padding:0 18px; font-weight:800; font-size:0.84rem; display:inline-flex; align-items:center; gap:6px; flex-shrink:0; box-shadow:0 2px 8px rgba(5,150,105,0.22);" title="Tambah Tim">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Tambah Tim</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Quick Action Buttons -->
+      <!-- Quick Action Buttons (Clean & Balanced) -->
       <div class="quick-actions-row">
-        <!-- Badminton Quick Actions -->
+        <!-- Badminton & Soccer Export CSV -->
         <button class="btn-quick-pill" id="btnExportCsv" onclick="exportCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Export CSV</span>
+          <span id="btnExportCsvLabel">Export CSV</span>
         </button>
+        <!-- Badminton Clear Players -->
         <button class="btn-quick-pill btn-quick-danger" id="btnClearPlayers" onclick="clearAllPlayers()" title="Kosongkan Semua Pemain">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span>Kosongkan</span>
         </button>
-        <!-- Soccer Quick Actions -->
-        <button class="btn-quick-pill" id="btnSoccerAddQuickTeam" onclick="addNewSoccerTeam()" style="display:none; background:#059669; color:#fff; font-weight:800; border-color:#059669;" title="Tambah Tim Baru">
-          <span>+ Tambah Tim Baru</span>
-        </button>
-        <button class="btn-quick-pill" id="btnSoccerRegenSchedule" onclick="regenerateSoccerScheduleWithConfirm()" style="display:none; background:var(--brand-orange); color:#fff; font-weight:800; border-color:var(--brand-orange);" title="Acak / Buat Ulang Jadwal Pertandingan">
-          <span>🎲 Acak / Buat Ulang Jadwal Match</span>
-        </button>
-        <button class="btn-quick-pill btn-quick-danger" id="btnSoccerResetTeams" onclick="clearAllSoccerTeams()" style="display:none;" title="Reset Tim Mini Soccer">
+        <!-- Soccer Reset Teams -->
+        <button class="btn-quick-pill btn-quick-danger" id="btnSoccerResetTeams" onclick="clearAllSoccerTeams()" style="display:none;" title="Reset Tim Mini Soccer ke 2 Tim Default">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span>Reset Tim</span>
         </button>
       </div>
@@ -2418,8 +2419,7 @@
     <div id="soccerTeamsSection" style="display: none;">
       <div class="os-card" style="background:#FAFDFB; border-color:#BBF7D0;">
         <div class="card-top-title">
-          <span class="card-title-text" style="color:#059669;">Pembagian Tim Mini Soccer</span>
-          <button class="btn-header-icon" style="font-size:0.72rem; padding:3px 10px;" onclick="generateSoccerTeams()">Acak Ulang Tim</button>
+          <span class="card-title-text" style="color:#059669;">Daftar Tim Turnamen</span>
         </div>
         <div id="soccerTeamsGrid"></div>
       </div>
@@ -4203,13 +4203,11 @@ function switchSport(sport) {
 
     const btnExp = document.getElementById('btnExportCsv');
     const btnClr = document.getElementById('btnClearPlayers');
-    const btnSAdd = document.getElementById('btnSoccerAddQuickTeam');
-    const btnSRegen = document.getElementById('btnSoccerRegenSchedule');
     const btnSReset = document.getElementById('btnSoccerResetTeams');
+    const btnExpLbl = document.getElementById('btnExportCsvLabel');
     if (btnExp) btnExp.style.display = 'inline-flex';
+    if (btnExpLbl) btnExpLbl.textContent = 'Export CSV';
     if (btnClr) btnClr.style.display = 'inline-flex';
-    if (btnSAdd) btnSAdd.style.display = 'none';
-    if (btnSRegen) btnSRegen.style.display = 'none';
     if (btnSReset) btnSReset.style.display = 'none';
 
     document.querySelectorAll('.badminton-role-opt').forEach(el => el.style.display = 'block');
@@ -4239,24 +4237,22 @@ function switchSport(sport) {
     document.getElementById('sportInfoBanner').innerHTML = `
       <strong style="color: var(--brand-navy-dark);">⚽ Manajemen Turnamen Mini Soccer:</strong>
       <div>• <strong>Cukup Daftarkan Tim:</strong> Tambahkan nama tim (minimal 2 tim) tanpa perlu memasukkan nama pemain.</div>
-      <div>• <strong>Bisa Tambah Tim Bebas:</strong> Klik tombol <strong>+ Tambah Tim</strong> untuk menambah tim baru kapan saja.</div>
+      <div>• <strong>Bebas Tambah Tim:</strong> Masukkan nama tim pada kolom di atas lalu klik <strong>Tambah Tim</strong>.</div>
       <div>• <strong>Jadwal & Skor Otomatis:</strong> Pertandingan antar tim otomatis terjadwal dan skor langsung diperbarui ke klasemen poin.</div>
     `;
 
     const bForm = document.getElementById('badmintonAddPlayerForm');
     const sForm = document.getElementById('soccerAddTeamForm');
     if (bForm) bForm.style.display = 'none';
-    if (sForm) sForm.style.display = 'flex';
+    if (sForm) sForm.style.display = 'block';
 
     const btnExp = document.getElementById('btnExportCsv');
     const btnClr = document.getElementById('btnClearPlayers');
-    const btnSAdd = document.getElementById('btnSoccerAddQuickTeam');
-    const btnSRegen = document.getElementById('btnSoccerRegenSchedule');
     const btnSReset = document.getElementById('btnSoccerResetTeams');
-    if (btnExp) btnExp.style.display = 'none';
+    const btnExpLbl = document.getElementById('btnExportCsvLabel');
+    if (btnExp) btnExp.style.display = 'inline-flex';
+    if (btnExpLbl) btnExpLbl.textContent = 'Export CSV Tim';
     if (btnClr) btnClr.style.display = 'none';
-    if (btnSAdd) btnSAdd.style.display = 'inline-flex';
-    if (btnSRegen) btnSRegen.style.display = 'inline-flex';
     if (btnSReset) btnSReset.style.display = 'inline-flex';
 
     if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
@@ -4268,7 +4264,7 @@ function switchSport(sport) {
     bNextSection.style.display = 'none';
     sTeamsSection.style.display = 'block';
     document.getElementById('btnAddMatchLabel').textContent = '+ Tambah Match';
-    document.getElementById('rebalanceBtnText').textContent = 'Acak / Buat Jadwal Match';
+    document.getElementById('rebalanceBtnText').textContent = 'Susun Jadwal Ulang';
   }
 
   updateSessionLabels();
@@ -9811,20 +9807,26 @@ function exportCSV() {
     document.body.removeChild(a);
   } else {
     if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
-    const header = ['No', 'Nama Pemain', 'Tim', 'Posisi', 'Gender'];
-    const rows = [];
-    let no = 1;
-    sTeams.forEach(t => {
-      (t.players || []).forEach(p => {
-        rows.push([no++, `"${p.name}"`, `"${t.name}"`, p.role || 'MF', p.gender || 'L']);
-      });
-    });
+    const statsList = typeof getSoccerStatsAndRankings === 'function' ? getSoccerStatsAndRankings('wins') : [];
+    const header = ['Peringkat', 'Nama Tim', 'Main', 'Menang', 'Seri', 'Kalah', 'Gol Masuk', 'Gol Kebobolan', 'Selisih Gol', 'Poin'];
+    const rows = statsList.map((st, idx) => [
+      idx + 1,
+      `"${st.name}"`,
+      st.p || 0,
+      st.w || 0,
+      st.d || 0,
+      st.l || 0,
+      st.gf || 0,
+      st.ga || 0,
+      st.gd || 0,
+      st.pts || 0
+    ]);
     const csv = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ONESPORT-minisoccer-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `ONESPORT-minisoccer-klasemen-${new Date().toISOString().slice(0,10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
