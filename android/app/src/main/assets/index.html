@@ -2867,8 +2867,21 @@
         <button class="btn-court-action" id="btnSettingsClearPlayers" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
         </button>
-        <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding-top:2px;">
-          Database Cloud: <span id="settingDbStatusText" style="font-weight:700; color:var(--brand-blue);">Ready</span>
+        <!-- 4. KONEKSI DATABASE CLOUD VERCEL -->
+        <div style="background:var(--card-bg-subtle, #f8fafc); border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-top:2px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <span style="font-size:0.75rem; font-weight:700; color:var(--text-main);">Database Cloud Vercel:</span>
+            <span id="settingDbStatusText" style="font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(2,132,199,0.1); color:var(--brand-blue);">${VercelDbSync.dbProvider === 'postgres' ? 'Postgres Connected' : (VercelDbSync.dbProvider === 'kv' ? 'KV Connected' : 'Ready')}</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="inputSettingBackendUrl" class="input-styled-os" placeholder="https://one-sport-badminton.vercel.app" style="font-size:0.72rem; padding:6px 8px; flex:1;" />
+            <button type="button" class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:700; white-space:nowrap; background:var(--brand-blue); color:#fff; border:none;" onclick="testAndSaveBackendUrl('inputSettingBackendUrl')">
+              Tes & Simpan
+            </button>
+          </div>
+          <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">
+            Otomatis sinkron ke Vercel Postgres / KV. Tekan "Tes & Simpan" untuk memverifikasi koneksi.
+          </div>
         </div>
       </div>
 
@@ -4162,6 +4175,45 @@ const VercelDbSync = {
     } catch (e) {}
   },
 
+  async testConnection() {
+    const baseUrl = this.getBaseApiUrl();
+    try {
+      // 1. Coba endpoint diagnostik /api/health
+      const healthRes = await fetch(`${baseUrl}/api/health`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      }).catch(() => null);
+
+      if (healthRes && healthRes.ok) {
+        const json = await healthRes.json();
+        if (json) {
+          const prov = json.provider || 'connected';
+          this.dbProvider = prov;
+          this.updateIndicator(prov);
+          return {
+            success: true,
+            provider: prov,
+            connected: json.connected !== false,
+            details: json
+          };
+        }
+      }
+
+      // 2. Fallback: /api/state?roomId=PING
+      const stateRes = await fetch(`${baseUrl}/api/state?roomId=PING`).catch(() => null);
+      if (stateRes && stateRes.ok) {
+        const json = await stateRes.json();
+        const prov = json.provider || 'connected';
+        this.dbProvider = prov;
+        this.updateIndicator(prov);
+        return { success: true, provider: prov };
+      }
+    } catch (e) {}
+
+    this.updateIndicator('standby');
+    return { success: false, message: 'Tidak dapat terhubung ke endpoint backend' };
+  },
+
   updateIndicator(status) {
     const elements = [
       document.getElementById('settingDbStatusText'),
@@ -4172,19 +4224,68 @@ const VercelDbSync = {
       if (status === 'postgres') {
         el.textContent = 'Postgres Connected';
         el.style.color = '#059669';
+        el.style.backgroundColor = 'rgba(5, 150, 105, 0.12)';
       } else if (status === 'kv') {
         el.textContent = 'KV Connected';
         el.style.color = '#7C3AED';
+        el.style.backgroundColor = 'rgba(124, 58, 237, 0.12)';
       } else if (status === 'memory' || status === 'connected') {
-        el.textContent = 'Ready';
+        el.textContent = 'Standby (In-Memory)';
         el.style.color = '#0284C7';
+        el.style.backgroundColor = 'rgba(2, 132, 199, 0.12)';
       } else {
-        el.textContent = 'Offline';
+        el.textContent = 'Offline / Standby';
         el.style.color = '#64748B';
+        el.style.backgroundColor = 'rgba(100, 116, 139, 0.12)';
       }
     });
   }
 };
+
+async function testAndSaveBackendUrl(inputId = 'inputSettingBackendUrl') {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  let val = input.value.trim().replace(/\/+$/, '');
+  if (val) {
+    if (!val.startsWith('http://') && !val.startsWith('https://')) {
+      val = 'https://' + val;
+      input.value = val;
+    }
+    localStorage.setItem('onesport_backend_url', val);
+  } else {
+    localStorage.removeItem('onesport_backend_url');
+  }
+
+  // Sinkronkan input lainnya jika ada
+  ['inputSettingBackendUrl', 'inputTabAccountBackendUrl'].forEach(id => {
+    const other = document.getElementById(id);
+    if (other && other !== input) {
+      other.value = val || VercelDbSync.getBaseApiUrl();
+    }
+  });
+
+  showToast('Menguji koneksi ke Database Cloud Vercel...', 'info');
+  const res = await VercelDbSync.testConnection();
+  if (res.success) {
+    if (res.provider === 'postgres') {
+      showToast('Berhasil terhubung ke Vercel Postgres!', 'success');
+    } else if (res.provider === 'kv') {
+      showToast('Berhasil terhubung ke Vercel KV!', 'success');
+    } else {
+      showToast('Terhubung ke Backend Vercel (Mode Standby In-Memory). Database Postgres/KV belum aktif.', 'info');
+    }
+    // Lakukan sinkronisasi data room saat ini jika ada
+    if (currentRoomId) {
+      if (userRole === 'host') {
+        VercelDbSync.saveState(currentRoomId, getCurrentAppState());
+      } else {
+        VercelDbSync.loadInitialState(currentRoomId);
+      }
+    }
+  } else {
+    showToast('Gagal terhubung ke backend: Periksa URL Vercel atau status deployment.', 'error');
+  }
+}
 
 // ── SPLASH SCREEN DISMISSAL & APP INITIALIZATION ──
 function dismissSplashScreen() {
@@ -9793,8 +9894,21 @@ function renderAccountTab() {
             <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
             </button>
-            <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; padding-top:2px;">
-              Database Cloud: <span id="tabAccountDbStatusText" style="font-weight:700; color:var(--brand-blue);">${VercelDbSync.dbProvider === 'postgres' ? 'Postgres Connected' : (VercelDbSync.dbProvider === 'kv' ? 'KV Connected' : 'Ready')}</span>
+            <!-- 4. KONEKSI DATABASE CLOUD VERCEL -->
+            <div style="background:var(--card-bg-subtle, #f8fafc); border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-top:2px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                <span style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-dark);">Database Cloud Vercel:</span>
+                <span id="tabAccountDbStatusText" style="font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(2,132,199,0.1); color:var(--brand-blue);">${VercelDbSync.dbProvider === 'postgres' ? 'Postgres Connected' : (VercelDbSync.dbProvider === 'kv' ? 'KV Connected' : 'Ready')}</span>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="inputTabAccountBackendUrl" class="input-styled-os" value="${VercelDbSync.getBaseApiUrl()}" placeholder="https://one-sport-badminton.vercel.app" style="font-size:0.72rem; padding:6px 8px; flex:1;" />
+                <button type="button" class="btn-court-action" style="font-size:0.72rem; padding:6px 10px; font-weight:700; white-space:nowrap; background:var(--brand-blue); color:#fff; border:none;" onclick="testAndSaveBackendUrl('inputTabAccountBackendUrl')">
+                  Tes & Simpan
+                </button>
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:4px;">
+                Otomatis sinkron ke Vercel Postgres / KV. Tekan "Tes & Simpan" untuk memverifikasi koneksi.
+              </div>
             </div>
           </div>
         </div>
@@ -10263,6 +10377,10 @@ function openSettingsModal() {
     document.getElementById('settingTotalRounds').value = plannedRounds || 8;
   }
   populateSettingsAccountUI();
+  const inputBackend = document.getElementById('inputSettingBackendUrl');
+  if (inputBackend) {
+    inputBackend.value = localStorage.getItem('onesport_backend_url') || VercelDbSync.getBaseApiUrl();
+  }
   document.getElementById('settingsModalOverlay').classList.add('open');
 }
 

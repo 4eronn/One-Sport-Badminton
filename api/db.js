@@ -14,11 +14,35 @@ const memoryStore = {
   players: new Map()
 };
 
+function getPostgresConnectionString() {
+  if (process.env.POSTGRES_URL) return process.env.POSTGRES_URL;
+  if (process.env.POSTGRES_PRISMA_URL) return process.env.POSTGRES_PRISMA_URL;
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  if (process.env.POSTGRES_URL_NON_POOLING) return process.env.POSTGRES_URL_NON_POOLING;
+  if (process.env.SUPABASE_DATABASE_URL) return process.env.SUPABASE_DATABASE_URL;
+  if (process.env.NEON_DATABASE_URL) return process.env.NEON_DATABASE_URL;
+
+  // Fallback: Bentuk connection string dari komponen environment terpisah
+  if (process.env.POSTGRES_HOST && process.env.POSTGRES_USER && process.env.POSTGRES_DATABASE) {
+    const user = encodeURIComponent(process.env.POSTGRES_USER);
+    const pass = process.env.POSTGRES_PASSWORD ? encodeURIComponent(process.env.POSTGRES_PASSWORD) : '';
+    const host = process.env.POSTGRES_HOST;
+    const db = process.env.POSTGRES_DATABASE;
+    return `postgres://${user}${pass ? ':' + pass : ''}@${host}/${db}?sslmode=require`;
+  }
+  return null;
+}
+
 function getProvider() {
-  if (process.env.POSTGRES_URL || process.env.DATABASE_URL) {
+  if (getPostgresConnectionString()) {
     return 'postgres';
   }
-  if ((process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) || process.env.KV_URL) {
+  if (
+    (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) ||
+    process.env.KV_URL ||
+    (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) ||
+    process.env.REDIS_URL
+  ) {
     return 'kv';
   }
   return 'memory';
@@ -31,7 +55,7 @@ let tablesInitialized = false;
 async function getPgClient() {
   if (pgPool) return pgPool;
 
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  const connectionString = getPostgresConnectionString();
   if (!connectionString) return null;
 
   try {
@@ -128,9 +152,11 @@ async function getState(roomId = 'DEFAULT') {
           }
           return { data: val, provider: 'postgres' };
         }
+        return { data: null, provider: 'postgres' };
       }
     } catch (e) {
       console.warn('[ONESPORT DB] Postgres getState error:', e.message);
+      pgPool = null;
     }
   }
 
@@ -142,6 +168,7 @@ async function getState(roomId = 'DEFAULT') {
         if (val) {
           return { data: typeof val === 'string' ? JSON.parse(val) : val, provider: 'kv' };
         }
+        return { data: null, provider: 'kv' };
       }
     } catch (e) {
       console.warn('[ONESPORT DB] KV getState error:', e.message);
@@ -177,6 +204,7 @@ async function saveState(roomId = 'DEFAULT', stateData) {
       }
     } catch (e) {
       console.warn('[ONESPORT DB] Postgres saveState error:', e.message);
+      pgPool = null;
     }
   }
 
@@ -217,9 +245,11 @@ async function getPlayers(roomId = 'DEFAULT') {
           });
           return { players: list, provider: 'postgres' };
         }
+        return { players: [], provider: 'postgres' };
       }
     } catch (e) {
       console.warn('[ONESPORT DB] Postgres getPlayers error:', e.message);
+      pgPool = null;
     }
   }
 
@@ -266,6 +296,7 @@ async function savePlayer(roomId = 'DEFAULT', player) {
       }
     } catch (e) {
       console.warn('[ONESPORT DB] Postgres savePlayer error:', e.message);
+      pgPool = null;
     }
   }
 
@@ -291,17 +322,71 @@ async function deletePlayer(roomId = 'DEFAULT', playerId) {
       }
     } catch (e) {
       console.warn('[ONESPORT DB] Postgres deletePlayer error:', e.message);
+      pgPool = null;
     }
   }
 
   return { success: true, provider: 'memory' };
 }
 
+async function checkHealth() {
+  const provider = getProvider();
+  if (provider === 'postgres') {
+    try {
+      const client = await getPgClient();
+      if (client) {
+        await ensurePgTables(client);
+        const res = await client.query('SELECT 1 as alive');
+        return {
+          connected: Boolean(res && res.rows && res.rows.length > 0),
+          provider: 'postgres',
+          tablesReady: tablesInitialized
+        };
+      }
+    } catch (e) {
+      return {
+        connected: false,
+        provider: 'postgres',
+        error: e.message
+      };
+    }
+  }
+
+  if (provider === 'kv') {
+    try {
+      const kv = getKvClient();
+      if (kv) {
+        await kv.set('onesport:health', 'ok', { ex: 60 });
+        return {
+          connected: true,
+          provider: 'kv'
+        };
+      }
+    } catch (e) {
+      return {
+        connected: false,
+        provider: 'kv',
+        error: e.message
+      };
+    }
+  }
+
+  return {
+    connected: false,
+    provider: 'memory',
+    message: 'Running in in-memory fallback. Connect Vercel Postgres or KV in Vercel Storage.'
+  };
+}
+
 module.exports = {
   getProvider,
+  getPostgresConnectionString,
+  getPgClient,
+  ensurePgTables,
   getState,
   saveState,
   getPlayers,
   savePlayer,
-  deletePlayer
+  deletePlayer,
+  checkHealth
 };

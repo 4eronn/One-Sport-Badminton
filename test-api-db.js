@@ -8,6 +8,7 @@ const assert = require('assert');
 const db = require('./api/db.js');
 const stateHandler = require('./api/state.js');
 const playersHandler = require('./api/players.js');
+const healthHandler = require('./api/health.js');
 
 let testCount = 0;
 let passCount = 0;
@@ -255,6 +256,46 @@ async function runTests() {
     });
     await playersHandler(pReq, pRes);
     assert.strictEqual(pRes.statusCode, 400);
+  });
+
+  console.log('\n--- 4. Serverless API Handler: /api/health & Diagnostics ---');
+  await it('/api/health merespon status ok dan informasi diagnostik database', async () => {
+    const { req, res } = createMockReqRes({ method: 'GET' });
+    await healthHandler(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.body.status, 'ok');
+    assert.ok(res.body.provider, 'Provider harus ada di respon health');
+  });
+
+  await it('getPostgresConnectionString mendeteksi semua variasi environment Vercel', () => {
+    const origEnv = { ...process.env };
+    try {
+      // Test 1: POSTGRES_PRISMA_URL
+      delete process.env.POSTGRES_URL;
+      delete process.env.DATABASE_URL;
+      process.env.POSTGRES_PRISMA_URL = 'postgres://prisma_user:pass@host/db';
+      assert.strictEqual(db.getPostgresConnectionString(), 'postgres://prisma_user:pass@host/db');
+      assert.strictEqual(db.getProvider(), 'postgres');
+
+      // Test 2: NEON_DATABASE_URL
+      delete process.env.POSTGRES_PRISMA_URL;
+      process.env.NEON_DATABASE_URL = 'postgres://neon_user:pass@host/db';
+      assert.strictEqual(db.getPostgresConnectionString(), 'postgres://neon_user:pass@host/db');
+      assert.strictEqual(db.getProvider(), 'postgres');
+
+      // Test 3: Komponen host/user/password terpisah
+      delete process.env.NEON_DATABASE_URL;
+      process.env.POSTGRES_HOST = 'ep-cool-host.neon.tech';
+      process.env.POSTGRES_USER = 'onesport_admin';
+      process.env.POSTGRES_PASSWORD = 'secret_password';
+      process.env.POSTGRES_DATABASE = 'onesport_db';
+      const connStr = db.getPostgresConnectionString();
+      assert.ok(connStr.includes('ep-cool-host.neon.tech'));
+      assert.ok(connStr.includes('onesport_admin'));
+      assert.strictEqual(db.getProvider(), 'postgres');
+    } finally {
+      process.env = origEnv;
+    }
   });
 
   console.log('\n======================================================');
