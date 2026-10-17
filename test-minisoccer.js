@@ -42,9 +42,11 @@ const SOCCER_DEFAULT_TEAMS = [
 
 eval(`
 ${htmlContent.substring(htmlContent.indexOf('function ensureSoccerTeamsInitialized()'), htmlContent.indexOf('function updateSoccerTeamSelectOptions()'))}
-${htmlContent.substring(htmlContent.indexOf('function setSoccerWinner('), htmlContent.indexOf('function stepFinishScore('))}
+${htmlContent.substring(htmlContent.indexOf('function startSoccerMatch('), htmlContent.indexOf('function stepFinishScore('))}
 ${htmlContent.substring(htmlContent.indexOf('function getSoccerStatsAndRankings('), htmlContent.indexOf('function renderLeaderboard()'))}
 ${htmlContent.substring(htmlContent.indexOf('function resolveStandingsByRules('), htmlContent.indexOf('function getBadmintonStatsAndRankings('))}
+${htmlContent.substring(htmlContent.indexOf('function parseSemVer('), htmlContent.indexOf('async function checkAppUpdates('))}
+${htmlContent.substring(htmlContent.indexOf('function deleteSoccerMatch('), htmlContent.indexOf('// ── MODAL INPUT SKOR PER MATCH MINI SOCCER ──'))}
 `);
 
 let testCount = 0;
@@ -399,6 +401,110 @@ it('handleCustomMatchOrCourtAction membuka modal match mini soccer saat currentS
   handleCustomMatchOrCourtAction();
   assert.strictEqual(modalOpened, true);
   openSoccerMatchModal = originalOpen;
+});
+
+console.log(`\n--- 9. Fixes & Robustness (Bug Analysis Verification) ---`);
+
+it('setSoccerWinner mempertahankan skor kustom pengguna yang konsisten dengan pemenang', () => {
+  sMatches = [{
+    roundNumber: 1,
+    title: 'Match 1 • Tim Alpha vs Tim Beta',
+    teamA: { name: 'Tim Alpha', key: 'team-a' },
+    teamB: { name: 'Tim Beta', key: 'team-b' },
+    scoreA: 4,
+    scoreB: 1,
+    winner: null,
+    status: 'ongoing'
+  }];
+
+  setSoccerWinner(0, 'A');
+  // Skor kustom 4-1 harus dipertahankan, BUKAN di-overwrite menjadi 2-1
+  assert.strictEqual(sMatches[0].scoreA, 4);
+  assert.strictEqual(sMatches[0].scoreB, 1);
+  assert.strictEqual(sMatches[0].winner, 'A');
+  assert.strictEqual(sMatches[0].status, 'finished');
+});
+
+it('startSoccerMatch menegakkan hanya 1 match yang ongoing secara bersamaan', () => {
+  sMatches = [
+    {
+      roundNumber: 1,
+      title: 'Match 1 • Tim A vs Tim B',
+      teamA: { name: 'Tim A', key: 'team-a' },
+      teamB: { name: 'Tim B', key: 'team-b' },
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: 'ongoing'
+    },
+    {
+      roundNumber: 2,
+      title: 'Match 2 • Tim C vs Tim D',
+      teamA: { name: 'Tim C', key: 'team-c' },
+      teamB: { name: 'Tim D', key: 'team-d' },
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: 'pending'
+    }
+  ];
+
+  startSoccerMatch(1);
+  // Match 2 menjadi ongoing, match 1 yang belum berskor kembali ke pending
+  assert.strictEqual(sMatches[1].status, 'ongoing');
+  assert.strictEqual(sMatches[0].status, 'pending');
+});
+
+it('deleteSoccerMatch meregenerasi judul match secara bersih tanpa duplikasi separator', () => {
+  sMatches = [
+    {
+      roundNumber: 1,
+      title: 'Match 1 • Tim A vs Tim B',
+      teamA: { name: 'Tim A', key: 'team-a' },
+      teamB: { name: 'Tim B', key: 'team-b' },
+      status: 'finished'
+    },
+    {
+      roundNumber: 2,
+      title: 'Match 2 • Tim B vs Tim C',
+      teamA: { name: 'Tim B', key: 'team-b' },
+      teamB: { name: 'Tim C', key: 'team-c' },
+      status: 'pending'
+    }
+  ];
+
+  deleteSoccerMatch(0);
+  assert.strictEqual(sMatches.length, 1);
+  assert.strictEqual(sMatches[0].roundNumber, 1);
+  assert.strictEqual(sMatches[0].title, 'Match 1 • Tim B vs Tim C');
+});
+
+it('getSoccerStatsAndRankings menangani data match null atau tanpa tim secara aman', () => {
+  sTeams = [
+    { name: 'Tim A', key: 'team-a', players: [] },
+    { name: 'Tim B', key: 'team-b', players: [] }
+  ];
+  sMatches = [
+    null,
+    { status: 'finished', teamA: null, teamB: null },
+    { status: 'finished', teamA: { name: 'Tim A' }, teamB: null },
+    { status: 'finished', teamA: { name: 'Tim A' }, teamB: { name: 'Tim B' }, scoreA: 3, scoreB: 1, winner: 'A' }
+  ];
+
+  const rankings = getSoccerStatsAndRankings('wins');
+  assert.strictEqual(rankings.length, 2);
+  const teamAStats = rankings.find(t => t.name === 'Tim A');
+  assert.strictEqual(teamAStats.p, 1);
+  assert.strictEqual(teamAStats.wins, 1);
+  assert.strictEqual(teamAStats.pts, 3);
+});
+
+it('isNewerVersion mengidentifikasi build v1.2.0-b44 secara akurat', () => {
+  assert.strictEqual(isNewerVersion('v1.2.0-b44', 'v1.2.0-b44'), false);
+  assert.strictEqual(isNewerVersion('v1.2.0-b45', 'v1.2.0-b44'), true);
+  assert.strictEqual(isNewerVersion('v1.2.1', 'v1.2.0-b44'), true);
+  assert.strictEqual(isNewerVersion('v1.2.0-b43', 'v1.2.0-b44'), false);
+  assert.strictEqual(isNewerVersion('v1.1.9', 'v1.2.0-b44'), false);
 });
 
 console.log(`\n======================================================`);

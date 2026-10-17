@@ -5449,9 +5449,9 @@ function deleteSoccerMatch(matchIdx) {
   sMatches.splice(matchIdx, 1);
   sMatches.forEach((m, idx) => {
     m.roundNumber = idx + 1;
-    const parts = m.title.split('•');
-    const vsPart = parts.length > 1 ? parts[1].trim() : `${m.teamA?.name || 'Tim A'} vs ${m.teamB?.name || 'Tim B'}`;
-    m.title = `Match ${idx + 1} • ${vsPart}`;
+    const nameA = m.teamA?.name || 'Tim A';
+    const nameB = m.teamB?.name || 'Tim B';
+    m.title = `Match ${idx + 1} • ${nameA} vs ${nameB}`;
   });
 
   renderCourtsView();
@@ -5468,6 +5468,9 @@ function openSoccerScoreModal(matchIdx) {
   const m = sMatches[matchIdx];
   if (!m) return;
 
+  const nameA = m.teamA?.name || 'Tim A';
+  const nameB = m.teamB?.name || 'Tim B';
+
   const targetInput = document.getElementById('soccerScoreTargetMatchIdx');
   if (targetInput) targetInput.value = matchIdx;
 
@@ -5478,22 +5481,22 @@ function openSoccerScoreModal(matchIdx) {
   if (headerEl) {
     headerEl.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; font-weight:900;">
-        <span style="color:var(--brand-navy-dark); flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamA.name)}</span>
+        <span style="color:var(--brand-navy-dark); flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(nameA)}</span>
         <span style="color:var(--brand-orange); font-size:0.75rem; padding:0 8px;">VS</span>
-        <span style="color:var(--brand-navy-dark); flex:1; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamB.name)}</span>
+        <span style="color:var(--brand-navy-dark); flex:1; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(nameB)}</span>
       </div>
     `;
   }
 
   const lblA = document.getElementById('soccerScoreLabelA');
   const lblB = document.getElementById('soccerScoreLabelB');
-  if (lblA) lblA.textContent = m.teamA.name;
-  if (lblB) lblB.textContent = m.teamB.name;
+  if (lblA) lblA.textContent = nameA;
+  if (lblB) lblB.textContent = nameB;
 
   const winTxtA = document.getElementById('soccerWinTextA');
   const winTxtB = document.getElementById('soccerWinTextB');
-  if (winTxtA) winTxtA.textContent = `${m.teamA.name.split(' ')[0]} Menang`;
-  if (winTxtB) winTxtB.textContent = `${m.teamB.name.split(' ')[0]} Menang`;
+  if (winTxtA) winTxtA.textContent = `${nameA.split(' ')[0]} Menang`;
+  if (winTxtB) winTxtB.textContent = `${nameB.split(' ')[0]} Menang`;
 
   const sA = (m.scoreA !== null && m.scoreA !== undefined) ? m.scoreA : 0;
   const sB = (m.scoreB !== null && m.scoreB !== undefined) ? m.scoreB : 0;
@@ -5573,7 +5576,9 @@ function submitSoccerModalScore() {
 
   const nextMatch = sMatches.find(x => x.status === 'pending');
   if (nextMatch) {
-    showToast(`Skor disimpan (${sA}-${sB})! Pertandingan berikutnya: ${nextMatch.teamA.name} vs ${nextMatch.teamB.name}`, 'success');
+    const nextA = nextMatch.teamA?.name || 'Tim A';
+    const nextB = nextMatch.teamB?.name || 'Tim B';
+    showToast(`Skor disimpan (${sA}-${sB})! Pertandingan berikutnya: ${nextA} vs ${nextB}`, 'success');
   } else {
     showToast(`Skor disimpan (${sA}-${sB})! Seluruh pertandingan telah selesai.`, 'success');
   }
@@ -5736,12 +5741,34 @@ function saveSoccerMatchModal() {
     const rNum = m.roundNumber || (matchIdx + 1);
     m.title = `Match ${rNum} • ${teamA.name} vs ${teamB.name}`;
     if (m.status !== 'finished') {
+      if (selectedStatus === 'ongoing') {
+        sMatches.forEach((otherMatch, oIdx) => {
+          if (oIdx !== matchIdx && otherMatch.status === 'ongoing') {
+            if (otherMatch.winner || (otherMatch.scoreA !== null && otherMatch.scoreB !== null)) {
+              otherMatch.status = 'finished';
+            } else {
+              otherMatch.status = 'pending';
+            }
+          }
+        });
+      }
       m.status = selectedStatus;
     }
 
     showToast(`Bagan Match ${rNum} berhasil diubah (${teamA.name} vs ${teamB.name})!`, 'success');
   } else {
     if (!Array.isArray(sMatches)) sMatches = [];
+    if (selectedStatus === 'ongoing') {
+      sMatches.forEach(otherMatch => {
+        if (otherMatch.status === 'ongoing') {
+          if (otherMatch.winner || (otherMatch.scoreA !== null && otherMatch.scoreB !== null)) {
+            otherMatch.status = 'finished';
+          } else {
+            otherMatch.status = 'pending';
+          }
+        }
+      });
+    }
     const newRoundNum = sMatches.length + 1;
     const newMatch = {
       roundNumber: newRoundNum,
@@ -6198,7 +6225,7 @@ function shuffleSoccerTeamsFromRoster(askConfirm = true) {
   renderCourtsView();
   renderLeaderboard();
   persistAndBroadcast();
-  showToast('🎲 Pemain berhasil diacak merata ke setiap tim!', 'success');
+  showToast('Pemain berhasil diacak merata ke setiap tim!', 'success');
 }
 
 function generateSoccerTeams() {
@@ -6230,14 +6257,14 @@ function renderSoccerTeams() {
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px;">
       ${sTeams.map((t, idx) => {
         const st = statsMap[t.name] || { p: 0, w: 0, d: 0, l: 0, pts: 0 };
-        const isPlaying = ongoingMatch && (ongoingMatch.teamA.name === t.name || ongoingMatch.teamB.name === t.name);
-        const isNext = !isPlaying && nextPendingMatch && (nextPendingMatch.teamA.name === t.name || nextPendingMatch.teamB.name === t.name);
+        const isPlaying = ongoingMatch && ((ongoingMatch.teamA?.name === t.name) || (ongoingMatch.teamB?.name === t.name));
+        const isNext = !isPlaying && nextPendingMatch && ((nextPendingMatch.teamA?.name === t.name) || (nextPendingMatch.teamB?.name === t.name));
 
         let statusBadge = `<span style="background:#F1F5F9; color:#64748B; font-size:0.65rem; font-weight:700; padding:1px 6px; border-radius:4px;">Istirahat</span>`;
         if (isPlaying) {
-          statusBadge = `<span style="background:#DCFCE7; color:#166534; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">🟢 Main</span>`;
+          statusBadge = `<span style="background:#DCFCE7; color:#166534; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">Main</span>`;
         } else if (isNext) {
-          statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">⏰ Siap Masuk</span>`;
+          statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">Siap Masuk</span>`;
         }
 
         return `
@@ -7596,11 +7623,11 @@ function renderCourtsView() {
 
           <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#FFFFFF; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px 14px; margin-bottom:8px;">
             <div style="text-align:left; font-weight:800; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              ${escapeHtml(nextPendingMatch.teamA.name)}
+              ${escapeHtml(nextPendingMatch.teamA?.name || 'Tim A')}
             </div>
             <div style="font-weight:800; color:var(--text-muted); font-size:0.75rem; text-align:center; padding:2px 8px; background:#F1F5F9; border-radius:4px;">VS</div>
             <div style="text-align:right; font-weight:800; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              ${escapeHtml(nextPendingMatch.teamB.name)}
+              ${escapeHtml(nextPendingMatch.teamB?.name || 'Tim B')}
             </div>
           </div>
 
@@ -7632,6 +7659,8 @@ function renderCourtsView() {
       const isNextPending = m === nextPendingMatch;
       const isWinA = isFinished && m.winner === 'A';
       const isWinB = isFinished && m.winner === 'B';
+      const teamAName = m.teamA?.name || 'Tim A';
+      const teamBName = m.teamB?.name || 'Tim B';
 
       if (isFinished && isGuestUser()) {
         return `
@@ -7676,8 +7705,8 @@ function renderCourtsView() {
             
             <!-- Team A Box -->
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:block; margin-bottom:4px;" title="${escapeHtml(m.teamA.name)}">
-                ${escapeHtml(m.teamA.name)}
+              <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:block; margin-bottom:4px;" title="${escapeHtml(teamAName)}">
+                ${escapeHtml(teamAName)}
               </strong>
               <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'A', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
@@ -7701,8 +7730,8 @@ function renderCourtsView() {
 
             <!-- Team B Box -->
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:block; margin-bottom:4px;" title="${escapeHtml(m.teamB.name)}">
-                ${escapeHtml(m.teamB.name)}
+              <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:block; margin-bottom:4px;" title="${escapeHtml(teamBName)}">
+                ${escapeHtml(teamBName)}
               </strong>
               <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'B', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
@@ -7730,8 +7759,8 @@ function renderCourtsView() {
 
             <div class="winner-picker-box">
               <span style="font-size:0.74rem; font-weight:800; color:var(--text-muted);">Pemenang:</span>
-              <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${escapeHtml(m.teamA.name.split(' ')[0])}</button>
-              <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${escapeHtml(m.teamB.name.split(' ')[0])}</button>
+              <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${escapeHtml(teamAName.split(' ')[0])}</button>
+              <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${escapeHtml(teamBName.split(' ')[0])}</button>
               <button class="btn-pick-winner ${m.winner === 'D' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'D')">Seri</button>
             </div>
           </div>
@@ -8262,7 +8291,16 @@ function saveShuttlecockInventorySettings() {
 // ── SOCCER MATCH CONTROLS ──
 function startSoccerMatch(idx) {
   if (!checkEditPermission()) return;
-  if (sMatches[idx]) {
+  if (sMatches && sMatches[idx]) {
+    sMatches.forEach((match, i) => {
+      if (i !== idx && match.status === 'ongoing') {
+        if (match.winner || (match.scoreA !== null && match.scoreB !== null)) {
+          match.status = 'finished';
+        } else {
+          match.status = 'pending';
+        }
+      }
+    });
     sMatches[idx].status = 'ongoing';
     renderCourtsView();
     persistAndBroadcast();
@@ -8276,9 +8314,40 @@ function setSoccerWinner(idx, outcome) {
   m.winner = outcome;
   m.status = 'finished';
 
-  if (outcome === 'A') { m.scoreA = 2; m.scoreB = 1; }
-  else if (outcome === 'B') { m.scoreA = 1; m.scoreB = 2; }
-  else { m.scoreA = 1; m.scoreB = 1; }
+  const hasScoreA = typeof m.scoreA === 'number' && !isNaN(m.scoreA);
+  const hasScoreB = typeof m.scoreB === 'number' && !isNaN(m.scoreB);
+
+  if (outcome === 'A') {
+    if (hasScoreA && hasScoreB && m.scoreA > m.scoreB) {
+      // Pertahankan skor custom pengguna jika sudah sesuai pemenang A
+    } else if (hasScoreB) {
+      m.scoreA = m.scoreB + 1;
+    } else {
+      m.scoreA = 2;
+      m.scoreB = 1;
+    }
+  } else if (outcome === 'B') {
+    if (hasScoreA && hasScoreB && m.scoreB > m.scoreA) {
+      // Pertahankan skor custom pengguna jika sudah sesuai pemenang B
+    } else if (hasScoreA) {
+      m.scoreB = m.scoreA + 1;
+    } else {
+      m.scoreA = 1;
+      m.scoreB = 2;
+    }
+  } else {
+    // Seri / Draw
+    if (hasScoreA && hasScoreB && m.scoreA === m.scoreB) {
+      // Pertahankan skor seri custom pengguna
+    } else if (hasScoreA) {
+      m.scoreB = m.scoreA;
+    } else if (hasScoreB) {
+      m.scoreA = m.scoreB;
+    } else {
+      m.scoreA = 1;
+      m.scoreB = 1;
+    }
+  }
 
   renderCourtsView();
   renderLeaderboard();
@@ -8352,12 +8421,12 @@ function openFinishScoreModal() {
         <div style="font-weight:800; font-size:0.85rem; margin-bottom:6px;">${escapeHtml(m.title)}</div>
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center;">
           <div>
-            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamA.name)}</div>
+            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamA?.name || 'Tim A')}</div>
             <input type="number" id="inputSoccerScoreA_${idx}" class="input-styled-os" value="${m.scoreA !== null ? m.scoreA : 2}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           </div>
           <strong style="color:var(--text-muted); margin-top:14px;">VS</strong>
           <div>
-            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamB.name)}</div>
+            <div style="font-size:0.75rem; font-weight:800; margin-bottom:2px;">${escapeHtml(m.teamB?.name || 'Tim B')}</div>
             <input type="number" id="inputSoccerScoreB_${idx}" class="input-styled-os" value="${m.scoreB !== null ? m.scoreB : 1}" style="text-align:center; font-weight:900; font-size:1.2rem;">
           </div>
         </div>
@@ -8673,7 +8742,8 @@ function getSoccerStatsAndRankings(sortMode = 'wins') {
   });
 
   sMatches.forEach(m => {
-    if (m.status !== 'finished') return;
+    if (!m || m.status !== 'finished') return;
+    if (!m.teamA?.name || !m.teamB?.name) return;
     const tA = teamStats[m.teamA.name];
     const tB = teamStats[m.teamB.name];
     if (!tA || !tB) return;
@@ -8687,13 +8757,17 @@ function getSoccerStatsAndRankings(sortMode = 'wins') {
     if (m.winner === 'A') {
       tA.w++; tA.wins++; tA.pts += 3;
       tB.l++; tB.losses++;
-      soccerH2H[tA.name][tB.name] = (soccerH2H[tA.name][tB.name] || 0) + 1;
-      soccerH2H[tB.name][tA.name] = (soccerH2H[tB.name][tA.name] || 0) - 1;
+      if (soccerH2H[tA.name] && soccerH2H[tB.name]) {
+        soccerH2H[tA.name][tB.name] = (soccerH2H[tA.name][tB.name] || 0) + 1;
+        soccerH2H[tB.name][tA.name] = (soccerH2H[tB.name][tA.name] || 0) - 1;
+      }
     } else if (m.winner === 'B') {
       tB.w++; tB.wins++; tB.pts += 3;
       tA.l++; tA.losses++;
-      soccerH2H[tB.name][tA.name] = (soccerH2H[tB.name][tA.name] || 0) + 1;
-      soccerH2H[tA.name][tB.name] = (soccerH2H[tA.name][tB.name] || 0) - 1;
+      if (soccerH2H[tA.name] && soccerH2H[tB.name]) {
+        soccerH2H[tB.name][tA.name] = (soccerH2H[tB.name][tA.name] || 0) + 1;
+        soccerH2H[tA.name][tB.name] = (soccerH2H[tA.name][tB.name] || 0) - 1;
+      }
     } else {
       tA.d++; tA.ties++; tA.pts += 1;
       tB.d++; tB.ties++; tB.pts += 1;
@@ -8908,9 +8982,9 @@ function renderHistory() {
     }
     container.innerHTML = finished.map(m => `
       <div style="display:flex; justify-content:space-between; align-items:center; background:#FFF; padding:12px; border-radius:var(--radius-md); border:1.5px solid var(--border-color); margin-bottom:8px;">
-        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamA.name)}</span>
-        <strong style="color:var(--brand-orange); font-size:1.2rem;">${m.scoreA || 0} - ${m.scoreB || 0}</strong>
-        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamB.name)}</span>
+        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamA?.name || 'Tim A')}</span>
+        <strong style="color:var(--brand-orange); font-size:1.2rem;">${m.scoreA !== null && m.scoreA !== undefined ? m.scoreA : 0} - ${m.scoreB !== null && m.scoreB !== undefined ? m.scoreB : 0}</strong>
+        <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamB?.name || 'Tim B')}</span>
       </div>
     `).join('');
   }
@@ -13409,7 +13483,7 @@ function triggerPwaInstall() {
 }
 
 // ── AUTO UPDATE CHECKER VIA GITHUB RELEASES (HANYA APK ANDROID) ──
-const CURRENT_APP_VERSION = 'v1.2.0';
+const CURRENT_APP_VERSION = 'v1.2.0-b44';
 const GITHUB_REPO = '4eronn/One-Sport-Badminton';
 const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`;
 const GITHUB_LATEST_APP_URL = `https://github.com/${GITHUB_REPO}/releases/tag/v1.2.0-b44`;
@@ -13604,7 +13678,7 @@ function handleUpdateOverlayClick(e) {
 function continueUsingCurrentVersion() {
   closeUpdateModal();
   dismissUpdateBanner();
-  showToast(`Melanjutkan dengan versi saat ini (${CURRENT_APP_VERSION}) 👍`, 'info');
+  showToast(`Melanjutkan dengan versi saat ini (${CURRENT_APP_VERSION})`, 'info');
 }
 </script>
 </body>
