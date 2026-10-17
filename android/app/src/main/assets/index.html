@@ -2360,9 +2360,9 @@
           <span>Kosongkan</span>
         </button>
         <!-- Soccer Reset Teams -->
-        <button class="btn-quick-pill btn-quick-danger" id="btnSoccerResetTeams" onclick="clearAllSoccerTeams()" style="display:none;" title="Reset Tim Mini Soccer ke 2 Tim Default">
+        <button class="btn-quick-pill btn-quick-danger" id="btnSoccerResetTeams" onclick="clearAllSoccerTeams()" style="display:none;" title="Kosongkan Semua Tim Mini Soccer">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-          <span>Reset Tim</span>
+          <span>Kosongkan</span>
         </button>
       </div>
 
@@ -4058,7 +4058,7 @@ let bOfficialScoring = false;
 
 // ── MINI SOCCER STATE ──
 let sPlayers = [];
-let sTeamCount = 2; // 2, 3, or 4 teams
+let sTeamCount = 0; // 0, 2, 3, or 4 teams
 let sTeams = [];
 let sMatches = [];
 let sCurrentMatchIndex = 0;
@@ -4565,7 +4565,7 @@ function switchSport(sport) {
     if (btnClr) btnClr.style.display = 'none';
     if (btnSReset) btnSReset.style.display = 'inline-flex';
 
-    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized(false);
     const sTeamSelect = document.getElementById('inputSoccerTeamSelect');
     if (sTeamSelect) sTeamSelect.style.display = 'none';
     const btnShuffle = document.getElementById('btnSoccerShuffleRoster');
@@ -4632,13 +4632,14 @@ function resetToCleanEmptyState() {
   sTeams = [];
   sMatches = [];
   sCurrentMatchIndex = 0;
+  sTeamCount = 0;
 
   currentRev = 0;
   if (currentSport === 'badminton') {
     ensureBadmintonCourtsInitialized();
   } else {
     if (typeof ensureSoccerTeamsInitialized === 'function') {
-      ensureSoccerTeamsInitialized();
+      ensureSoccerTeamsInitialized(false);
     }
   }
 
@@ -4707,7 +4708,7 @@ function setCourtsCount(count) {
 function setSoccerTeamCount(count) {
   if (!checkEditPermission()) return;
   if (typeof count !== 'number' || count < 2) count = 2;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
 
   if (sTeams.length < count) {
     while (sTeams.length < count) {
@@ -4765,7 +4766,11 @@ function addNewPlayer() {
       showToast(`${newP.name} berhasil ditambahkan ke antrian (status: Menunggu)!`, 'success');
     }
   } else {
-    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized(false);
+    if (!Array.isArray(sTeams) || sTeams.length === 0) {
+      showToast('Daftarkan tim terlebih dahulu sebelum menambahkan pemain ke tim.', 'warning');
+      return;
+    }
     const teamSelect = document.getElementById('inputSoccerTeamSelect');
     let targetTeamIdx = teamSelect ? parseInt(teamSelect.value, 10) : 0;
     if (isNaN(targetTeamIdx) || targetTeamIdx < 0 || targetTeamIdx >= sTeams.length) targetTeamIdx = 0;
@@ -5403,21 +5408,23 @@ const SOCCER_DEFAULT_TEAMS = [
   { name: 'Tim Singa (D)', key: 'team-d' }
 ];
 
-function ensureSoccerTeamsInitialized() {
+function ensureSoccerTeamsInitialized(forceDefaults = false) {
   if (!Array.isArray(sTeams)) sTeams = [];
-  if (typeof sTeamCount !== 'number' || sTeamCount < 2) {
-    sTeamCount = Math.max(2, sTeams.length || 2);
-  }
+  if (forceDefaults) {
+    if (typeof sTeamCount !== 'number' || sTeamCount < 2) {
+      sTeamCount = Math.max(2, sTeams.length || 2);
+    }
 
-  // Pastikan sTeams memiliki minimal 2 tim default jika kosong
-  while (sTeams.length < 2) {
-    const idx = sTeams.length;
-    const def = SOCCER_DEFAULT_TEAMS[idx] || { name: `Tim ${String.fromCharCode(65 + idx)}`, key: `team-${String.fromCharCode(97 + idx)}` };
-    sTeams.push({
-      name: def.name,
-      key: def.key + '-' + Date.now(),
-      players: []
-    });
+    // Pastikan sTeams memiliki minimal 2 tim default jika kosong dan forceDefaults aktif
+    while (sTeams.length < 2) {
+      const idx = sTeams.length;
+      const def = SOCCER_DEFAULT_TEAMS[idx] || { name: `Tim ${String.fromCharCode(65 + idx)}`, key: `team-${String.fromCharCode(97 + idx)}` };
+      sTeams.push({
+        name: def.name,
+        key: def.key + '-' + Date.now(),
+        players: []
+      });
+    }
   }
 
   sTeamCount = sTeams.length;
@@ -5431,7 +5438,7 @@ function ensureSoccerTeamsInitialized() {
 
   // Jika sTeams memiliki 0 total pemain tapi sPlayers terisi (migrasi data lama)
   const totalInTeams = sTeams.reduce((sum, t) => sum + (t.players ? t.players.length : 0), 0);
-  if (totalInTeams === 0 && Array.isArray(sPlayers) && sPlayers.length > 0) {
+  if (totalInTeams === 0 && Array.isArray(sPlayers) && sPlayers.length > 0 && sTeams.length > 0) {
     sPlayers.forEach((p, idx) => {
       const targetIdx = (typeof p.teamIndex === 'number' && p.teamIndex < sTeams.length) ? p.teamIndex : (idx % sTeams.length);
       sTeams[targetIdx].players.push(p);
@@ -5439,7 +5446,9 @@ function ensureSoccerTeamsInitialized() {
   }
 
   syncSoccerPlayersFromTeams();
-  ensureSoccerMatchesInitialized();
+  if (sTeams.length >= 2) {
+    ensureSoccerMatchesInitialized();
+  }
 }
 
 function syncSoccerPlayersFromTeams() {
@@ -5478,7 +5487,11 @@ function ensureSoccerMatchesInitialized() {
 }
 
 function generateSoccerMatchSchedule() {
-  if (!Array.isArray(sTeams) || sTeams.length < 2) return;
+  if (!Array.isArray(sTeams) || sTeams.length < 2) {
+    sMatches = [];
+    sCurrentMatchIndex = 0;
+    return;
+  }
   sMatches = [];
 
   if (sTeams.length === 2) {
@@ -5524,7 +5537,7 @@ function generateSoccerMatchSchedule() {
 
 function addNewSoccerTeam(nameInput) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
 
   let teamName = '';
   if (typeof nameInput === 'string' && nameInput.trim()) {
@@ -5554,24 +5567,28 @@ function addNewSoccerTeam(nameInput) {
 
   // Jadwalkan pertandingan untuk tim baru
   if (!Array.isArray(sMatches)) sMatches = [];
-  const hasFinishedMatches = sMatches.some(m => m.status === 'finished');
-
-  if (!hasFinishedMatches) {
-    generateSoccerMatchSchedule();
+  if (sTeams.length < 2) {
+    sMatches = [];
   } else {
-    const prevCount = sTeams.length - 1;
-    for (let i = 0; i < prevCount; i++) {
-      const opp = sTeams[i];
-      sMatches.push({
-        roundNumber: sMatches.length + 1,
-        title: `Match ${sMatches.length + 1} • ${opp.name} vs ${newTeam.name}`,
-        teamA: opp,
-        teamB: newTeam,
-        scoreA: null,
-        scoreB: null,
-        winner: null,
-        status: 'pending'
-      });
+    const hasFinishedMatches = sMatches.some(m => m.status === 'finished');
+
+    if (!hasFinishedMatches) {
+      generateSoccerMatchSchedule();
+    } else {
+      const prevCount = sTeams.length - 1;
+      for (let i = 0; i < prevCount; i++) {
+        const opp = sTeams[i];
+        sMatches.push({
+          roundNumber: sMatches.length + 1,
+          title: `Match ${sMatches.length + 1} • ${opp.name} vs ${newTeam.name}`,
+          teamA: opp,
+          teamB: newTeam,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+      }
     }
   }
 
@@ -5587,10 +5604,10 @@ function addNewSoccerTeam(nameInput) {
 
 function removeSoccerTeam(teamIdx) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
   if (!sTeams[teamIdx]) return;
   if (sTeams.length <= 2) {
-    showToast('Minimal harus ada 2 tim untuk turnamen Mini Soccer.', 'warning');
+    showToast('Minimal harus ada 2 tim untuk turnamen Mini Soccer. Gunakan tombol Kosongkan jika ingin menghapus seluruh tim.', 'warning');
     return;
   }
 
@@ -5629,16 +5646,13 @@ function removeSoccerTeam(teamIdx) {
 
 function clearAllSoccerTeams() {
   if (!checkEditPermission()) return;
-  if (!confirm('Reset seluruh tim Mini Soccer kembali ke 2 tim awal? Seluruh jadwal dan skor akan direset.')) return;
+  if (!confirm('Kosongkan semua tim dan jadwal Mini Soccer? Seluruh jadwal dan skor akan direset.')) return;
 
-  sTeams = [
-    { name: 'Tim Garuda (A)', key: 'team-a', players: [] },
-    { name: 'Tim Rajawali (B)', key: 'team-b', players: [] }
-  ];
-  sTeamCount = 2;
+  sTeams = [];
+  sTeamCount = 0;
   sPlayers = [];
   sMatches = [];
-  generateSoccerMatchSchedule();
+  sCurrentMatchIndex = 0;
 
   updateSessionLabels();
   renderPlayersList();
@@ -5647,12 +5661,16 @@ function clearAllSoccerTeams() {
   renderHistory();
   renderFinalPodium();
   persistAndBroadcast();
-  showToast('Tim Mini Soccer berhasil direset ke 2 tim default.', 'info');
+  showToast('Semua data tim Mini Soccer telah dikosongkan.', 'info');
 }
 
 function regenerateSoccerScheduleWithConfirm() {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
+  if (!Array.isArray(sTeams) || sTeams.length < 2) {
+    showToast('Daftarkan minimal 2 tim terlebih dahulu untuk membuat jadwal.', 'warning');
+    return;
+  }
   const hasScores = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
   if (hasScores) {
     if (!confirm('Buat ulang seluruh jadwal pertandingan? Semua skor pertandingan yang ada akan direset.')) return;
@@ -5839,7 +5857,7 @@ function submitSoccerModalScore() {
 // ── ATUR BAGAN & PILIH TIM MINI SOCCER ──
 function openSoccerMatchModal(matchIdx = null) {
   if (!checkEditPermission()) return;
-  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized(false);
 
   if (!Array.isArray(sTeams) || sTeams.length < 2) {
     showToast('Daftarkan minimal 2 tim terlebih dahulu sebelum mengatur jadwal/bagan.', 'warning');
@@ -6068,7 +6086,7 @@ function updateSoccerTeamSelectOptions() {
 
 function addSoccerPlayerToTeam(teamIdx) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
   if (!sTeams[teamIdx]) return;
 
   const nameInput = document.getElementById(`inlineSoccerPlayerName_${teamIdx}`);
@@ -6114,7 +6132,7 @@ function addSoccerPlayerToTeam(teamIdx) {
 
 function openSoccerBulkAddModal(teamIdx) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
   if (!sTeams[teamIdx]) return;
   document.getElementById('soccerBulkTargetTeamIdx').value = teamIdx;
   document.getElementById('soccerBulkModalTitle').textContent = `Input Roster: ${sTeams[teamIdx].name}`;
@@ -6196,7 +6214,7 @@ function submitSoccerBulkAdd() {
 
 function openSoccerSwapModal(playerId) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
 
   let sourcePlayer = null;
   let sourceTeamIdx = -1;
@@ -6264,7 +6282,7 @@ function closeSoccerSwapModal() {
 
 function swapSoccerPlayers(playerAId, playerBId) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
 
   let teamAIdx = -1, pAIdx = -1, playerA = null;
   let teamBIdx = -1, pBIdx = -1, playerB = null;
@@ -6303,7 +6321,7 @@ function swapSoccerPlayers(playerAId, playerBId) {
 
 function moveSoccerPlayerToTeam(playerId, newTeamIdx) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
   if (isNaN(newTeamIdx) || newTeamIdx < 0 || newTeamIdx >= sTeams.length) return;
 
   let foundPlayer = null;
@@ -6416,7 +6434,7 @@ function renameSoccerTeam(teamIdx) {
 
 function shuffleSoccerTeamsFromRoster(askConfirm = true) {
   if (!checkEditPermission()) return;
-  ensureSoccerTeamsInitialized();
+  ensureSoccerTeamsInitialized(false);
 
   const allPlayers = [];
   sTeams.forEach(t => {
@@ -6487,7 +6505,7 @@ function generateSoccerTeams() {
 function renderSoccerTeams() {
   const container = document.getElementById('soccerTeamsGrid');
   if (!container) return;
-  ensureSoccerTeamsInitialized();
+  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized(false);
 
   if (sTeams.length === 0) {
     container.innerHTML = `
@@ -6538,8 +6556,27 @@ function renderSoccerTeams() {
 }
 
 function renderSoccerTeamRoster(container) {
-  ensureSoccerTeamsInitialized();
+  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized(false);
   updateSoccerTeamSelectOptions();
+
+  if (!Array.isArray(sTeams) || sTeams.length === 0) {
+    container.innerHTML = `
+      <div class="os-card" style="text-align:center; padding:32px 16px; border-radius:var(--radius-lg); border:1.5px dashed var(--border-color); background:#FAFAFA; margin-top:8px;">
+        <div style="font-size:2rem; margin-bottom:8px;">⚽</div>
+        <div style="font-weight:800; font-size:0.95rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Tim Mini Soccer</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); max-width:320px; margin:0 auto 16px;">Tambahkan tim pada form di atas untuk memulai turnamen Mini Soccer. Jadwal pertandingan otomatis tersusun setelah minimal 2 tim terdaftar.</div>
+      </div>
+      <!-- Bottom Add Team Action Box -->
+      <div class="os-card" style="margin-top:8px; background:#FAFDFB; border:1.5px dashed #86EFAC; text-align:center; padding:18px 14px; border-radius:var(--radius-lg);">
+        <div style="font-weight:800; font-size:0.9rem; color:#065F46; margin-bottom:4px;">Turnamen Mini Soccer Berbasis Tim</div>
+        <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">Cukup tambahkan tim tanpa perlu menginput pemain. Jadwal dan skor otomatis terkelola.</div>
+        <button type="button" class="btn-os-cyan" onclick="addNewSoccerTeam()" style="display:inline-flex; align-items:center; gap:6px; margin:0 auto; width:auto; font-weight:800; font-size:0.82rem; padding:8px 20px; background:#059669; border-color:#059669;">
+          + Tambah Tim Baru
+        </button>
+      </div>
+    `;
+    return;
+  }
 
   const teamThemes = [
     { border: '#CBD5E1', headerBg: 'var(--brand-navy-dark)', headerColor: '#FFF' },
@@ -6767,14 +6804,18 @@ function addNewCourt() {
     persistAndBroadcast();
     showToast(`Lapangan berhasil ditambah (${bNumCourts} Lapangan)`);
   } else {
+    if (!Array.isArray(sTeams) || sTeams.length < 2) {
+      showToast('Daftarkan minimal 2 tim terlebih dahulu sebelum membuat pertandingan.', 'warning');
+      return;
+    }
     if (typeof openSoccerMatchModal === 'function') {
       openSoccerMatchModal();
     } else {
       sMatches.push({
         roundNumber: sMatches.length + 1,
         title: `Match Tambahan ${sMatches.length + 1}`,
-        teamA: sTeams[0] || { name: 'Tim Garuda (A)' },
-        teamB: sTeams[1] || { name: 'Tim Rajawali (B)' },
+        teamA: sTeams[0] || { name: 'Tim A' },
+        teamB: sTeams[1] || { name: 'Tim B' },
         scoreA: null,
         scoreB: null,
         winner: null,
@@ -10520,7 +10561,11 @@ function exportCSV() {
     a.click();
     document.body.removeChild(a);
   } else {
-    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+    if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized(false);
+    if (!Array.isArray(sTeams) || sTeams.length === 0) {
+      showToast('Belum ada data tim untuk di-export.', 'warning');
+      return;
+    }
     const statsList = typeof getSoccerStatsAndRankings === 'function' ? getSoccerStatsAndRankings('wins') : [];
     const header = ['Peringkat', 'Nama Tim', 'Main', 'Menang', 'Seri', 'Kalah', 'Gol Masuk', 'Gol Kebobolan', 'Selisih Gol', 'Poin'];
     const rows = statsList.map((st, idx) => [
@@ -10755,7 +10800,7 @@ function loadFromLocalStorage() {
     if (typeof data.sCurrentMatchIndex === 'number') sCurrentMatchIndex = data.sCurrentMatchIndex;
 
     if (currentSport === 'minisoccer' && typeof ensureSoccerTeamsInitialized === 'function') {
-      ensureSoccerTeamsInitialized();
+      ensureSoccerTeamsInitialized(false);
     }
 
     // Migrasi data aman & backfill statistik tanpa merusak data lama
@@ -12516,7 +12561,7 @@ function applyReceivedState(incomingData) {
   if (typeof data.sCurrentMatchIndex === 'number') sCurrentMatchIndex = data.sCurrentMatchIndex;
 
   if (currentSport === 'minisoccer' && typeof ensureSoccerTeamsInitialized === 'function') {
-    ensureSoccerTeamsInitialized();
+    ensureSoccerTeamsInitialized(false);
   }
 
   if (currentRoomId) {

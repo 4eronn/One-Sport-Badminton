@@ -41,7 +41,7 @@ const SOCCER_DEFAULT_TEAMS = [
 ];
 
 eval(`
-${htmlContent.substring(htmlContent.indexOf('function ensureSoccerTeamsInitialized()'), htmlContent.indexOf('function updateSoccerTeamSelectOptions()'))}
+${htmlContent.substring(htmlContent.indexOf('function ensureSoccerTeamsInitialized('), htmlContent.indexOf('function updateSoccerTeamSelectOptions()'))}
 ${htmlContent.substring(htmlContent.indexOf('function startSoccerMatch('), htmlContent.indexOf('function stepFinishScore('))}
 ${htmlContent.substring(htmlContent.indexOf('function getSoccerStatsAndRankings('), htmlContent.indexOf('function renderLeaderboard()'))}
 ${htmlContent.substring(htmlContent.indexOf('function resolveStandingsByRules('), htmlContent.indexOf('function getBadmintonStatsAndRankings('))}
@@ -67,22 +67,29 @@ function it(name, fn) {
 
 console.log('\n=== RUNNING ONESPORT MINI SOCCER TEAM MANAGEMENT TESTS ===\n');
 
-console.log('--- 1. Inisialisasi Tim Default & Tanpa Pemain ---');
-it('ensureSoccerTeamsInitialized membuat minimal 2 tim default saat kosong', () => {
+console.log('--- 1. Inisialisasi State Mini Soccer Kosong & Tanpa Dummy Data ---');
+it('Mini soccer bersih dan kosong saat inisialisasi awal tanpa data dummy', () => {
   sTeams = [];
   sPlayers = [];
   sMatches = [];
+  sTeamCount = 0;
   ensureSoccerTeamsInitialized();
 
-  assert.strictEqual(sTeams.length, 2);
-  assert.strictEqual(sTeams[0].name, 'Tim Garuda (A)');
-  assert.strictEqual(sTeams[1].name, 'Tim Rajawali (B)');
-  assert.strictEqual(sPlayers.length, 0, 'sPlayers harus tetap kosong tanpa input pemain');
-  assert.strictEqual(sMatches.length, 3, 'Untuk 2 tim, default terjadwal 3 ronde match');
+  assert.strictEqual(sTeams.length, 0, 'sTeams harus tetap kosong saat inisialisasi tanpa data dummy');
+  assert.strictEqual(sPlayers.length, 0, 'sPlayers harus tetap kosong');
+  assert.strictEqual(sMatches.length, 0, 'sMatches harus tetap kosong tanpa tim');
 });
 
 console.log('\n--- 2. Tambah Tim Bebas (Lebih dari 4 Tim) ---');
 it('addNewSoccerTeam menambah tim baru dan memperbarui jumlah tim', () => {
+  addNewSoccerTeam('Tim Garuda (A)');
+  assert.strictEqual(sTeams.length, 1);
+  assert.strictEqual(sMatches.length, 0, '1 tim belum cukup untuk jadwal pertandingan');
+
+  addNewSoccerTeam('Tim Rajawali (B)');
+  assert.strictEqual(sTeams.length, 2);
+  assert.strictEqual(sMatches.length, 3, 'Untuk 2 tim, default terjadwal 3 ronde match');
+
   addNewSoccerTeam('Tim Elang (C)');
   assert.strictEqual(sTeams.length, 3);
   assert.strictEqual(sTeams[2].name, 'Tim Elang (C)');
@@ -175,15 +182,13 @@ it('getSoccerStatsAndRankings menghitung klasemen murni berbasis tim tanpa pemai
   assert.strictEqual(standings[1].gd, -1);
 });
 
-console.log('\n--- 5. Reset Tim Mini Soccer ---');
-it('clearAllSoccerTeams mereset tim ke 2 tim default dan membersihkan skor', () => {
+console.log('\n--- 5. Kosongkan Tim Mini Soccer ---');
+it('clearAllSoccerTeams mengosongkan seluruh tim, skor, dan jadwal Mini Soccer', () => {
   clearAllSoccerTeams();
-  assert.strictEqual(sTeams.length, 2);
-  assert.strictEqual(sTeams[0].name, 'Tim Garuda (A)');
-  assert.strictEqual(sTeams[1].name, 'Tim Rajawali (B)');
-  assert.strictEqual(sMatches.length, 3);
-  assert.strictEqual(sMatches[0].scoreA, null);
-  assert.strictEqual(sMatches[0].status, 'ongoing');
+  assert.strictEqual(sTeams.length, 0);
+  assert.strictEqual(sMatches.length, 0);
+  assert.strictEqual(sPlayers.length, 0);
+  assert.strictEqual(sTeamCount, 0);
 });
 
 // Global mock DOM elements
