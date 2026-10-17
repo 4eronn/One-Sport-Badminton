@@ -1,5 +1,5 @@
-// Service Worker for ONESPORT PWA (Optimized for Low-End Devices)
-const CACHE_NAME = 'onesport-cache-v6';
+// Service Worker for ONESPORT PWA
+const CACHE_NAME = 'onesport-cache-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

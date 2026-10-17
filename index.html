@@ -2158,25 +2158,9 @@
     margin-bottom: 10px;
     box-shadow: 0 2px 6px rgba(15, 30, 54, 0.03);
     transition: all 0.2s;
-    content-visibility: auto;
-    contain-intrinsic-size: auto none auto 120px;
   }
   .history-item-card:hover {
     border-color: var(--brand-navy-soft);
-  }
-  .history-round-card {
-    content-visibility: auto;
-    contain-intrinsic-size: auto none auto 160px;
-  }
-
-  /* ── LOW-END DEVICE & REDUCED MOTION OPTIMIZATIONS ── */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.001ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.001ms !important;
-      scroll-behavior: auto !important;
-    }
   }
 </style>
 </head>
@@ -3729,7 +3713,7 @@
 </div>
 
 <!-- ── MODAL: AUTH / LOGIN / SIGN UP / GUEST ── -->
-<div class="modal-overlay" id="loginModalOverlay" style="z-index: 99998;">
+<div class="modal-overlay" id="loginModalOverlay" style="z-index: 99998;" onclick="handleLoginOverlayClick(event)">
   <div class="modal-box" style="max-width: 400px; padding: 20px;">
     <div class="modal-header" style="margin-bottom: 12px; align-items: center;">
       <div style="display:flex; align-items:center; gap:10px;">
@@ -3936,7 +3920,7 @@ function saveUsersDatabase(users) {
   } catch (e) {}
 }
 
-let isGuestSession = false;
+let isGuestSession = (localStorage.getItem('onesport_guest_session') === 'true');
 let currentUser = null;
 try {
   const savedUser = localStorage.getItem('onesport_auth_user');
@@ -4316,9 +4300,11 @@ function initApp() {
       }
     } catch (e) {}
 
-    // Bagi pengguna baru / belum masuk room: data harus kosongan.
-    // Data pertandingan hanya akan muncul ketika pengguna masuk ke dalam room online.
-    resetToCleanEmptyState();
+    // Bagi pengguna baru: mulai kosongan jika belum ada sesi tersimpan
+    const hasSaved = loadFromLocalStorage();
+    if (!hasSaved) {
+      resetToCleanEmptyState();
+    }
 
     const elFinalHeader = document.getElementById('finalTitleHeader');
     if (elFinalHeader) elFinalHeader.textContent = sessionTitle;
@@ -9146,7 +9132,7 @@ function renderHistory() {
     }
 
     container.innerHTML = roundsWithMatches.map(group => `
-      <div class="history-round-card" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:12px; margin-bottom:12px;">
+      <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:12px; margin-bottom:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <span style="font-weight:900; color:var(--brand-orange); font-size:0.88rem;">Babak / Ronde ${group.r.roundNumber || (group.rIdx + 1)}</span>
           <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">${group.finishedMatches.length} Pertandingan Selesai</span>
@@ -11656,6 +11642,12 @@ function switchLoginAuthTab(tab) {
   }
 }
 
+function handleLoginOverlayClick(e) {
+  if (e && e.target && e.target.id === 'loginModalOverlay') {
+    closeLoginModal();
+  }
+}
+
 function openLoginModal(isInitial = false) {
   const modal = document.getElementById('loginModalOverlay');
   const closeBtn = document.getElementById('btnLoginModalCloseBtn');
@@ -11667,7 +11659,7 @@ function openLoginModal(isInitial = false) {
   if (signErrEl) signErrEl.style.display = 'none';
 
   if (closeBtn) {
-    closeBtn.style.display = (currentUser || isGuestSession) ? 'block' : 'none';
+    closeBtn.style.display = 'block';
   }
 
   switchLoginAuthTab('signin');
@@ -11801,10 +11793,7 @@ function submitSignUpForm() {
   localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
   localStorage.setItem('onesport_user_role', 'spectator');
   localStorage.setItem('onesport_user_display_name', currentUser.name);
-
-  if (!isOnlineActive && !currentRoomId) {
-    resetToCleanEmptyState();
-  }
+  localStorage.removeItem('onesport_guest_session');
 
   if (errEl) errEl.style.display = 'none';
   closeLoginModal();
@@ -11825,9 +11814,7 @@ function loginAsGuest() {
   userRole = 'spectator';
   localStorage.removeItem('onesport_auth_user');
   localStorage.removeItem('onesport_user_role');
-  if (!isOnlineActive && !currentRoomId) {
-    resetToCleanEmptyState();
-  }
+  localStorage.setItem('onesport_guest_session', 'true');
   closeLoginModal();
   applyRoleUI();
   if (document.getElementById('tab-akun')?.classList.contains('active')) {
@@ -11856,11 +11843,9 @@ function loginUser(email, password) {
     };
     userRole = 'host';
     isGuestSession = false;
+    localStorage.removeItem('onesport_guest_session');
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'host');
-    if (!isOnlineActive && !currentRoomId) {
-      resetToCleanEmptyState();
-    }
     if (errEl) errEl.style.display = 'none';
     if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
@@ -11888,12 +11873,10 @@ function loginUser(email, password) {
     };
     userRole = 'spectator';
     isGuestSession = false;
+    localStorage.removeItem('onesport_guest_session');
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'spectator');
     localStorage.setItem('onesport_user_display_name', currentUser.name);
-    if (!isOnlineActive && !currentRoomId) {
-      resetToCleanEmptyState();
-    }
     if (errEl) errEl.style.display = 'none';
     if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
@@ -11913,12 +11896,10 @@ function loginUser(email, password) {
     currentUser = newUser;
     userRole = 'spectator';
     isGuestSession = false;
+    localStorage.removeItem('onesport_guest_session');
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
     localStorage.setItem('onesport_user_role', 'spectator');
     localStorage.setItem('onesport_user_display_name', currentUser.name);
-    if (!isOnlineActive && !currentRoomId) {
-      resetToCleanEmptyState();
-    }
     if (errEl) errEl.style.display = 'none';
     if (tabErrEl) tabErrEl.style.display = 'none';
     closeLoginModal();
@@ -11943,13 +11924,11 @@ function loginUser(email, password) {
           };
           userRole = 'host';
           isGuestSession = false;
+          localStorage.removeItem('onesport_guest_session');
           localStorage.setItem('onesport_admin_password', cleanPass);
           localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
           localStorage.setItem('onesport_user_role', 'host');
           localStorage.setItem('onesport_user_display_name', currentUser.name);
-          if (!isOnlineActive && !currentRoomId) {
-            resetToCleanEmptyState();
-          }
           if (errEl) errEl.style.display = 'none';
           if (tabErrEl) tabErrEl.style.display = 'none';
           closeLoginModal();
@@ -11966,6 +11945,7 @@ function loginUser(email, password) {
           };
           userRole = 'spectator';
           isGuestSession = false;
+          localStorage.removeItem('onesport_guest_session');
           localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
           localStorage.setItem('onesport_user_role', 'spectator');
           localStorage.setItem('onesport_user_display_name', currentUser.name);
@@ -11973,9 +11953,6 @@ function loginUser(email, password) {
           if (!localUsers.some(u => u.username.toLowerCase() === res.user.username.toLowerCase())) {
             localUsers.push({ username: res.user.username, name: currentUser.name, password: cleanPass, role: 'user' });
             saveUsersDatabase(localUsers);
-          }
-          if (!isOnlineActive && !currentRoomId) {
-            resetToCleanEmptyState();
           }
           if (errEl) errEl.style.display = 'none';
           if (tabErrEl) tabErrEl.style.display = 'none';
@@ -12014,6 +11991,7 @@ function logoutUser() {
     isGuestSession = false;
     userRole = 'spectator';
     localStorage.removeItem('onesport_auth_user');
+    localStorage.removeItem('onesport_guest_session');
     localStorage.setItem('onesport_user_role', 'spectator');
     applyRoleUI();
     if (document.getElementById('tab-akun')?.classList.contains('active')) {
