@@ -2430,15 +2430,15 @@
 
     <!-- Bottom Actions -->
     <div class="court-bottom-actions" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-      <button class="btn-os-cyan" style="background:#0F1E36;" onclick="handleMatchRebalanceAction()">
+      <button class="btn-os-cyan" style="background:#0E294D; color:#FFFFFF; border:none; padding:10px 12px; font-weight:800; font-size:0.83rem; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;" onclick="handleMatchRebalanceAction()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
         <span id="rebalanceBtnText">Smart Match</span>
       </button>
-      <button class="btn-os-orange" style="background:#10B981; box-shadow:0 4px 12px rgba(16,185,129,0.25);" onclick="addNewCourt()">
+      <button class="btn-os-orange" style="background:#0E294D; color:#FFFFFF; border:none; padding:10px 12px; font-weight:800; font-size:0.83rem; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;" onclick="addNewCourt()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="btnAddMatchLabel">Tambah Lapangan</span>
       </button>
-      <button class="btn-os-purple" id="btnCustomCourtTrigger" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color:#FFFFFF; font-weight:800; font-size:0.85rem; padding:11px 14px; border:none; border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(109,40,217,0.3); grid-column:span 2; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'" onclick="handleCustomMatchOrCourtAction()">
+      <button class="btn-os-purple" id="btnCustomCourtTrigger" style="background:var(--brand-blue); color:#FFFFFF; font-weight:800; font-size:0.85rem; padding:11px 14px; border:none; border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 3px 10px rgba(11,116,222,0.22); grid-column:span 2; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'" onclick="handleCustomMatchOrCourtAction()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
         <span id="btnCustomCourtLabel">Buat Lapangan Pilihan (Pilih Pemain)</span>
       </button>
@@ -3572,8 +3572,8 @@
     <input type="hidden" id="soccerScoreTargetMatchIdx" value="0">
 
     <div style="display:flex; gap:8px;">
-      <button type="button" class="btn-court-action" style="flex:1; padding:10px;" onclick="closeSoccerScoreModal()">Batal</button>
-      <button type="button" class="btn-os-orange" style="flex:2; padding:10px; font-weight:800;" onclick="submitSoccerModalScore()">Simpan Skor Match</button>
+      <button type="button" class="btn-court-action" style="flex:1; padding:10px; background:#FFFFFF; border:1.5px solid #CBD5E1; color:var(--text-muted); font-weight:800; border-radius:var(--radius-md);" onclick="closeSoccerScoreModal()">Batal</button>
+      <button type="button" style="flex:2; padding:10px; font-weight:800; background:var(--brand-blue); color:#FFFFFF; border:none; border-radius:var(--radius-md); cursor:pointer;" onclick="submitSoccerModalScore()">Simpan Skor Match</button>
     </div>
   </div>
 </div>
@@ -3593,32 +3593,32 @@
     <input type="hidden" id="soccerMatchModalTargetIdx" value="">
 
     <!-- Team Selection Arena -->
-    <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:14px; margin-bottom:12px;">
+    <div style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:14px; margin-bottom:12px;">
       
       <!-- Team A Picker -->
       <div style="margin-bottom:8px;">
         <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>⚽ Tim A (Kandang / Home)</span>
+          <span>Tim A (Kandang)</span>
           <span style="font-size:0.7rem; color:var(--text-muted);">Pilih Tim</span>
         </label>
-        <select id="soccerMatchSelectTeamA" class="input-styled-os" style="font-weight:800; font-size:0.86rem; width:100%; height:40px; background:#FFFFFF;" onchange="updateSoccerMatchModalPreview()">
+        <select id="soccerMatchSelectTeamA" class="input-styled-os" style="font-weight:800; font-size:0.86rem; width:100%; height:40px; background:#FFFFFF; border:1.5px solid var(--border-color);" onchange="updateSoccerMatchModalPreview()">
         </select>
       </div>
 
       <!-- Quick Swap Button -->
       <div style="display:flex; justify-content:center; margin:4px 0;">
-        <button type="button" onclick="swapSoccerMatchModalTeams()" class="btn-court-quick-action" style="background:#EFF6FF; border:1px solid #BFDBFE; color:var(--brand-blue); padding:4px 14px; font-weight:800; font-size:0.74rem; border-radius:999px; display:inline-flex; align-items:center; gap:5px;" title="Tukar posisi Tim A dan Tim B">
-          ⇄ Tukar Posisi Tim (A ↔ B)
+        <button type="button" onclick="swapSoccerMatchModalTeams()" class="btn-court-quick-action" style="background:#FFFFFF; border:1px solid #CBD5E1; color:var(--brand-navy-dark); padding:5px 14px; font-weight:800; font-size:0.74rem; border-radius:999px; display:inline-flex; align-items:center; gap:5px; cursor:pointer;" title="Tukar posisi Tim A dan Tim B">
+          Tukar Posisi (A ↔ B)
         </button>
       </div>
 
       <!-- Team B Picker -->
       <div style="margin-bottom:4px;">
         <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:flex; justify-content:space-between; margin-bottom:4px;">
-          <span>⚽ Tim B (Tandang / Away)</span>
+          <span>Tim B (Tandang)</span>
           <span style="font-size:0.7rem; color:var(--text-muted);">Pilih Lawan</span>
         </label>
-        <select id="soccerMatchSelectTeamB" class="input-styled-os" style="font-weight:800; font-size:0.86rem; width:100%; height:40px; background:#FFFFFF;" onchange="updateSoccerMatchModalPreview()">
+        <select id="soccerMatchSelectTeamB" class="input-styled-os" style="font-weight:800; font-size:0.86rem; width:100%; height:40px; background:#FFFFFF; border:1.5px solid var(--border-color);" onchange="updateSoccerMatchModalPreview()">
         </select>
       </div>
     </div>
@@ -3629,11 +3629,11 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
         <label style="display:flex; align-items:center; justify-content:center; gap:6px; background:#FFF; padding:8px 6px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer;">
           <input type="radio" name="soccer_match_status_radio" id="soccerStatusRadioPending" value="pending" checked>
-          <span>Pending (Menunggu)</span>
+          <span>Menunggu (Pending)</span>
         </label>
         <label style="display:flex; align-items:center; justify-content:center; gap:6px; background:#FFF; padding:8px 6px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer;">
           <input type="radio" name="soccer_match_status_radio" id="soccerStatusRadioOngoing" value="ongoing">
-          <span style="color:#166534;">🟢 Sedang Main (Live)</span>
+          <span style="color:var(--brand-blue);">Sedang Main (Live)</span>
         </label>
       </div>
     </div>
@@ -3645,8 +3645,8 @@
 
     <!-- Actions -->
     <div style="display:flex; gap:8px;">
-      <button type="button" class="btn-court-action" style="flex:1; padding:10px;" onclick="closeSoccerMatchModal()">Batal</button>
-      <button type="button" class="btn-os-orange" id="btnSoccerMatchModalSave" style="flex:2; padding:10px; font-weight:800;" onclick="saveSoccerMatchModal()">Simpan Bagan Match</button>
+      <button type="button" class="btn-court-action" style="flex:1; padding:10px; background:#FFFFFF; border:1.5px solid #CBD5E1; color:var(--text-muted); font-weight:800; border-radius:var(--radius-md);" onclick="closeSoccerMatchModal()">Batal</button>
+      <button type="button" id="btnSoccerMatchModalSave" style="flex:2; padding:10px; font-weight:800; background:var(--brand-blue); color:#FFFFFF; border:none; border-radius:var(--radius-md); cursor:pointer;" onclick="saveSoccerMatchModal()">Simpan Bagan Match</button>
     </div>
   </div>
 </div>
@@ -4310,7 +4310,7 @@ function switchSport(sport) {
     document.getElementById('navMatchLabel').textContent = 'Pertandingan';
     document.getElementById('rosterTitleText').textContent = 'Daftar Tim Mini Soccer';
     document.getElementById('sportInfoBanner').innerHTML = `
-      <strong style="color: var(--brand-navy-dark);">⚽ Manajemen Turnamen Mini Soccer:</strong>
+      <strong style="color: var(--brand-navy-dark);">Manajemen Turnamen Mini Soccer:</strong>
       <div>• <strong>Cukup Daftarkan Tim:</strong> Tambahkan nama tim (minimal 2 tim) tanpa perlu memasukkan nama pemain.</div>
       <div>• <strong>Bebas Tambah Tim:</strong> Masukkan nama tim pada kolom di atas lalu klik <strong>Tambah Tim</strong>.</div>
       <div>• <strong>Jadwal & Skor Otomatis:</strong> Pertandingan antar tim otomatis terjadwal dan skor langsung diperbarui ke klasemen poin.</div>
@@ -4341,7 +4341,7 @@ function switchSport(sport) {
     document.getElementById('btnAddMatchLabel').textContent = '+ Tambah Match';
     document.getElementById('rebalanceBtnText').textContent = 'Susun Jadwal Ulang';
     const customLblS = document.getElementById('btnCustomCourtLabel');
-    if (customLblS) customLblS.textContent = '+ Buat Pertandingan Pilihan (Pilih Tim)';
+    if (customLblS) customLblS.textContent = 'Buat Pertandingan Pilihan (Pilih Tim)';
   }
 
   updateSessionLabels();
@@ -5573,9 +5573,9 @@ function submitSoccerModalScore() {
 
   const nextMatch = sMatches.find(x => x.status === 'pending');
   if (nextMatch) {
-    showToast(`Skor disimpan (${sA}-${sB})! Siap-siap match berikutnya: ${nextMatch.teamA.name} vs ${nextMatch.teamB.name}`, 'success');
+    showToast(`Skor disimpan (${sA}-${sB})! Pertandingan berikutnya: ${nextMatch.teamA.name} vs ${nextMatch.teamB.name}`, 'success');
   } else {
-    showToast(`Skor disimpan (${sA}-${sB})! Seluruh pertandingan telah selesai 👍`, 'success');
+    showToast(`Skor disimpan (${sA}-${sB})! Seluruh pertandingan telah selesai.`, 'success');
   }
 }
 
@@ -5603,7 +5603,7 @@ function openSoccerMatchModal(matchIdx = null) {
   if (errEl) errEl.style.display = 'none';
 
   // Populate options
-  const optionsHtml = sTeams.map((t, i) => `<option value="${i}">⚽ ${escapeHtml(t.name)}</option>`).join('');
+  const optionsHtml = sTeams.map((t, i) => `<option value="${i}">${escapeHtml(t.name)}</option>`).join('');
   selA.innerHTML = optionsHtml;
   selB.innerHTML = optionsHtml;
 
@@ -5630,7 +5630,7 @@ function openSoccerMatchModal(matchIdx = null) {
     }
   } else {
     if (targetIdxInput) targetIdxInput.value = '';
-    if (titleEl) titleEl.textContent = '+ Buat Pertandingan Baru (Pilih Tim)';
+    if (titleEl) titleEl.textContent = 'Buat Pertandingan Baru (Pilih Tim)';
     if (btnSave) btnSave.textContent = 'Tambahkan ke Bagan Jadwal';
 
     selA.value = 0;
@@ -7576,41 +7576,39 @@ function renderCourtsView() {
     if (nextPendingMatch) {
       const nextIdx = sMatches.indexOf(nextPendingMatch);
       nextMatchBannerHtml = `
-        <div class="os-card" style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FCD34D; border-radius: var(--radius-lg); padding: 12px 14px; margin-top: 10px; margin-bottom: 6px; box-shadow: 0 2px 10px rgba(217,119,6,0.12);">
+        <div class="os-card" style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:12px 14px; margin-top:10px; margin-bottom:6px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span style="font-weight:900; font-size:0.82rem; color:#92400E; display:flex; align-items:center; gap:6px;">
-              <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#F59E0B; box-shadow:0 0 0 3px rgba(245,158,11,0.25);"></span>
-              ⏰ TIM SIAP-SIAP MASUK LAPANGAN (PERTANDINGAN BERIKUTNYA)
+            <span style="font-weight:800; font-size:0.78rem; color:var(--brand-navy-dark); display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:0.4px;">
+              <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--brand-blue);"></span>
+              Tim Siap Masuk Lapangan (Berikutnya)
             </span>
             <div style="display:flex; align-items:center; gap:6px;">
-              <span class="court-status-chip pending" style="background:#FDE68A; color:#78350F; font-size:0.68rem; font-weight:800;">
+              <span style="background:#E2E8F0; color:var(--brand-navy-dark); font-size:0.68rem; font-weight:800; padding:2px 8px; border-radius:4px;">
                 Match ${nextPendingMatch.roundNumber || (nextIdx + 1)}
               </span>
               ${checkEditPermission(false) ? `
-                <button type="button" onclick="openSoccerMatchModal(${nextIdx})" class="btn-court-quick-action" style="background:#FFF; border:1px solid #FCD34D; color:#92400E; font-weight:800; font-size:0.7rem; padding:2px 8px; border-radius:999px; cursor:pointer;" title="Ubah bagan tim berikutnya">
-                  ✎ Ubah Tim
+                <button type="button" onclick="openSoccerMatchModal(${nextIdx})" class="btn-court-quick-action" style="background:#FFFFFF; border:1px solid #CBD5E1; color:var(--brand-navy-dark); font-weight:800; font-size:0.7rem; padding:2px 8px; border-radius:4px; cursor:pointer;" title="Ubah bagan tim berikutnya">
+                  Ubah Tim
                 </button>
               ` : ''}
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#FFFFFF; border:1px solid #FDE68A; border-radius:var(--radius-md); padding:10px 14px; margin-bottom:8px;">
-            <div style="text-align:left; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:6px;">
-              <span style="font-size:1.05rem;">⚽</span>
-              <span>${escapeHtml(nextPendingMatch.teamA.name)}</span>
+          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#FFFFFF; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px 14px; margin-bottom:8px;">
+            <div style="text-align:left; font-weight:800; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${escapeHtml(nextPendingMatch.teamA.name)}
             </div>
-            <div style="font-weight:900; color:#D97706; font-size:0.8rem; text-align:center; padding:3px 10px; background:#FEF3C7; border-radius:999px;">VS</div>
-            <div style="text-align:right; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; justify-content:flex-end; gap:6px;">
-              <span>${escapeHtml(nextPendingMatch.teamB.name)}</span>
-              <span style="font-size:1.05rem;">⚽</span>
+            <div style="font-weight:800; color:var(--text-muted); font-size:0.75rem; text-align:center; padding:2px 8px; background:#F1F5F9; border-radius:4px;">VS</div>
+            <div style="text-align:right; font-weight:800; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${escapeHtml(nextPendingMatch.teamB.name)}
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:0.73rem; color:#78350F; font-weight:700;">
-            <span>${ongoingMatch ? '⏳ Mohon bersiap di pinggir lapangan. Masuk begitu match saat ini selesai!' : '🟢 Lapangan siap. Tim dipersilakan kickoff sekarang!'}</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:0.73rem; color:var(--text-muted); font-weight:600;">
+            <span>${ongoingMatch ? 'Mohon bersiap di pinggir lapangan. Masuk begitu pertandingan selesai.' : 'Lapangan siap digunakan. Tim dapat segera kickoff.'}</span>
             ${checkEditPermission(false) ? `
-              <button type="button" class="btn-court-quick-action" onclick="startSoccerMatch(${nextIdx})" style="background:#D97706; color:#FFF; border:none; padding:4px 12px; font-size:0.74rem; font-weight:800; border-radius:5px; cursor:pointer;" title="Mulai pertandingan berikutnya">
-                Kickoff Match Ini ▶
+              <button type="button" class="btn-court-quick-action" onclick="startSoccerMatch(${nextIdx})" style="background:var(--brand-navy-dark); color:#FFF; border:none; padding:5px 14px; font-size:0.74rem; font-weight:800; border-radius:5px; cursor:pointer;" title="Mulai pertandingan berikutnya">
+                Kickoff Sekarang
               </button>
             ` : ''}
           </div>
@@ -7618,11 +7616,11 @@ function renderCourtsView() {
       `;
     } else if (sMatches.every(m => m.status === 'finished')) {
       nextMatchBannerHtml = `
-        <div class="os-card" style="background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%); border: 1.5px solid #86EFAC; border-radius: var(--radius-lg); padding: 14px; margin-top: 10px; margin-bottom: 6px; text-align:center;">
-          <div style="font-weight:900; color:#065F46; font-size:0.92rem; margin-bottom:4px;">🏆 Seluruh Pertandingan Selesai!</div>
-          <div style="font-size:0.76rem; color:#047857; margin-bottom:10px;">Semua match telah dimainkan. Cek klasemen poin atau podium juara akhir.</div>
-          <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-selesai')" style="background:#059669; color:#FFF; border:none; padding:6px 18px; font-size:0.78rem; font-weight:800; border-radius:6px; cursor:pointer;">
-            Lihat Podium Juara 🏆
+        <div class="os-card" style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:14px; margin-top:10px; margin-bottom:6px; text-align:center;">
+          <div style="font-weight:800; color:var(--brand-navy-dark); font-size:0.92rem; margin-bottom:4px;">Seluruh Pertandingan Selesai</div>
+          <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px;">Semua match telah dimainkan. Cek klasemen poin atau podium juara akhir.</div>
+          <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-selesai')" style="background:var(--brand-blue); color:#FFF; border:none; padding:6px 18px; font-size:0.78rem; font-weight:800; border-radius:6px; cursor:pointer;">
+            Lihat Klasemen Akhir
           </button>
         </div>
       `;
@@ -7637,13 +7635,13 @@ function renderCourtsView() {
 
       if (isFinished && isGuestUser()) {
         return `
-          <div class="os-card is-finished" style="margin-top:10px; border:1.5px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
+          <div class="os-card is-finished" style="margin-top:10px; border:1.5px dashed var(--border-color); background:#F8FAFC; text-align:center; padding:18px 12px;">
             <div class="card-top-title" style="margin-bottom:6px;">
-              <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(m.title)}</span>
-              <span class="court-status-chip finished" style="background:#E2E8F0; color:#475569;">Selesai</span>
+              <span class="card-title-text" style="color:var(--text-muted); font-size:0.82rem; font-weight:700;">${escapeHtml(m.title)}</span>
+              <span class="court-status-chip finished" style="background:#E2E8F0; color:#475569; font-weight:700;">Selesai</span>
             </div>
-            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Match Soccer Telah Selesai</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data skor pertandingan selesai tidak tersedia untuk akun Tamu (Guest).</div>
+            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Pertandingan Telah Selesai</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data skor pertandingan selesai tidak tersedia untuk akun Tamu.</div>
             <button class="btn-court-action" style="font-size:0.74rem; padding:6px 14px; width:auto; margin:0 auto; font-weight:800; color:var(--brand-blue); border-color:#BFDBFE; background:#EFF6FF;" onclick="openLoginModal()">
               Masuk / Daftar Akun
             </button>
@@ -7652,19 +7650,19 @@ function renderCourtsView() {
       }
 
       return `
-        <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px; border: 1.5px solid ${isOngoing ? '#86EFAC' : (isNextPending ? '#FDE68A' : 'var(--border-color)')}; box-shadow: ${isOngoing ? '0 4px 14px rgba(22,101,52,0.1)' : '0 2px 6px rgba(0,0,0,0.04)'};">
+        <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px; border: 1.5px solid ${isOngoing ? 'var(--brand-blue)' : 'var(--border-color)'}; box-shadow: ${isOngoing ? '0 2px 10px rgba(11,116,222,0.08)' : '0 1px 4px rgba(0,0,0,0.03)'}; background:${isFinished ? '#FAFBFD' : '#FFFFFF'};">
           
           <!-- Top Bar: Match Title, Status & Actions -->
           <div class="card-top-title" style="margin-bottom:10px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="background:var(--brand-navy-dark); color:#FFF; font-size:0.72rem; font-weight:900; padding:3px 8px; border-radius:6px; letter-spacing:0.5px;">MATCH ${m.roundNumber || (idx + 1)}</span>
+              <span style="background:var(--brand-navy-dark); color:#FFF; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;">MATCH ${m.roundNumber || (idx + 1)}</span>
               <span class="card-title-text" style="font-size:0.84rem; font-weight:800;">${escapeHtml(m.title)}</span>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
-              ${isOngoing ? `<span class="court-status-chip" style="background:#DCFCE7; color:#166534; font-weight:800; border:1px solid #BBF7D0;">🟢 LIVE</span>` : ''}
-              ${isNextPending && !isOngoing ? `<span class="court-status-chip" style="background:#FEF3C7; color:#92400E; font-weight:800; border:1px solid #FDE68A;">⚡ SIAP MASUK</span>` : ''}
-              ${isFinished ? `<span class="court-status-chip" style="background:#F1F5F9; color:#475569; font-weight:800;">✓ SELESAI</span>` : ''}
-              ${!isOngoing && !isNextPending && !isFinished ? `<span class="court-status-chip pending">PENDING</span>` : ''}
+              ${isOngoing ? `<span class="court-status-chip" style="background:#EAF4FF; color:var(--brand-blue); font-weight:800; border:1px solid #BAE6FD;">Live</span>` : ''}
+              ${isNextPending && !isOngoing ? `<span class="court-status-chip" style="background:#F1F5F9; color:#334155; font-weight:800; border:1px solid #CBD5E1;">Siap Masuk</span>` : ''}
+              ${isFinished ? `<span class="court-status-chip" style="background:#F1F5F9; color:#64748B; font-weight:700;">Selesai</span>` : ''}
+              ${!isOngoing && !isNextPending && !isFinished ? `<span class="court-status-chip pending" style="background:#F8FAFC; color:#64748B; font-weight:700; border:1px solid #E2E8F0;">Menunggu</span>` : ''}
               ${checkEditPermission(false) ? `
                 <button type="button" onclick="deleteSoccerMatch(${idx})" title="Hapus pertandingan ini" style="background:none; border:none; color:var(--text-muted); font-size:0.9rem; font-weight:800; cursor:pointer; padding:2px 4px; line-height:1;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='var(--text-muted)'">
                   ✕
@@ -7674,50 +7672,44 @@ function renderCourtsView() {
           </div>
 
           <!-- Fixture Card Arena: Team A vs Team B -->
-          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:${isOngoing ? '#F0FDF4' : '#F8FAFC'}; padding:12px; border:1.5px solid ${isOngoing ? '#BBF7D0' : '#E2E8F0'}; border-radius:var(--radius-lg); margin-bottom:10px;">
+          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#F8FAFC; padding:12px; border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:10px;">
             
             <!-- Team A Box -->
             <div style="text-align:center;">
-              <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
-                <span style="font-size:0.9rem;">⚽</span>
-                <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:inline-block;" title="${escapeHtml(m.teamA.name)}">
-                  ${escapeHtml(m.teamA.name)}
-                </strong>
-              </div>
+              <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:block; margin-bottom:4px;" title="${escapeHtml(m.teamA.name)}">
+                ${escapeHtml(m.teamA.name)}
+              </strong>
               <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'A', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
-                <span style="font-size:1.85rem; font-weight:900; color:${isWinA ? '#059669' : 'var(--brand-orange)'}; min-width:32px; display:inline-block; font-variant-numeric: tabular-nums;">${m.scoreA !== null ? m.scoreA : '-'}</span>
+                <span style="font-size:1.85rem; font-weight:900; color:${isWinA ? 'var(--brand-blue)' : 'var(--brand-navy-dark)'}; min-width:32px; display:inline-block; font-variant-numeric: tabular-nums;">${m.scoreA !== null ? m.scoreA : '-'}</span>
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper plus" onclick="changeSoccerMatchScore(${idx}, 'A', 1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Tambah skor">+</button>` : ''}
               </div>
-              ${isWinA ? `<div style="margin-top:3px;"><span style="font-size:0.68rem; background:#DCFCE7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:800;">MENANG 🏆</span></div>` : ''}
+              ${isWinA ? `<div style="margin-top:3px;"><span style="font-size:0.68rem; background:#EAF4FF; color:var(--brand-blue); border:1px solid #BAE6FD; padding:1px 6px; border-radius:4px; font-weight:800;">Menang</span></div>` : ''}
             </div>
 
             <!-- Center Divider: VS Badge & Quick Swap Button -->
             <div style="text-align:center;">
-              <div style="width:34px; height:34px; border-radius:50%; background:#FFFFFF; border:1.5px solid #CBD5E1; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.75rem; color:#64748B; margin:0 auto 4px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+              <div style="width:32px; height:32px; border-radius:50%; background:#FFFFFF; border:1px solid #CBD5E1; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.74rem; color:var(--brand-navy-dark); margin:0 auto 4px;">
                 VS
               </div>
               ${checkEditPermission(false) ? `
-                <button type="button" onclick="swapSoccerMatchTeams(${idx})" title="Tukar posisi Tim A ↔ Tim B" style="background:#EFF6FF; border:1px solid #BFDBFE; color:var(--brand-blue); border-radius:999px; padding:2px 8px; font-size:0.68rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:2px; white-space:nowrap;">
-                  ⇄ Tukar
+                <button type="button" onclick="swapSoccerMatchTeams(${idx})" title="Tukar posisi Tim A dan Tim B" style="background:#FFFFFF; border:1px solid #CBD5E1; color:var(--brand-navy-dark); border-radius:999px; padding:2px 8px; font-size:0.68rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:2px; white-space:nowrap;">
+                  Tukar Posisi
                 </button>
               ` : ''}
             </div>
 
             <!-- Team B Box -->
             <div style="text-align:center;">
-              <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
-                <span style="font-size:0.9rem;">⚽</span>
-                <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:inline-block;" title="${escapeHtml(m.teamB.name)}">
-                  ${escapeHtml(m.teamB.name)}
-                </strong>
-              </div>
+              <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:block; margin-bottom:4px;" title="${escapeHtml(m.teamB.name)}">
+                ${escapeHtml(m.teamB.name)}
+              </strong>
               <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'B', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
-                <span style="font-size:1.85rem; font-weight:900; color:${isWinB ? '#059669' : 'var(--brand-navy-dark)'}; min-width:32px; display:inline-block; font-variant-numeric: tabular-nums;">${m.scoreB !== null ? m.scoreB : '-'}</span>
+                <span style="font-size:1.85rem; font-weight:900; color:${isWinB ? 'var(--brand-blue)' : 'var(--brand-navy-dark)'}; min-width:32px; display:inline-block; font-variant-numeric: tabular-nums;">${m.scoreB !== null ? m.scoreB : '-'}</span>
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper plus" onclick="changeSoccerMatchScore(${idx}, 'B', 1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Tambah skor">+</button>` : ''}
               </div>
-              ${isWinB ? `<div style="margin-top:3px;"><span style="font-size:0.68rem; background:#DCFCE7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:800;">MENANG 🏆</span></div>` : ''}
+              ${isWinB ? `<div style="margin-top:3px;"><span style="font-size:0.68rem; background:#EAF4FF; color:var(--brand-blue); border:1px solid #BAE6FD; padding:1px 6px; border-radius:4px; font-weight:800;">Menang</span></div>` : ''}
             </div>
 
           </div>
@@ -7725,13 +7717,13 @@ function renderCourtsView() {
           <!-- Bottom Control Bar -->
           <div class="court-control-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">▶ Mulai Kickoff</button>` : ''}
+              ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})" style="background:var(--brand-navy-dark); color:#FFF; font-weight:800; font-size:0.75rem; padding:6px 14px; border-radius:6px; border:none; cursor:pointer;">Mulai Kickoff</button>` : ''}
               ${checkEditPermission(false) ? `
-                <button type="button" class="btn-court-quick-action" onclick="openSoccerMatchModal(${idx})" style="background:#F8FAFC; border:1.5px solid #CBD5E1; color:var(--brand-navy-dark); font-weight:800; font-size:0.75rem; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;" title="Ubah Tim / Bagan Manual">
-                  ✎ Ubah Bagan
+                <button type="button" class="btn-court-quick-action" onclick="openSoccerMatchModal(${idx})" style="background:#FFFFFF; border:1px solid #CBD5E1; color:var(--brand-navy-dark); font-weight:800; font-size:0.75rem; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;" title="Ubah Tim / Bagan Manual">
+                  Ubah Bagan
                 </button>
-                <button type="button" class="btn-court-action" style="background:#0F1E36; color:#FFF; font-weight:800; font-size:0.75rem; padding:6px 14px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; cursor:pointer;" onclick="openSoccerScoreModal(${idx})" title="Input Skor Match">
-                  ⚽ Input Skor
+                <button type="button" class="btn-court-action" style="background:var(--brand-blue); color:#FFF; font-weight:800; font-size:0.75rem; padding:6px 14px; border-radius:6px; border:none; display:inline-flex; align-items:center; gap:5px; cursor:pointer;" onclick="openSoccerScoreModal(${idx})" title="Input Skor Match">
+                  Input Skor
                 </button>
               ` : ''}
             </div>
