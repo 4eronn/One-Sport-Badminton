@@ -2430,17 +2430,17 @@
 
     <!-- Bottom Actions -->
     <div class="court-bottom-actions" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-      <button class="btn-os-cyan" style="background:#0F1E36;" onclick="smartRebalanceUpcoming()">
+      <button class="btn-os-cyan" style="background:#0F1E36;" onclick="handleMatchRebalanceAction()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-        <span>Smart Match</span>
+        <span id="rebalanceBtnText">Smart Match</span>
       </button>
       <button class="btn-os-orange" style="background:#10B981; box-shadow:0 4px 12px rgba(16,185,129,0.25);" onclick="addNewCourt()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         <span id="btnAddMatchLabel">Tambah Lapangan</span>
       </button>
-      <button class="btn-os-purple" id="btnCustomCourtTrigger" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color:#FFFFFF; font-weight:800; font-size:0.85rem; padding:11px 14px; border:none; border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(109,40,217,0.3); grid-column:span 2; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'" onclick="openCustomCourtModal()">
+      <button class="btn-os-purple" id="btnCustomCourtTrigger" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); color:#FFFFFF; font-weight:800; font-size:0.85rem; padding:11px 14px; border:none; border-radius:var(--radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(109,40,217,0.3); grid-column:span 2; transition:transform 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'" onclick="handleCustomMatchOrCourtAction()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        <span>Buat Lapangan Pilihan (Pilih Pemain)</span>
+        <span id="btnCustomCourtLabel">Buat Lapangan Pilihan (Pilih Pemain)</span>
       </button>
     </div>
 
@@ -3578,6 +3578,79 @@
   </div>
 </div>
 
+<!-- ── MODAL: ATUR BAGAN & PILIH TIM MINI SOCCER ── -->
+<div class="modal-overlay" id="soccerMatchModalOverlay" style="z-index: 99997;">
+  <div class="modal-box" style="max-width: 440px;">
+    <div class="modal-header">
+      <div class="modal-title" id="soccerMatchModalTitle">Atur Bagan Pertandingan</div>
+      <button class="btn-del-player" onclick="closeSoccerMatchModal()">✕</button>
+    </div>
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;" id="soccerMatchModalSub">
+      Pilih dua tim yang akan bertanding di jadwal pertandingan ini.
+    </div>
+
+    <!-- Match Target Index (kosong = buat baru) -->
+    <input type="hidden" id="soccerMatchModalTargetIdx" value="">
+
+    <!-- Team Selection Arena -->
+    <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:14px; margin-bottom:12px;">
+      
+      <!-- Team A Picker -->
+      <div style="margin-bottom:8px;">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>⚽ Tim A (Kandang / Home)</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Pilih Tim</span>
+        </label>
+        <select id="soccerMatchSelectTeamA" class="input-styled-os" style="font-weight:800; font-size:0.86rem; width:100%; height:40px; background:#FFFFFF;" onchange="updateSoccerMatchModalPreview()">
+        </select>
+      </div>
+
+      <!-- Quick Swap Button -->
+      <div style="display:flex; justify-content:center; margin:4px 0;">
+        <button type="button" onclick="swapSoccerMatchModalTeams()" class="btn-court-quick-action" style="background:#EFF6FF; border:1px solid #BFDBFE; color:var(--brand-blue); padding:4px 14px; font-weight:800; font-size:0.74rem; border-radius:999px; display:inline-flex; align-items:center; gap:5px;" title="Tukar posisi Tim A dan Tim B">
+          ⇄ Tukar Posisi Tim (A ↔ B)
+        </button>
+      </div>
+
+      <!-- Team B Picker -->
+      <div style="margin-bottom:4px;">
+        <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>⚽ Tim B (Tandang / Away)</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Pilih Lawan</span>
+        </label>
+        <select id="soccerMatchSelectTeamB" class="input-styled-os" style="font-weight:800; font-size:0.86rem; width:100%; height:40px; background:#FFFFFF;" onchange="updateSoccerMatchModalPreview()">
+        </select>
+      </div>
+    </div>
+
+    <!-- Match Status Picker -->
+    <div id="soccerMatchStatusGroup" style="margin-bottom:12px;">
+      <label style="font-size:0.74rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:5px;">Status Pertandingan:</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <label style="display:flex; align-items:center; justify-content:center; gap:6px; background:#FFF; padding:8px 6px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer;">
+          <input type="radio" name="soccer_match_status_radio" id="soccerStatusRadioPending" value="pending" checked>
+          <span>Pending (Menunggu)</span>
+        </label>
+        <label style="display:flex; align-items:center; justify-content:center; gap:6px; background:#FFF; padding:8px 6px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer;">
+          <input type="radio" name="soccer_match_status_radio" id="soccerStatusRadioOngoing" value="ongoing">
+          <span style="color:#166534;">🟢 Sedang Main (Live)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Validation Error Alert -->
+    <div id="soccerMatchModalError" style="display:none; background:#FEF2F2; border:1px solid #FCA5A5; color:#DC2626; border-radius:var(--radius-sm); padding:8px 10px; font-size:0.74rem; font-weight:700; margin-bottom:12px;">
+      Tim A dan Tim B tidak boleh tim yang sama. Silakan pilih dua tim yang berbeda.
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="btn-court-action" style="flex:1; padding:10px;" onclick="closeSoccerMatchModal()">Batal</button>
+      <button type="button" class="btn-os-orange" id="btnSoccerMatchModalSave" style="flex:2; padding:10px; font-weight:800;" onclick="saveSoccerMatchModal()">Simpan Bagan Match</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL: REQUEST REKAN TIM (FITUR 2) ── -->
 <div class="modal-overlay" id="partnerRequestModalOverlay" style="z-index: 99997;">
   <div class="modal-box" style="max-width: 420px;">
@@ -4223,6 +4296,8 @@ function switchSport(sport) {
     sTeamsSection.style.display = 'none';
     document.getElementById('btnAddMatchLabel').textContent = '+ Tambah Lapangan';
     document.getElementById('rebalanceBtnText').textContent = 'Susun Ulang';
+    const customLblB = document.getElementById('btnCustomCourtLabel');
+    if (customLblB) customLblB.textContent = 'Buat Lapangan Pilihan (Pilih Pemain)';
   } else {
     btnB.classList.remove('active');
     btnS.classList.add('active');
@@ -4265,6 +4340,8 @@ function switchSport(sport) {
     sTeamsSection.style.display = 'block';
     document.getElementById('btnAddMatchLabel').textContent = '+ Tambah Match';
     document.getElementById('rebalanceBtnText').textContent = 'Susun Jadwal Ulang';
+    const customLblS = document.getElementById('btnCustomCourtLabel');
+    if (customLblS) customLblS.textContent = '+ Buat Pertandingan Pilihan (Pilih Tim)';
   }
 
   updateSessionLabels();
@@ -5502,6 +5579,204 @@ function submitSoccerModalScore() {
   }
 }
 
+// ── ATUR BAGAN & PILIH TIM MINI SOCCER ──
+function openSoccerMatchModal(matchIdx = null) {
+  if (!checkEditPermission()) return;
+  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
+
+  if (!Array.isArray(sTeams) || sTeams.length < 2) {
+    showToast('Daftarkan minimal 2 tim terlebih dahulu sebelum mengatur jadwal/bagan.', 'warning');
+    return;
+  }
+
+  const modal = document.getElementById('soccerMatchModalOverlay');
+  const titleEl = document.getElementById('soccerMatchModalTitle');
+  const targetIdxInput = document.getElementById('soccerMatchModalTargetIdx');
+  const selA = document.getElementById('soccerMatchSelectTeamA');
+  const selB = document.getElementById('soccerMatchSelectTeamB');
+  const radioPending = document.getElementById('soccerStatusRadioPending');
+  const radioOngoing = document.getElementById('soccerStatusRadioOngoing');
+  const btnSave = document.getElementById('btnSoccerMatchModalSave');
+  const errEl = document.getElementById('soccerMatchModalError');
+
+  if (!modal || !selA || !selB) return;
+  if (errEl) errEl.style.display = 'none';
+
+  // Populate options
+  const optionsHtml = sTeams.map((t, i) => `<option value="${i}">⚽ ${escapeHtml(t.name)}</option>`).join('');
+  selA.innerHTML = optionsHtml;
+  selB.innerHTML = optionsHtml;
+
+  const isEditing = (typeof matchIdx === 'number' && matchIdx !== null && sMatches && sMatches[matchIdx]);
+
+  if (isEditing) {
+    const m = sMatches[matchIdx];
+    if (targetIdxInput) targetIdxInput.value = matchIdx;
+    if (titleEl) titleEl.textContent = `Atur Bagan: Match ${m.roundNumber || (matchIdx + 1)}`;
+    if (btnSave) btnSave.textContent = 'Simpan Perubahan Bagan';
+
+    let idxA = sTeams.findIndex(t => (m.teamA && m.teamA.key && t.key === m.teamA.key) || (m.teamA && t.name === m.teamA.name));
+    let idxB = sTeams.findIndex(t => (m.teamB && m.teamB.key && t.key === m.teamB.key) || (m.teamB && t.name === m.teamB.name));
+    if (idxA === -1) idxA = 0;
+    if (idxB === -1) idxB = (idxA + 1) % sTeams.length;
+
+    selA.value = idxA;
+    selB.value = idxB;
+
+    if (m.status === 'ongoing') {
+      if (radioOngoing) radioOngoing.checked = true;
+    } else {
+      if (radioPending) radioPending.checked = true;
+    }
+  } else {
+    if (targetIdxInput) targetIdxInput.value = '';
+    if (titleEl) titleEl.textContent = '+ Buat Pertandingan Baru (Pilih Tim)';
+    if (btnSave) btnSave.textContent = 'Tambahkan ke Bagan Jadwal';
+
+    selA.value = 0;
+    selB.value = sTeams.length > 1 ? 1 : 0;
+    if (radioPending) radioPending.checked = true;
+  }
+
+  updateSoccerMatchModalPreview();
+  modal.classList.add('open');
+}
+
+function closeSoccerMatchModal() {
+  const modal = document.getElementById('soccerMatchModalOverlay');
+  if (modal) modal.classList.remove('open');
+}
+
+function swapSoccerMatchModalTeams() {
+  const selA = document.getElementById('soccerMatchSelectTeamA');
+  const selB = document.getElementById('soccerMatchSelectTeamB');
+  if (!selA || !selB) return;
+  const temp = selA.value;
+  selA.value = selB.value;
+  selB.value = temp;
+  updateSoccerMatchModalPreview();
+}
+
+function updateSoccerMatchModalPreview() {
+  const selA = document.getElementById('soccerMatchSelectTeamA');
+  const selB = document.getElementById('soccerMatchSelectTeamB');
+  const errEl = document.getElementById('soccerMatchModalError');
+  const btnSave = document.getElementById('btnSoccerMatchModalSave');
+  if (!selA || !selB) return;
+
+  const isSame = (selA.value === selB.value);
+  if (errEl) {
+    errEl.style.display = isSame ? 'block' : 'none';
+  }
+  if (btnSave) {
+    btnSave.disabled = isSame;
+    btnSave.style.opacity = isSame ? '0.5' : '1';
+    btnSave.style.cursor = isSame ? 'not-allowed' : 'pointer';
+  }
+}
+
+function swapSoccerMatchTeams(matchIdx) {
+  if (!checkEditPermission()) return;
+  if (!Array.isArray(sMatches) || !sMatches[matchIdx]) return;
+
+  const m = sMatches[matchIdx];
+  const tempTeam = m.teamA;
+  m.teamA = m.teamB;
+  m.teamB = tempTeam;
+
+  const tempScore = m.scoreA;
+  m.scoreA = m.scoreB;
+  m.scoreB = tempScore;
+
+  if (m.winner === 'A') m.winner = 'B';
+  else if (m.winner === 'B') m.winner = 'A';
+
+  const rNum = m.roundNumber || (matchIdx + 1);
+  m.title = `Match ${rNum} • ${m.teamA.name} vs ${m.teamB.name}`;
+
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`Posisi tim ditukar: ${m.teamA.name} vs ${m.teamB.name}`, 'info');
+}
+
+function saveSoccerMatchModal() {
+  if (!checkEditPermission()) return;
+  const selA = document.getElementById('soccerMatchSelectTeamA');
+  const selB = document.getElementById('soccerMatchSelectTeamB');
+  const errEl = document.getElementById('soccerMatchModalError');
+  if (!selA || !selB) return;
+
+  const idxA = parseInt(selA.value, 10);
+  const idxB = parseInt(selB.value, 10);
+
+  if (isNaN(idxA) || isNaN(idxB) || idxA === idxB || !sTeams[idxA] || !sTeams[idxB]) {
+    if (errEl) {
+      errEl.textContent = 'Tim A dan Tim B tidak boleh tim yang sama. Silakan pilih dua tim yang berbeda.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+
+  const teamA = sTeams[idxA];
+  const teamB = sTeams[idxB];
+  const radioOngoing = document.getElementById('soccerStatusRadioOngoing');
+  const selectedStatus = (radioOngoing && radioOngoing.checked) ? 'ongoing' : 'pending';
+
+  const targetIdxVal = document.getElementById('soccerMatchModalTargetIdx')?.value;
+  const isEditing = (targetIdxVal !== '' && targetIdxVal !== null && targetIdxVal !== undefined);
+
+  if (isEditing) {
+    const matchIdx = parseInt(targetIdxVal, 10);
+    const m = sMatches[matchIdx];
+    if (!m) return;
+
+    m.teamA = teamA;
+    m.teamB = teamB;
+    const rNum = m.roundNumber || (matchIdx + 1);
+    m.title = `Match ${rNum} • ${teamA.name} vs ${teamB.name}`;
+    if (m.status !== 'finished') {
+      m.status = selectedStatus;
+    }
+
+    showToast(`Bagan Match ${rNum} berhasil diubah (${teamA.name} vs ${teamB.name})!`, 'success');
+  } else {
+    if (!Array.isArray(sMatches)) sMatches = [];
+    const newRoundNum = sMatches.length + 1;
+    const newMatch = {
+      roundNumber: newRoundNum,
+      title: `Match ${newRoundNum} • ${teamA.name} vs ${teamB.name}`,
+      teamA: teamA,
+      teamB: teamB,
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: selectedStatus
+    };
+    sMatches.push(newMatch);
+    showToast(`Pertandingan baru ditambahkan: ${teamA.name} vs ${teamB.name}!`, 'success');
+  }
+
+  closeSoccerMatchModal();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+}
+
+function handleCustomMatchOrCourtAction() {
+  if (currentSport === 'minisoccer') {
+    openSoccerMatchModal();
+  } else {
+    openCustomCourtModal();
+  }
+}
+
+function handleMatchRebalanceAction() {
+  smartRebalanceUpcoming();
+}
+
 function updateSoccerTeamSelectOptions() {
   const sel = document.getElementById('inputSoccerTeamSelect');
   if (!sel || !Array.isArray(sTeams)) return;
@@ -6213,19 +6488,23 @@ function addNewCourt() {
     persistAndBroadcast();
     showToast(`Lapangan berhasil ditambah (${bNumCourts} Lapangan)`);
   } else {
-    sMatches.push({
-      roundNumber: sMatches.length + 1,
-      title: `Match Tambahan ${sMatches.length + 1}`,
-      teamA: sTeams[0] || { name: 'Tim Garuda (A)' },
-      teamB: sTeams[1] || { name: 'Tim Rajawali (B)' },
-      scoreA: null,
-      scoreB: null,
-      winner: null,
-      status: 'pending'
-    });
-    renderCourtsView();
-    persistAndBroadcast();
-    showToast('Match Mini Soccer berhasil ditambahkan');
+    if (typeof openSoccerMatchModal === 'function') {
+      openSoccerMatchModal();
+    } else {
+      sMatches.push({
+        roundNumber: sMatches.length + 1,
+        title: `Match Tambahan ${sMatches.length + 1}`,
+        teamA: sTeams[0] || { name: 'Tim Garuda (A)' },
+        teamB: sTeams[1] || { name: 'Tim Rajawali (B)' },
+        scoreA: null,
+        scoreB: null,
+        winner: null,
+        status: 'pending'
+      });
+      renderCourtsView();
+      persistAndBroadcast();
+      showToast('Match Mini Soccer berhasil ditambahkan');
+    }
   }
 }
 
@@ -7303,23 +7582,32 @@ function renderCourtsView() {
               <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#F59E0B; box-shadow:0 0 0 3px rgba(245,158,11,0.25);"></span>
               ⏰ TIM SIAP-SIAP MASUK LAPANGAN (PERTANDINGAN BERIKUTNYA)
             </span>
-            <span class="court-status-chip pending" style="background:#FDE68A; color:#78350F; font-size:0.68rem; font-weight:800;">
-              Match ${nextPendingMatch.roundNumber}
-            </span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="court-status-chip pending" style="background:#FDE68A; color:#78350F; font-size:0.68rem; font-weight:800;">
+                Match ${nextPendingMatch.roundNumber || (nextIdx + 1)}
+              </span>
+              ${checkEditPermission(false) ? `
+                <button type="button" onclick="openSoccerMatchModal(${nextIdx})" class="btn-court-quick-action" style="background:#FFF; border:1px solid #FCD34D; color:#92400E; font-weight:800; font-size:0.7rem; padding:2px 8px; border-radius:999px; cursor:pointer;" title="Ubah bagan tim berikutnya">
+                  ✎ Ubah Tim
+                </button>
+              ` : ''}
+            </div>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#FFFFFF; border:1px solid #FDE68A; border-radius:var(--radius-md); padding:10px 14px; margin-bottom:8px;">
-            <div style="text-align:left; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              ${escapeHtml(nextPendingMatch.teamA.name)}
+            <div style="text-align:left; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:6px;">
+              <span style="font-size:1.05rem;">⚽</span>
+              <span>${escapeHtml(nextPendingMatch.teamA.name)}</span>
             </div>
-            <div style="font-weight:900; color:#D97706; font-size:0.82rem; text-align:center;">VS</div>
-            <div style="text-align:right; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              ${escapeHtml(nextPendingMatch.teamB.name)}
+            <div style="font-weight:900; color:#D97706; font-size:0.8rem; text-align:center; padding:3px 10px; background:#FEF3C7; border-radius:999px;">VS</div>
+            <div style="text-align:right; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; justify-content:flex-end; gap:6px;">
+              <span>${escapeHtml(nextPendingMatch.teamB.name)}</span>
+              <span style="font-size:1.05rem;">⚽</span>
             </div>
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:0.73rem; color:#78350F; font-weight:700;">
-            <span>${ongoingMatch ? 'Mohon bersiap di pinggir lapangan. Masuk begitu match saat ini selesai!' : 'Lapangan kosong. Tim siap dipersilakan masuk sekarang!'}</span>
+            <span>${ongoingMatch ? '⏳ Mohon bersiap di pinggir lapangan. Masuk begitu match saat ini selesai!' : '🟢 Lapangan siap. Tim dipersilakan kickoff sekarang!'}</span>
             ${checkEditPermission(false) ? `
               <button type="button" class="btn-court-quick-action" onclick="startSoccerMatch(${nextIdx})" style="background:#D97706; color:#FFF; border:none; padding:4px 12px; font-size:0.74rem; font-weight:800; border-radius:5px; cursor:pointer;" title="Mulai pertandingan berikutnya">
                 Kickoff Match Ini ▶
@@ -7330,10 +7618,10 @@ function renderCourtsView() {
       `;
     } else if (sMatches.every(m => m.status === 'finished')) {
       nextMatchBannerHtml = `
-        <div class="os-card" style="background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%); border: 1.5px solid #86EFAC; border-radius: var(--radius-lg); padding: 12px 14px; margin-top: 10px; margin-bottom: 6px; text-align:center;">
-          <div style="font-weight:900; color:#065F46; font-size:0.9rem; margin-bottom:4px;">🏆 Seluruh Pertandingan Selesai!</div>
-          <div style="font-size:0.75rem; color:#047857; margin-bottom:8px;">Semua match telah dimainkan. Cek klasemen poin atau podium juara akhir.</div>
-          <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-selesai')" style="background:#059669; color:#FFF; border:none; padding:5px 16px; font-size:0.75rem; font-weight:800; border-radius:6px; cursor:pointer;">
+        <div class="os-card" style="background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%); border: 1.5px solid #86EFAC; border-radius: var(--radius-lg); padding: 14px; margin-top: 10px; margin-bottom: 6px; text-align:center;">
+          <div style="font-weight:900; color:#065F46; font-size:0.92rem; margin-bottom:4px;">🏆 Seluruh Pertandingan Selesai!</div>
+          <div style="font-size:0.76rem; color:#047857; margin-bottom:10px;">Semua match telah dimainkan. Cek klasemen poin atau podium juara akhir.</div>
+          <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-selesai')" style="background:#059669; color:#FFF; border:none; padding:6px 18px; font-size:0.78rem; font-weight:800; border-radius:6px; cursor:pointer;">
             Lihat Podium Juara 🏆
           </button>
         </div>
@@ -7344,6 +7632,8 @@ function renderCourtsView() {
       const isFinished = m.status === 'finished';
       const isOngoing = m.status === 'ongoing';
       const isNextPending = m === nextPendingMatch;
+      const isWinA = isFinished && m.winner === 'A';
+      const isWinB = isFinished && m.winner === 'B';
 
       if (isFinished && isGuestUser()) {
         return `
@@ -7362,53 +7652,92 @@ function renderCourtsView() {
       }
 
       return `
-        <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px;">
-          <div class="card-top-title">
-            <span class="card-title-text">${escapeHtml(m.title)}</span>
+        <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px; border: 1.5px solid ${isOngoing ? '#86EFAC' : (isNextPending ? '#FDE68A' : 'var(--border-color)')}; box-shadow: ${isOngoing ? '0 4px 14px rgba(22,101,52,0.1)' : '0 2px 6px rgba(0,0,0,0.04)'};">
+          
+          <!-- Top Bar: Match Title, Status & Actions -->
+          <div class="card-top-title" style="margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="background:var(--brand-navy-dark); color:#FFF; font-size:0.72rem; font-weight:900; padding:3px 8px; border-radius:6px; letter-spacing:0.5px;">MATCH ${m.roundNumber || (idx + 1)}</span>
+              <span class="card-title-text" style="font-size:0.84rem; font-weight:800;">${escapeHtml(m.title)}</span>
+            </div>
             <div style="display:flex; align-items:center; gap:6px;">
-              ${isOngoing ? `<span class="court-status-chip" style="background:#DCFCE7; color:#166534; font-weight:800;">🟢 Sedang Main</span>` : ''}
-              ${isNextPending && !isOngoing ? `<span class="court-status-chip" style="background:#FEF3C7; color:#92400E; font-weight:800;">⚡ Siap-Siap Masuk</span>` : ''}
-              <span class="court-status-chip ${m.status}">${isFinished ? 'Selesai' : (isOngoing ? 'Live' : 'Pending')}</span>
+              ${isOngoing ? `<span class="court-status-chip" style="background:#DCFCE7; color:#166534; font-weight:800; border:1px solid #BBF7D0;">🟢 LIVE</span>` : ''}
+              ${isNextPending && !isOngoing ? `<span class="court-status-chip" style="background:#FEF3C7; color:#92400E; font-weight:800; border:1px solid #FDE68A;">⚡ SIAP MASUK</span>` : ''}
+              ${isFinished ? `<span class="court-status-chip" style="background:#F1F5F9; color:#475569; font-weight:800;">✓ SELESAI</span>` : ''}
+              ${!isOngoing && !isNextPending && !isFinished ? `<span class="court-status-chip pending">PENDING</span>` : ''}
               ${checkEditPermission(false) ? `
-                <button type="button" onclick="deleteSoccerMatch(${idx})" title="Hapus pertandingan ini" style="background:none; border:none; color:var(--text-muted); font-size:0.85rem; font-weight:800; cursor:pointer; padding:2px 4px; line-height:1;">
+                <button type="button" onclick="deleteSoccerMatch(${idx})" title="Hapus pertandingan ini" style="background:none; border:none; color:var(--text-muted); font-size:0.9rem; font-weight:800; cursor:pointer; padding:2px 4px; line-height:1;" onmouseover="this.style.color='#DC2626'" onmouseout="this.style.color='var(--text-muted)'">
                   ✕
                 </button>
               ` : ''}
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#F8FAFC; padding:12px; border-radius:var(--radius-lg); margin-bottom:10px;">
+          <!-- Fixture Card Arena: Team A vs Team B -->
+          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:${isOngoing ? '#F0FDF4' : '#F8FAFC'}; padding:12px; border:1.5px solid ${isOngoing ? '#BBF7D0' : '#E2E8F0'}; border-radius:var(--radius-lg); margin-bottom:10px;">
+            
+            <!-- Team A Box -->
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:0.95rem; display:block; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamA.name)}</strong>
+              <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
+                <span style="font-size:0.9rem;">⚽</span>
+                <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:inline-block;" title="${escapeHtml(m.teamA.name)}">
+                  ${escapeHtml(m.teamA.name)}
+                </strong>
+              </div>
               <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'A', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
-                <span style="font-size:1.8rem; font-weight:900; color:var(--brand-orange); min-width:32px; display:inline-block;">${m.scoreA !== null ? m.scoreA : '-'}</span>
+                <span style="font-size:1.85rem; font-weight:900; color:${isWinA ? '#059669' : 'var(--brand-orange)'}; min-width:32px; display:inline-block; font-variant-numeric: tabular-nums;">${m.scoreA !== null ? m.scoreA : '-'}</span>
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper plus" onclick="changeSoccerMatchScore(${idx}, 'A', 1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Tambah skor">+</button>` : ''}
               </div>
+              ${isWinA ? `<div style="margin-top:3px;"><span style="font-size:0.68rem; background:#DCFCE7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:800;">MENANG 🏆</span></div>` : ''}
             </div>
-            <div style="font-size:0.85rem; font-weight:900; color:var(--text-muted); text-align:center;">VS</div>
+
+            <!-- Center Divider: VS Badge & Quick Swap Button -->
             <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:0.95rem; display:block; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamB.name)}</strong>
+              <div style="width:34px; height:34px; border-radius:50%; background:#FFFFFF; border:1.5px solid #CBD5E1; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:0.75rem; color:#64748B; margin:0 auto 4px; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                VS
+              </div>
+              ${checkEditPermission(false) ? `
+                <button type="button" onclick="swapSoccerMatchTeams(${idx})" title="Tukar posisi Tim A ↔ Tim B" style="background:#EFF6FF; border:1px solid #BFDBFE; color:var(--brand-blue); border-radius:999px; padding:2px 8px; font-size:0.68rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:2px; white-space:nowrap;">
+                  ⇄ Tukar
+                </button>
+              ` : ''}
+            </div>
+
+            <!-- Team B Box -->
+            <div style="text-align:center;">
+              <div style="display:flex; align-items:center; justify-content:center; gap:4px; margin-bottom:4px;">
+                <span style="font-size:0.9rem;">⚽</span>
+                <strong style="color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; display:inline-block;" title="${escapeHtml(m.teamB.name)}">
+                  ${escapeHtml(m.teamB.name)}
+                </strong>
+              </div>
               <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'B', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
-                <span style="font-size:1.8rem; font-weight:900; color:var(--brand-navy-dark); min-width:32px; display:inline-block;">${m.scoreB !== null ? m.scoreB : '-'}</span>
+                <span style="font-size:1.85rem; font-weight:900; color:${isWinB ? '#059669' : 'var(--brand-navy-dark)'}; min-width:32px; display:inline-block; font-variant-numeric: tabular-nums;">${m.scoreB !== null ? m.scoreB : '-'}</span>
                 ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper plus" onclick="changeSoccerMatchScore(${idx}, 'B', 1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Tambah skor">+</button>` : ''}
               </div>
+              ${isWinB ? `<div style="margin-top:3px;"><span style="font-size:0.68rem; background:#DCFCE7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:800;">MENANG 🏆</span></div>` : ''}
             </div>
+
           </div>
 
+          <!-- Bottom Control Bar -->
           <div class="court-control-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">Mulai Kickoff</button>` : ''}
+              ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">▶ Mulai Kickoff</button>` : ''}
               ${checkEditPermission(false) ? `
-                <button class="btn-court-action" style="background:#0F1E36; color:#FFF; font-weight:800; font-size:0.75rem; padding:6px 14px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;" onclick="openSoccerScoreModal(${idx})" title="Input Skor Match">
+                <button type="button" class="btn-court-quick-action" onclick="openSoccerMatchModal(${idx})" style="background:#F8FAFC; border:1.5px solid #CBD5E1; color:var(--brand-navy-dark); font-weight:800; font-size:0.75rem; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;" title="Ubah Tim / Bagan Manual">
+                  ✎ Ubah Bagan
+                </button>
+                <button type="button" class="btn-court-action" style="background:#0F1E36; color:#FFF; font-weight:800; font-size:0.75rem; padding:6px 14px; border-radius:6px; display:inline-flex; align-items:center; gap:5px; cursor:pointer;" onclick="openSoccerScoreModal(${idx})" title="Input Skor Match">
                   ⚽ Input Skor
                 </button>
               ` : ''}
             </div>
 
             <div class="winner-picker-box">
-              <span style="font-size:0.74rem; font-weight:800;">Pemenang:</span>
+              <span style="font-size:0.74rem; font-weight:800; color:var(--text-muted);">Pemenang:</span>
               <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${escapeHtml(m.teamA.name.split(' ')[0])}</button>
               <button class="btn-pick-winner ${m.winner === 'B' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'B')">${escapeHtml(m.teamB.name.split(' ')[0])}</button>
               <button class="btn-pick-winner ${m.winner === 'D' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'D')">Seri</button>

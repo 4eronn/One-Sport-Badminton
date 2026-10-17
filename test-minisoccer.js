@@ -194,6 +194,8 @@ global.document = {
         textContent: '',
         innerHTML: '',
         checked: false,
+        disabled: false,
+        style: {},
         classList: {
           _classes: new Set(),
           add: function(c) { this._classes.add(c); },
@@ -289,6 +291,114 @@ it('Mengidentifikasi pertandingan berikutnya dan tim yang siap masuk lapangan', 
   assert.strictEqual(getUpdatedTeamPitchStatus('Rajawali FC'), 'Sedang Main');
   assert.strictEqual(getUpdatedTeamPitchStatus('Harimau FC'), 'Sedang Main');
   assert.strictEqual(getUpdatedTeamPitchStatus('Garuda FC'), 'Siap Masuk');
+});
+
+console.log('\n--- 8. Atur Bagan Manual & Tukar Posisi Tim (Fitur Bagan Pilihan) ---');
+it('swapSoccerMatchTeams menukar Tim A ↔ Tim B, skor, dan memperbarui judul match', () => {
+  sTeams = [
+    { name: 'Persib (A)', key: 'team-a', players: [] },
+    { name: 'Persija (B)', key: 'team-b', players: [] }
+  ];
+  sMatches = [
+    { roundNumber: 1, title: 'Match 1 • Persib (A) vs Persija (B)', teamA: sTeams[0], teamB: sTeams[1], scoreA: 2, scoreB: 1, winner: 'A', status: 'finished' }
+  ];
+
+  swapSoccerMatchTeams(0);
+  assert.strictEqual(sMatches[0].teamA.name, 'Persija (B)');
+  assert.strictEqual(sMatches[0].teamB.name, 'Persib (A)');
+  assert.strictEqual(sMatches[0].scoreA, 1);
+  assert.strictEqual(sMatches[0].scoreB, 2);
+  assert.strictEqual(sMatches[0].winner, 'B');
+  assert.strictEqual(sMatches[0].title, 'Match 1 • Persija (B) vs Persib (A)');
+});
+
+it('openSoccerMatchModal dan saveSoccerMatchModal mengubah lawan pada bagan yang sudah ada', () => {
+  sTeams = [
+    { name: 'Tim Merah', key: 'team-1', players: [] },
+    { name: 'Tim Biru', key: 'team-2', players: [] },
+    { name: 'Tim Hijau', key: 'team-3', players: [] }
+  ];
+  sMatches = [
+    { roundNumber: 1, title: 'Match 1 • Tim Merah vs Tim Biru', teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'pending' }
+  ];
+
+  openSoccerMatchModal(0);
+  assert.strictEqual(document.getElementById('soccerMatchModalTargetIdx').value, 0);
+  assert.strictEqual(document.getElementById('soccerMatchSelectTeamA').value, 0);
+  assert.strictEqual(document.getElementById('soccerMatchSelectTeamB').value, 1);
+
+  // Ubah lawan Tim Merah dari Tim Biru menjadi Tim Hijau (index 2)
+  document.getElementById('soccerMatchSelectTeamB').value = 2;
+  saveSoccerMatchModal();
+
+  assert.strictEqual(sMatches[0].teamA.name, 'Tim Merah');
+  assert.strictEqual(sMatches[0].teamB.name, 'Tim Hijau');
+  assert.strictEqual(sMatches[0].title, 'Match 1 • Tim Merah vs Tim Hijau');
+});
+
+it('saveSoccerMatchModal menolak jika Tim A dan Tim B adalah tim yang sama (validasi bagan)', () => {
+  sTeams = [
+    { name: 'Tim Alpha', key: 'team-a', players: [] },
+    { name: 'Tim Beta', key: 'team-b', players: [] }
+  ];
+  sMatches = [
+    { roundNumber: 1, title: 'Match 1 • Tim Alpha vs Tim Beta', teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'pending' }
+  ];
+
+  openSoccerMatchModal(0);
+  // Pilih Tim Alpha untuk keduanya
+  document.getElementById('soccerMatchSelectTeamA').value = 0;
+  document.getElementById('soccerMatchSelectTeamB').value = 0;
+  updateSoccerMatchModalPreview();
+
+  assert.strictEqual(document.getElementById('soccerMatchModalError').style.display, 'block');
+  assert.strictEqual(document.getElementById('btnSoccerMatchModalSave').disabled, true);
+
+  // Coba paksa save
+  saveSoccerMatchModal();
+  // Bagan match 0 tidak boleh berubah menjadi Tim Alpha vs Tim Alpha
+  assert.notStrictEqual(sMatches[0].teamA.name, sMatches[0].teamB.name);
+  assert.strictEqual(sMatches[0].teamB.name, 'Tim Beta');
+});
+
+it('saveSoccerMatchModal menambah match baru saat targetIdx kosong', () => {
+  sTeams = [
+    { name: 'Tim X', key: 'team-x', players: [] },
+    { name: 'Tim Y', key: 'team-y', players: [] }
+  ];
+  sMatches = [];
+
+  openSoccerMatchModal(null); // Mode buat baru, ensureSoccerTeamsInitialized membuat 3 ronde default
+  const prevLen = sMatches.length; // 3
+  assert.strictEqual(document.getElementById('soccerMatchModalTargetIdx').value, '');
+  document.getElementById('soccerMatchSelectTeamA').value = 0;
+  document.getElementById('soccerMatchSelectTeamB').value = 1;
+
+  saveSoccerMatchModal();
+  assert.strictEqual(sMatches.length, prevLen + 1);
+  const newMatch = sMatches[sMatches.length - 1];
+  assert.strictEqual(newMatch.roundNumber, prevLen + 1);
+  assert.strictEqual(newMatch.teamA.name, 'Tim X');
+  assert.strictEqual(newMatch.teamB.name, 'Tim Y');
+  assert.strictEqual(newMatch.title, `Match ${prevLen + 1} • Tim X vs Tim Y`);
+});
+
+it('swapSoccerMatchModalTeams menukar pilihan dropdown tim di dalam modal', () => {
+  document.getElementById('soccerMatchSelectTeamA').value = 0;
+  document.getElementById('soccerMatchSelectTeamB').value = 1;
+  swapSoccerMatchModalTeams();
+  assert.strictEqual(document.getElementById('soccerMatchSelectTeamA').value, 1);
+  assert.strictEqual(document.getElementById('soccerMatchSelectTeamB').value, 0);
+});
+
+it('handleCustomMatchOrCourtAction membuka modal match mini soccer saat currentSport === minisoccer', () => {
+  currentSport = 'minisoccer';
+  let modalOpened = false;
+  const originalOpen = openSoccerMatchModal;
+  openSoccerMatchModal = () => { modalOpened = true; };
+  handleCustomMatchOrCourtAction();
+  assert.strictEqual(modalOpened, true);
+  openSoccerMatchModal = originalOpen;
 });
 
 console.log(`\n======================================================`);
