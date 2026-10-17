@@ -9,6 +9,7 @@ const db = require('./api/db.js');
 const stateHandler = require('./api/state.js');
 const playersHandler = require('./api/players.js');
 const healthHandler = require('./api/health.js');
+const authHandler = require('./api/auth.js');
 
 let testCount = 0;
 let passCount = 0;
@@ -296,6 +297,97 @@ async function runTests() {
     } finally {
       process.env = origEnv;
     }
+  });
+
+  console.log('\n--- 5. Serverless API Handler: /api/auth & Multi-Device Admin Sync ---');
+  await it('/api/auth merespon OPTIONS dengan header CORS lengkap', async () => {
+    const { req, res } = createMockReqRes({ method: 'OPTIONS' });
+    await authHandler(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.headers['access-control-allow-origin'], '*');
+    assert.ok(res.headers['access-control-allow-methods'].includes('POST'));
+  });
+
+  await it('Login berhasil dengan username admin dan password default (role: host)', async () => {
+    const { req, res } = createMockReqRes({
+      method: 'POST',
+      body: { username: 'admin', password: 'temanmainlebihdekat' }
+    });
+    await authHandler(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.body.success, true);
+    assert.strictEqual(res.body.user.username, 'admin');
+    assert.strictEqual(res.body.user.role, 'host');
+  });
+
+  await it('Login berhasil dengan email admin (admin@onesport.co.id)', async () => {
+    const { req, res } = createMockReqRes({
+      method: 'POST',
+      body: { username: 'admin@onesport.co.id', password: 'temanmainlebihdekat' }
+    });
+    await authHandler(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.body.success, true);
+    assert.strictEqual(res.body.user.role, 'host');
+  });
+
+  await it('Login ditolak saat password salah (HTTP 401)', async () => {
+    const { req, res } = createMockReqRes({
+      method: 'POST',
+      body: { username: 'admin', password: 'wrongpassword' }
+    });
+    await authHandler(req, res);
+    assert.strictEqual(res.statusCode, 401);
+    assert.strictEqual(res.body.success, false);
+  });
+
+  await it('Update password dan nama admin, lalu verifikasi login dengan password baru', async () => {
+    // 1. Update password admin
+    const { req: uReq, res: uRes } = createMockReqRes({
+      method: 'POST',
+      body: { action: 'update', username: 'admin', name: 'Super Admin', password: 'newadminpass123' }
+    });
+    await authHandler(uReq, uRes);
+    assert.strictEqual(uRes.statusCode, 200);
+    assert.strictEqual(uRes.body.success, true);
+
+    // 2. Login dengan password baru
+    const { req: lReq, res: lRes } = createMockReqRes({
+      method: 'POST',
+      body: { username: 'admin', password: 'newadminpass123' }
+    });
+    await authHandler(lReq, lRes);
+    assert.strictEqual(lRes.statusCode, 200);
+    assert.strictEqual(lRes.body.user.name, 'Super Admin');
+
+    // 3. Kembalikan password default untuk idempotensi test berikutnya
+    await db.saveUser({
+      username: 'admin',
+      name: 'Admin OneSport',
+      password: 'temanmainlebihdekat',
+      role: 'host'
+    });
+  });
+
+  await it('SignUp user baru via /api/auth dan verifikasi dapat login', async () => {
+    const testUsername = 'testuser_' + Date.now();
+    const { req: sReq, res: sRes } = createMockReqRes({
+      method: 'POST',
+      body: { action: 'signup', username: testUsername, name: 'Pemain Baru', password: 'pass1234user' }
+    });
+    await authHandler(sReq, sRes);
+    assert.strictEqual(sRes.statusCode, 201);
+    assert.strictEqual(sRes.body.success, true);
+
+    // Verifikasi login
+    const { req: lReq, res: lRes } = createMockReqRes({
+      method: 'POST',
+      body: { username: testUsername, password: 'pass1234user' }
+    });
+    await authHandler(lReq, lRes);
+    assert.strictEqual(lRes.statusCode, 200);
+    assert.strictEqual(lRes.body.user.username, testUsername);
+    assert.strictEqual(lRes.body.user.role, 'user');
   });
 
   console.log('\n======================================================');

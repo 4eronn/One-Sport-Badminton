@@ -9,10 +9,29 @@ const fs = require('fs');
 const path = require('path');
 
 // In-memory fallback untuk local development / serverless standby
+const DEFAULT_USERS = [
+  {
+    username: 'admin',
+    email: 'admin@onesport.co.id',
+    name: 'Admin OneSport',
+    password: 'temanmainlebihdekat',
+    role: 'host'
+  },
+  {
+    username: 'user',
+    name: 'Pemain OneSport',
+    password: 'user123',
+    role: 'user'
+  }
+];
+
 const memoryStore = {
   states: new Map(),
-  players: new Map()
+  players: new Map(),
+  users: new Map()
 };
+
+DEFAULT_USERS.forEach(u => memoryStore.users.set(u.username.toLowerCase(), { ...u }));
 
 function getPostgresConnectionString() {
   if (process.env.POSTGRES_URL) return process.env.POSTGRES_URL;
@@ -103,6 +122,24 @@ async function ensurePgTables(client) {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (room_id, player_id)
       );
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS onesport_users (
+        username VARCHAR(100) PRIMARY KEY,
+        email VARCHAR(150),
+        name VARCHAR(100) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await client.query(`
+      INSERT INTO onesport_users (username, email, name, password, role)
+      VALUES 
+        ('admin', 'admin@onesport.co.id', 'Admin OneSport', 'temanmainlebihdekat', 'host'),
+        ('user', null, 'Pemain OneSport', 'user123', 'user')
+      ON CONFLICT (username) DO NOTHING;
     `);
     tablesInitialized = true;
   } catch (err) {
@@ -329,6 +366,192 @@ async function deletePlayer(roomId = 'DEFAULT', playerId) {
   return { success: true, provider: 'memory' };
 }
 
+// ── 5. OPERASI USERS & AUTHENTICATION ──
+async function getUser(usernameOrEmail) {
+  if (!usernameOrEmail) return null;
+  const clean = String(usernameOrEmail).trim().toLowerCase();
+  const provider = getProvider();
+
+  if (provider === 'postgres') {
+    try {
+      const client = await getPgClient();
+      if (client) {
+        await ensurePgTables(client);
+        const res = await client.query(
+          'SELECT username, email, name, password, role FROM onesport_users WHERE LOWER(username) = $1 OR LOWER(email) = $1 LIMIT 1',
+          [clean]
+        );
+        if (res && res.rows && res.rows.length > 0) {
+          return { ...res.rows[0], provider: 'postgres' };
+        }
+      }
+    } catch (e) {
+      console.warn('[ONESPORT DB] Postgres getUser error:', e.message);
+      pgPool = null;
+    }
+  }
+
+  if (provider === 'kv') {
+    try {
+      const kv = getKvClient();
+      if (kv) {
+        let u = await kv.get('onesport:users:' + clean);
+        if (!u && clean.includes('@')) {
+          const direct = await kv.get('onesport:users:admin');
+          if (direct && (direct.email || '').toLowerCase() === clean) {
+            u = direct;
+          }
+        }
+        if (u) return { ...u, provider: 'kv' };
+      }
+    } catch (e) {
+      console.warn('[ONESPORT DB] KV getUser error:', e.message);
+    }
+  }
+
+  // Memory fallback
+  for (const [key, val] of memoryStore.users.entries()) {
+    if (key === clean || (val.email && val.email.toLowerCase() === clean)) {
+      return { ...val, provider: 'memory' };
+    }
+  }
+
+  return null;
+}
+
+async function saveUser(userData) {
+  if (!userData || !userData.username) return { success: false, message: 'Invalid user data' };
+  const username = String(userData.username).trim().toLowerCase();
+  const name = String(userData.name || username).trim();
+  const password = String(userData.password || '').trim();
+  const email = userData.email ? String(userData.email).trim().toLowerCase() : (username === 'admin' ? 'admin@onesport.co.id' : null);
+  const role = (username === 'admin' || userData.role === 'host') ? 'host' : (userData.role || 'user');
+  const provider = getProvider();
+
+  const userObj = {
+    username,
+    email,
+    name,
+    password,
+    role,
+    updatedAt: Date.now()
+  };
+
+  memoryStore.users.set(username, userObj);
+
+  if (provider === 'postgres') {
+    try {
+      const client = await getPgClient();
+      if (client) {
+        await ensurePgTables(client);
+        const query = `
+          INSERT INTO onesport_users (username, email, name, password, role, updated_at)
+          VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+          ON CONFLICT (username)
+          DO UPDATE SET email = COALESCE($2, onesport_users.email), name = $3, password = $4, role = $5, updated_at = CURRENT_TIMESTAMP
+        `;
+        await client.query(query, [username, email, name, password, role]);
+        return { success: true, provider: 'postgres', user: { username, email, name, role } };
+      }
+    } catch (e) {
+      console.warn('[ONESPORT DB] Postgres saveUser error:', e.message);
+      pgPool = null;
+    }
+  }
+
+  if (provider === 'kv') {
+    try {
+      const kv = getKvClient();
+      if (kv) {
+        await kv.set('onesport:users:' + username, userObj);
+        return { success: true, provider: 'kv', user: { username, email, name, role } };
+      }
+    } catch (e) {
+      console.warn('[ONESPORT DB] KV saveUser error:', e.message);
+    }
+  }
+
+  return { success: true, provider: 'memory', user: { username, email, name, role } };
+}
+
+async function authenticateUser(usernameOrEmail, password) {
+  if (!usernameOrEmail || !password) {
+    return { success: false, message: 'Username dan password wajib diisi.' };
+  }
+  const cleanUname = String(usernameOrEmail).trim().toLowerCase();
+  const cleanPass = String(password).trim();
+
+  const user = await getUser(cleanUname);
+  if (user) {
+    if (user.password === cleanPass || (user.username === 'admin' && cleanPass === 'temanmainlebihdekat')) {
+      return {
+        success: true,
+        user: {
+          username: user.username,
+          email: user.email,
+          name: user.name,
+          role: user.role
+        },
+        provider: user.provider || getProvider()
+      };
+    }
+  }
+
+  // Khusus admin: selalu izinkan kredensial default 'admin' / 'temanmainlebihdekat'
+  if ((cleanUname === 'admin' || cleanUname === 'admin@onesport.co.id') && cleanPass === 'temanmainlebihdekat') {
+    return {
+      success: true,
+      user: {
+        username: 'admin',
+        email: 'admin@onesport.co.id',
+        name: 'Admin OneSport',
+        role: 'host'
+      },
+      provider: getProvider()
+    };
+  }
+
+  // Khusus user default:
+  if (cleanUname === 'user' && cleanPass === 'user123') {
+    return {
+      success: true,
+      user: {
+        username: 'user',
+        name: 'Pemain OneSport',
+        role: 'user'
+      },
+      provider: getProvider()
+    };
+  }
+
+  return { success: false, message: 'Akses ditolak: Username atau password salah!' };
+}
+
+async function getUsers() {
+  const provider = getProvider();
+  if (provider === 'postgres') {
+    try {
+      const client = await getPgClient();
+      if (client) {
+        await ensurePgTables(client);
+        const res = await client.query('SELECT username, email, name, role FROM onesport_users ORDER BY created_at ASC');
+        if (res && res.rows) {
+          return { users: res.rows, provider: 'postgres' };
+        }
+      }
+    } catch (e) {
+      console.warn('[ONESPORT DB] Postgres getUsers error:', e.message);
+      pgPool = null;
+    }
+  }
+
+  const list = [];
+  for (const val of memoryStore.users.values()) {
+    list.push({ username: val.username, email: val.email, name: val.name, role: val.role });
+  }
+  return { users: list, provider: 'memory' };
+}
+
 async function checkHealth() {
   const provider = getProvider();
   if (provider === 'postgres') {
@@ -388,5 +611,9 @@ module.exports = {
   getPlayers,
   savePlayer,
   deletePlayer,
+  getUser,
+  saveUser,
+  authenticateUser,
+  getUsers,
   checkHealth
 };

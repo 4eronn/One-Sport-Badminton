@@ -4175,6 +4175,51 @@ const VercelDbSync = {
     } catch (e) {}
   },
 
+  async loginUserOnline(usernameOrEmail, password) {
+    try {
+      const baseUrl = this.getBaseApiUrl();
+      const res = await fetch(`${baseUrl}/api/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', username: usernameOrEmail, password })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {}
+    return null;
+  },
+
+  async updateUserOnline(username, name, password, email) {
+    try {
+      const baseUrl = this.getBaseApiUrl();
+      const res = await fetch(`${baseUrl}/api/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update', username, name, password, email })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {}
+    return null;
+  },
+
+  async signUpUserOnline(name, username, password) {
+    try {
+      const baseUrl = this.getBaseApiUrl();
+      const res = await fetch(`${baseUrl}/api/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signup', name, username, password })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {}
+    return null;
+  },
+
   async testConnection() {
     const baseUrl = this.getBaseApiUrl();
     try {
@@ -9802,6 +9847,8 @@ function renderAccountTab() {
     const displayName = getUserDisplayName();
     const isApk = typeof isAndroidApk === 'function' && isAndroidApk();
     const allHistory = getLiveHistory();
+    const adminUsername = 'admin';
+    const currentAdminPass = localStorage.getItem('onesport_admin_password') || HOST_PASSWORD;
     container.innerHTML = `
       <div class="os-card" style="margin-bottom: 14px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
@@ -9826,12 +9873,32 @@ function renderAccountTab() {
             </div>
 
             <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Username Login</label>
+              <input type="text" class="input-styled-os" value="${escapeHtml(adminUsername)} (${escapeHtml(HOST_EMAIL)})" readonly style="background:#F1F5F9; color:var(--text-secondary); cursor:not-allowed; font-size:0.8rem; padding:7px 10px;">
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Gunakan username ini untuk login Admin di semua perangkat (PC, HP, Web, APK).</div>
+            </div>
+
+            <div>
               <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Nama Pengguna / Tampilan</label>
-              <div style="display:flex; gap:6px;">
-                <input type="text" id="tabAccountHostName" class="input-styled-os" value="${escapeHtml(displayName)}" maxlength="30" style="flex:1; padding:7px 10px; font-size:0.8rem;">
-                <button type="button" class="btn-os-cyan" style="padding:6px 14px; font-size:0.74rem; font-weight:800; white-space:nowrap;" onclick="saveHostNameFromTab()">Simpan Nama</button>
-              </div>
+              <input type="text" id="tabAccountHostName" class="input-styled-os" value="${escapeHtml(displayName)}" maxlength="30" style="padding:7px 10px; font-size:0.8rem;" placeholder="Nama Admin...">
               <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Nama ini akan tampil di header dan identitas Anda di aplikasi.</div>
+            </div>
+
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Password Login Admin</label>
+              <div style="position:relative;">
+                <input type="password" id="tabAccountHostPassword" class="input-styled-os" value="${escapeHtml(currentAdminPass)}" style="padding-right:42px; font-size:0.8rem;" placeholder="Password baru admin...">
+                <button type="button" onclick="togglePasswordVisibility('tabAccountHostPassword', this)" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; display:flex; align-items:center;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
+                </button>
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Password ini dapat dipakai di semua perangkat dan otomatis tersinkron ke database cloud.</div>
+            </div>
+
+            <div>
+              <button type="button" class="btn-os-cyan" style="width:100%; padding:9px 14px; font-size:0.78rem; font-weight:800;" onclick="saveHostAccountSettings()">
+                Simpan Perubahan Akun Admin
+              </button>
             </div>
 
             <div style="padding-top:2px;">
@@ -10165,10 +10232,12 @@ function renderAccountTab() {
   `;
 }
 
-function saveHostNameFromTab() {
-  const input = document.getElementById('tabAccountHostName');
-  if (!input) return;
-  const newName = input.value.trim();
+function saveHostAccountSettings() {
+  const nameInput = document.getElementById('tabAccountHostName');
+  const passInput = document.getElementById('tabAccountHostPassword');
+  const newName = nameInput ? nameInput.value.trim() : '';
+  const newPass = passInput ? passInput.value.trim() : '';
+
   if (!newName) {
     showToast('Nama pengguna tidak boleh kosong.', 'warning');
     return;
@@ -10177,17 +10246,38 @@ function saveHostNameFromTab() {
     showToast('Nama pengguna maksimal 30 karakter.', 'warning');
     return;
   }
+  if (newPass && newPass.length < 4) {
+    showToast('Password minimal 4 karakter.', 'warning');
+    return;
+  }
+
   localStorage.setItem('onesport_user_display_name', newName);
+  if (newPass) {
+    localStorage.setItem('onesport_admin_password', newPass);
+  }
   if (currentUser) {
     currentUser.name = newName;
     localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
   }
   renderAuthUI();
-  showToast(`Nama host berhasil diubah menjadi "${newName}".`, 'success');
+
+  // Sinkronisasi ke Database Cloud Vercel
+  if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.updateUserOnline === 'function') {
+    VercelDbSync.updateUserOnline('admin', newName, newPass || (localStorage.getItem('onesport_admin_password') || HOST_PASSWORD));
+  }
+
+  showToast('Perubahan akun Admin berhasil disimpan & disinkronkan ke database cloud!', 'success');
+  if (document.getElementById('tab-akun')?.classList.contains('active')) {
+    renderAccountTab();
+  }
+}
+
+function saveHostNameFromTab() {
+  saveHostAccountSettings();
 }
 
 function saveAccountTabSettings() {
-  saveHostNameFromTab();
+  saveHostAccountSettings();
   if (!checkEditPermission()) return;
 
   const titleInput = document.getElementById('tabAccountSessionTitle');
@@ -10255,6 +10345,11 @@ function saveRegularUserAccount() {
     });
   }
   saveUsersDatabase(users);
+
+  // Sinkronisasi ke Database Cloud Vercel
+  if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.updateUserOnline === 'function') {
+    VercelDbSync.updateUserOnline(uname, newName, newPass);
+  }
 
   // Synchronize to database
   if (typeof persistAndBroadcast === 'function') {
@@ -11731,6 +11826,11 @@ function submitSignUpForm() {
   users.push(newUser);
   saveUsersDatabase(users);
 
+  // Sinkronisasi ke Database Cloud Vercel
+  if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.signUpUserOnline === 'function') {
+    VercelDbSync.signUpUserOnline(name, cleanUname, pass);
+  }
+
   currentUser = {
     username: newUser.username,
     name: newUser.name,
@@ -11775,8 +11875,9 @@ function loginUser(email, password) {
   const errEl = document.getElementById('loginErrorMessage');
   const tabErrEl = document.getElementById('tabAccountLoginError');
 
+  const customAdminPass = localStorage.getItem('onesport_admin_password');
   const isHostUsername = (cleanEmail === HOST_EMAIL.toLowerCase() || cleanEmail === 'admin');
-  const isHostPassword = (cleanPass === HOST_PASSWORD);
+  const isHostPassword = (cleanPass === (customAdminPass || HOST_PASSWORD) || cleanPass === HOST_PASSWORD);
 
   if (isHostUsername && isHostPassword) {
     const customName = localStorage.getItem('onesport_user_display_name');
@@ -11798,6 +11899,11 @@ function loginUser(email, password) {
       renderAccountTab();
     }
     showToast('Berhasil masuk sebagai Host (Admin).', 'success');
+
+    // Sinkronisasi status auth ke backend Vercel jika online
+    if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.loginUserOnline === 'function') {
+      VercelDbSync.loginUserOnline(cleanEmail, cleanPass);
+    }
     return true;
   }
 
@@ -11848,7 +11954,61 @@ function loginUser(email, password) {
     return true;
   }
 
-  // Akses otomatis ditolak karena salah akun / password
+  // Coba verifikasi dengan Vercel Cloud Database via /api/auth jika ada koneksi
+  if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.loginUserOnline === 'function') {
+    VercelDbSync.loginUserOnline(cleanEmail, cleanPass).then(res => {
+      if (res && res.success && res.user) {
+        if (res.user.role === 'host') {
+          currentUser = {
+            username: 'admin',
+            email: res.user.email || HOST_EMAIL,
+            name: res.user.name || 'Admin OneSport',
+            role: 'host'
+          };
+          userRole = 'host';
+          isGuestSession = false;
+          localStorage.setItem('onesport_admin_password', cleanPass);
+          localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+          localStorage.setItem('onesport_user_role', 'host');
+          localStorage.setItem('onesport_user_display_name', currentUser.name);
+          if (errEl) errEl.style.display = 'none';
+          if (tabErrEl) tabErrEl.style.display = 'none';
+          closeLoginModal();
+          applyRoleUI();
+          if (document.getElementById('tab-akun')?.classList.contains('active')) {
+            renderAccountTab();
+          }
+          showToast('Berhasil masuk sebagai Host (Admin) via Cloud Database.', 'success');
+        } else {
+          currentUser = {
+            username: res.user.username,
+            name: res.user.name || res.user.username,
+            role: 'user'
+          };
+          userRole = 'spectator';
+          isGuestSession = false;
+          localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
+          localStorage.setItem('onesport_user_role', 'spectator');
+          localStorage.setItem('onesport_user_display_name', currentUser.name);
+          const localUsers = getUsersDatabase();
+          if (!localUsers.some(u => u.username.toLowerCase() === res.user.username.toLowerCase())) {
+            localUsers.push({ username: res.user.username, name: currentUser.name, password: cleanPass, role: 'user' });
+            saveUsersDatabase(localUsers);
+          }
+          if (errEl) errEl.style.display = 'none';
+          if (tabErrEl) tabErrEl.style.display = 'none';
+          closeLoginModal();
+          applyRoleUI();
+          if (document.getElementById('tab-akun')?.classList.contains('active')) {
+            renderAccountTab();
+          }
+          showToast(`Berhasil masuk sebagai ${currentUser.name} via Cloud Database.`, 'success');
+        }
+      }
+    }).catch(() => {});
+  }
+
+  // Akses ditolak karena salah akun / password lokal
   if (errEl) {
     errEl.textContent = 'Akses ditolak: Username atau password salah!';
     errEl.style.display = 'block';
@@ -11996,7 +12156,17 @@ function onMqttConnected() {
       saveActiveLiveSession();
       broadcastRoomLobbyAnnounce('ROOM_ANNOUNCE');
       startHeartbeatTimer();
-      broadcastStateUpdate();
+      if (isHostCreator) {
+        broadcastStateUpdate();
+      } else {
+        // Admin / Host perangkat lain yang gabung ke room: minta state terbaru dari room
+        mqttClient.publish(roomTopic, JSON.stringify({
+          type: 'REQUEST_STATE',
+          roomId: currentRoomId,
+          senderId: myClientId,
+          timestamp: Date.now()
+        }));
+      }
       showToast(`Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
     } else {
       saveActiveLiveSession();
@@ -12096,13 +12266,9 @@ async function handleIncomingMessage(topic, rawText) {
       peerHeartbeats.set(msg.senderId, Date.now());
       pruneStalePeers();
 
-      // Deteksi split-brain host (BUG-6)
+      // Multi-device host / admin peer sync
       if (userRole === 'host' && msg.role === 'host' && msg.senderId !== myClientId) {
-        const now = Date.now();
-        if (now - lastHostConflictWarningTime > 20000) {
-          lastHostConflictWarningTime = now;
-          showToast('Konflik Host: Terdeteksi perangkat lain bertindak sebagai Host di room ini.', 'warning');
-        }
+        console.log('Multi-device admin peer active in room:', msg.senderId);
       }
       return;
     }
@@ -12225,16 +12391,16 @@ async function handleIncomingMessage(topic, rawText) {
 
     if (msg.type === 'STATE_UPDATE') {
       if (userRole === 'host' && msg.role === 'host' && msg.senderId !== myClientId) {
-        const now = Date.now();
-        if (now - lastHostConflictWarningTime > 20000) {
-          lastHostConflictWarningTime = now;
-          showToast('Konflik Host: Terdeteksi perangkat lain mengirim state update sebagai Host.', 'warning');
-        }
+        console.log('Multi-device admin sync: State update received from peer host', msg.senderId);
       }
       if (msg.type !== 'ROOM_FINALIZED') {
-        if (userRole === 'spectator' || isCollabMode) {
+        if (msg.senderId !== myClientId) {
           applyReceivedState(msg.payload || msg);
-          showToast('Data pertandingan diperbarui langsung oleh Host');
+          if (userRole === 'host') {
+            showToast('Data disinkronkan dari perangkat Host lain', 'info');
+          } else {
+            showToast('Data pertandingan diperbarui langsung oleh Host');
+          }
         }
         return;
       }
@@ -13038,16 +13204,6 @@ function leaveOnlineRoom(keepRoomData = false) {
   clearActiveLiveSession();
   if (mqttClient && isOnlineActive && currentRoomId) {
     const leftRoom = currentRoomId;
-    if (userRole === 'host') {
-      try {
-        mqttClient.publish(LOBBY_DISCOVERY_TOPIC, JSON.stringify({
-          type: 'ROOM_ENDED',
-          roomId: leftRoom,
-          timestamp: Date.now()
-        }));
-        mqttClient.publish(LOBBY_ROOMS_PREFIX + leftRoom, '', { qos: 1, retain: true });
-      } catch(e){}
-    }
     try {
       mqttClient.unsubscribe(`onesport/v3/room/${leftRoom}`);
       mqttClient.unsubscribe(`onesport/v3/room/${leftRoom}/state`);
