@@ -4094,8 +4094,8 @@ const VercelDbSync = {
     return '';
   },
 
-  async loadInitialState() {
-    const roomId = currentRoomId || 'DEFAULT';
+  async loadInitialState(optRoomId) {
+    const roomId = String(optRoomId || currentRoomId || 'DEFAULT').trim().toUpperCase() || 'DEFAULT';
     try {
       const baseUrl = this.getBaseApiUrl();
       const res = await fetch(`${baseUrl}/api/state?roomId=${encodeURIComponent(roomId)}`);
@@ -11804,6 +11804,15 @@ function connectOnlineRoom(roomId, role = null, pin = '', isReconnecting = false
       const currentState = getCurrentAppState();
       localStorage.setItem(STORAGE_OFFLINE_BACKUP, JSON.stringify(currentState));
     } catch(e){}
+  }
+
+  // Sinkronisasi data dari Database Cloud Vercel untuk room ini
+  if (typeof VercelDbSync !== 'undefined') {
+    if (isCreator) {
+      VercelDbSync.saveState(cleanRoomId, getCurrentAppState());
+    } else {
+      VercelDbSync.loadInitialState(cleanRoomId);
+    }
   }
 
   applyRoleUI();

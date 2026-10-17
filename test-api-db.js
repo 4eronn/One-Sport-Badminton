@@ -208,6 +208,55 @@ async function runTests() {
     assert.strictEqual(g2Res.body.players.length, 0);
   });
 
+  await it('/api/players otomatis membuat player.id jika tidak disertakan', async () => {
+    const roomId = 'API_AUTO_ID_ROOM';
+    const { req, res } = createMockReqRes({
+      method: 'POST',
+      body: { roomId, name: 'Pemain Tanpa ID' }
+    });
+    await playersHandler(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.body.success, true);
+    assert.ok(res.body.player.id, 'player.id harus digenerate otomatis');
+  });
+
+  await it('Normalisasi roomId case-insensitive dan whitespace di /api/state dan /api/players', async () => {
+    const { req: pReq, res: pRes } = createMockReqRes({
+      method: 'POST',
+      body: { roomId: '  mixEd_cAsE_rOOm  ', payload: { sessionTitle: 'Room Normalization Test' } }
+    });
+    await stateHandler(pReq, pRes);
+    assert.strictEqual(pRes.statusCode, 200);
+    assert.strictEqual(pRes.body.roomId, 'MIXED_CASE_ROOM');
+
+    // Baca dengan lowercase
+    const { req: gReq, res: gRes } = createMockReqRes({
+      method: 'GET',
+      query: { roomId: 'mixed_case_room' }
+    });
+    await stateHandler(gReq, gRes);
+    assert.strictEqual(gRes.statusCode, 200);
+    assert.strictEqual(gRes.body.data.sessionTitle, 'Room Normalization Test');
+  });
+
+  await it('Menolak payload state dan pemain yang tidak valid dengan status 400', async () => {
+    // State invalid
+    const { req: sReq, res: sRes } = createMockReqRes({
+      method: 'POST',
+      body: { roomId: 'INVALID_ROOM', payload: 'bukan_objek' }
+    });
+    await stateHandler(sReq, sRes);
+    assert.strictEqual(sRes.statusCode, 400);
+
+    // Player invalid (tanpa nama)
+    const { req: pReq, res: pRes } = createMockReqRes({
+      method: 'POST',
+      body: { roomId: 'INVALID_ROOM', player: { gender: 'L' } }
+    });
+    await playersHandler(pReq, pRes);
+    assert.strictEqual(pRes.statusCode, 400);
+  });
+
   console.log('\n======================================================');
   console.log(`BACKEND TEST RESULTS: ${passCount} / ${testCount} Passed (${Math.round(passCount/testCount*100)}%)`);
   console.log('======================================================\n');

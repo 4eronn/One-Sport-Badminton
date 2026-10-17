@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
       body = {};
     }
   }
-  const roomId = query.roomId || body.roomId || 'DEFAULT';
+  const roomId = String(query.roomId || body.roomId || 'DEFAULT').trim().toUpperCase() || 'DEFAULT';
 
   try {
     // 1. GET: Ambil daftar pemain
@@ -42,12 +42,18 @@ module.exports = async function handler(req, res) {
 
     // 2. POST: Tambah atau update pemain
     if (req.method === 'POST') {
-      const player = body.player ? body.player : body;
-      if (!player || !player.name) {
+      const player = (body.player !== undefined) ? body.player : body;
+      if (!player || typeof player !== 'object' || Array.isArray(player) || !player.name) {
         return res.status(400).json({ success: false, message: 'Data pemain tidak valid (nama wajib diisi)' });
+      }
+      if (player.id === undefined || player.id === null || String(player.id).trim() === '') {
+        player.id = 'p_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
       }
 
       const saveRes = await savePlayer(roomId, player);
+      if (!saveRes || !saveRes.success) {
+        return res.status(500).json({ success: false, message: saveRes.message || 'Gagal menyimpan pemain' });
+      }
       return res.status(200).json({
         success: true,
         roomId,
@@ -64,6 +70,9 @@ module.exports = async function handler(req, res) {
       }
 
       const delRes = await deletePlayer(roomId, playerId);
+      if (!delRes || !delRes.success) {
+        return res.status(500).json({ success: false, message: 'Gagal menghapus pemain' });
+      }
       return res.status(200).json({
         success: true,
         roomId,

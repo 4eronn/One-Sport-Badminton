@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
       body = {};
     }
   }
-  const roomId = query.roomId || body.roomId || 'DEFAULT';
+  const roomId = String(query.roomId || body.roomId || 'DEFAULT').trim().toUpperCase() || 'DEFAULT';
 
   try {
     // 1. GET: Ambil state terbaru dari Database Vercel
@@ -41,12 +41,15 @@ module.exports = async function handler(req, res) {
 
     // 2. POST: Simpan state ke Database Vercel
     if (req.method === 'POST') {
-      const statePayload = body.payload ? body.payload : body;
-      if (!statePayload || typeof statePayload !== 'object') {
+      const statePayload = (body.payload !== undefined) ? body.payload : body;
+      if (!statePayload || typeof statePayload !== 'object' || Array.isArray(statePayload)) {
         return res.status(400).json({ success: false, message: 'Payload state tidak valid' });
       }
 
       const saveRes = await saveState(roomId, statePayload);
+      if (!saveRes || !saveRes.success) {
+        return res.status(500).json({ success: false, message: 'Gagal menyimpan state ke database' });
+      }
       return res.status(200).json({
         success: true,
         roomId,
