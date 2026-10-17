@@ -3035,10 +3035,7 @@
           <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">KODE ROOM AKTIF:</div>
           <div style="font-family:'Outfit',sans-serif; font-size:1.6rem; font-weight:900; letter-spacing:2px; color:var(--brand-orange);" id="onlineDisplayRoomCode">ONESPORT-88</div>
           <div style="font-size:0.74rem; color:var(--brand-navy-dark); font-weight:800; margin-top:2px;" id="onlineDisplayRoleText">Peran: Host Utama</div>
-          <div id="onlineHostPinDisplayBox" style="display:none; margin-top:6px; font-size:0.72rem; background:#FFF1EB; border:1px dashed #FFD0B8; padding:4px 8px; border-radius:6px; color:#C2410C;">
-            PIN Host Anda: <strong id="onlineDisplayHostPin">1234</strong>
-            <button onclick="copyHostPin()" style="border:none; background:none; color:var(--brand-orange); font-weight:800; cursor:pointer; text-decoration:underline; font-size:0.72rem; margin-left:4px;">(Salin PIN)</button>
-          </div>
+          <div id="onlineHostPinDisplayBox" style="display:none;"></div>
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:5px; display:inline-flex; align-items:center; gap:5px;" id="onlineDisplayPeerCount">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span>1 Perangkat Terhubung</span>
@@ -3094,10 +3091,9 @@
               <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">Judul Siaran Langsung (Opsional)</label>
               <input type="text" id="inputRoomTitle" class="input-styled-os" placeholder="Contoh: Mabar Badminton PB Djarum" style="margin-top:4px;">
             </div>
-            <div>
-              <label style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-soft);">PIN Host (4-6 Angka)</label>
-              <input type="password" id="inputHostPin" class="input-styled-os" placeholder="1234" maxlength="6" value="1234" style="margin-top:4px;">
-              <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">PIN ini dibuat oleh Anda untuk dibagikan ke wasit/co-host lain agar bisa bantu kontrol skor.</div>
+            <input type="hidden" id="inputHostPin" value="ONESPORT_HOST">
+            <div style="font-size:0.72rem; color:var(--text-muted); background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 10px;">
+              Siaran live terhubung dengan akun Host/Admin Anda. Wasit atau host lain cukup login akun Admin atau Host tanpa perlu memasukkan PIN.
             </div>
           </div>
           <button class="btn-os-orange" style="width:100%; font-size:0.85rem; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px;" onclick="startHostRoom()">
@@ -3270,7 +3266,7 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-navy-mid);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           <strong style="font-size:0.85rem; color:var(--brand-navy-dark);">Hanya Nonton (Penonton)</strong>
         </div>
-        <span style="font-size:0.7rem; font-weight:800; color:#059669; background:#ECFDF5; padding:2px 7px; border-radius:999px;">Gratis / Tanpa PIN</span>
+        <span style="font-size:0.7rem; font-weight:800; color:#059669; background:#ECFDF5; padding:2px 7px; border-radius:999px;">Akses Terbuka</span>
       </div>
       <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.4;">
         Buka skor realtime, rotasi pemain, dan peringkat langsung dari HP Anda. Tidak bisa mengubah skor.
@@ -3284,14 +3280,15 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--brand-orange);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           <strong style="font-size:0.85rem; color:var(--brand-navy-dark);">Masuk sebagai Host / Wasit</strong>
         </div>
-        <span style="font-size:0.7rem; font-weight:800; color:#B45309; background:#FFFBEB; padding:2px 7px; border-radius:999px;">Perlu PIN Host</span>
+        <span style="font-size:0.7rem; font-weight:800; color:#0B74DE; background:#EFF6FF; padding:2px 7px; border-radius:999px;" id="joinChoiceHostBadge">Perlu Akun Admin</span>
       </div>
       <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.4; margin-bottom:8px;">
-        Dapatkan akses penuh untuk mengubah skor pertandingan dan rotasi bersama host awal.
+        Akses penuh untuk mengubah skor pertandingan dan rotasi bersama host awal (cukup login akun Admin atau Host).
       </div>
-      <div id="choiceHostPinInputWrapper" style="display:none; margin-top:8px;" onclick="event.stopPropagation()">
-        <label style="font-size:0.72rem; font-weight:800; color:var(--brand-navy-soft);">Masukkan PIN Host yang Dibuat Host Awal:</label>
-        <input type="password" id="inputChoiceModalHostPin" class="input-styled-os" placeholder="Contoh: 1234" maxlength="6" style="margin-top:4px;">
+      <div id="choiceHostInfoBox" style="display:none; margin-top:8px;" onclick="event.stopPropagation()">
+        <div style="font-size:0.72rem; color:var(--text-muted); background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 10px;" id="choiceHostInfoContent">
+          Akses Host otomatis aktif untuk akun Admin atau Host tanpa perlu memasukkan PIN.
+        </div>
       </div>
     </div>
 
@@ -10254,8 +10251,9 @@ let currentRoomTitle = '';
 let isOnlineActive = false;
 // userRole is initialized at top of engine ('host' | 'spectator')
 let isHostCreator = false;
+const SHARED_HOST_SECRET = 'ONESPORT_HOST_ADMIN_KEY';
 let pendingHostCandidatePin = null;
-let hostPin = '1234';
+let hostPin = SHARED_HOST_SECRET;
 let currentRoomPinHash = '';
 let isCollabMode = false;
 let connectedPeersCount = 1;
@@ -10336,9 +10334,9 @@ function restoreActiveLiveSessionIfAny() {
 
     // 2. Pulihkan metadata sesi live
     currentRoomId = session.roomId;
-    userRole = session.role || 'host';
+    userRole = isHostUser() ? 'host' : 'spectator';
     isHostCreator = session.isHostCreator !== false;
-    hostPin = sessionStorage.getItem('onesport_host_pin_' + session.roomId) || '1234';
+    hostPin = SHARED_HOST_SECRET;
     roomStartTime = session.roomStartTime || Date.now();
     isCollabMode = !!session.isCollabMode;
     if (session.sessionTitle) sessionTitle = session.sessionTitle;
@@ -10348,7 +10346,7 @@ function restoreActiveLiveSessionIfAny() {
 
     // 3. Sambungkan kembali ke room MQTT realtime
     updateOnlineUI('connecting');
-    connectOnlineRoom(session.roomId, userRole, hostPin, true /* isReconnecting */, isHostCreator);
+    connectOnlineRoom(session.roomId, userRole, SHARED_HOST_SECRET, true /* isReconnecting */, isHostCreator);
 
     showToast(`Sesi Live Room ${session.roomId} dipulihkan (Aktif di Perangkat)`, 'success');
     return true;
@@ -11043,21 +11041,16 @@ function switchSetupSubTab(subKey) {
 function toggleJoinRoleUI(role) {
   const pinBox = document.getElementById('joinHostPinBox');
   const hint = document.getElementById('roleDescriptionHint');
-  if (pinBox) pinBox.style.display = role === 'host' ? 'block' : 'none';
+  if (pinBox) pinBox.style.display = 'none';
   if (hint) {
     hint.textContent = role === 'host'
-      ? 'Mode Host / Wasit memerlukan PIN Host dari host pembuat room agar bisa mengubah skor & rotasi.'
-      : 'Mode Penonton hanya melihat skor live realtime tanpa memasukkan PIN.';
+      ? 'Mode Host / Wasit memerlukan login akun Admin atau Host.'
+      : 'Mode Penonton dapat langsung melihat skor live real-time.';
   }
 }
 
 function copyHostPin() {
-  if (!hostPin) return;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(hostPin).then(() => showToast('PIN Host disalin: ' + hostPin));
-  } else {
-    showToast('PIN Host Anda: ' + hostPin);
-  }
+  showToast('Akses Host aktif menggunakan akun Admin/Host (tanpa PIN).', 'info');
 }
 
 function generateRandomRoomCode() {
@@ -11112,10 +11105,9 @@ function startHostRoom() {
     const finalHeader = document.getElementById('finalTitleHeader');
     if (finalHeader) finalHeader.textContent = customTitle;
   }
-  const pin = document.getElementById('inputHostPin').value.trim() || '1234';
   userRole = 'host';
   localStorage.setItem('onesport_user_role', 'host');
-  connectOnlineRoom(code, 'host', pin, false /* isReconnecting */, true /* isCreator */);
+  connectOnlineRoom(code, 'host', SHARED_HOST_SECRET, false /* isReconnecting */, true /* isCreator */);
   closeOnlineModal();
   switchTab('tab-match');
   applyRoleUI();
@@ -11139,15 +11131,15 @@ function joinRoomAsSpectator(roomId) {
   const role = isHostUser() ? 'host' : 'spectator';
   userRole = role;
   localStorage.setItem('onesport_user_role', role);
-  connectOnlineRoom(cleanRoom, role, '', false, false);
+  connectOnlineRoom(cleanRoom, role, SHARED_HOST_SECRET, false, false);
   switchTab('tab-match');
   applyRoleUI();
   showToast(isHostUser() ? `Siaran Live ${cleanRoom} terhubung sebagai Host.` : `Masuk ke Siaran Live ${cleanRoom}.`, 'info');
 }
 
-function joinRoomAsHost(roomId, pin) {
+function joinRoomAsHost(roomId) {
   if (!isHostUser()) {
-    showToast('Hanya akun Host yang dapat masuk dengan kontrol Host.', 'error');
+    showToast('Hanya akun Admin / Host yang dapat masuk dengan kontrol Host.', 'error');
     openLoginModal();
     return;
   }
@@ -11156,7 +11148,7 @@ function joinRoomAsHost(roomId, pin) {
   const cleanRoom = roomId.trim().toUpperCase();
   userRole = 'host';
   localStorage.setItem('onesport_user_role', 'host');
-  connectOnlineRoom(cleanRoom, 'host', pin, false, false);
+  connectOnlineRoom(cleanRoom, 'host', SHARED_HOST_SECRET, false, false);
   switchTab('tab-match');
   applyRoleUI();
   showToast(`Siaran Live ${cleanRoom} terhubung sebagai Host.`, 'success');
@@ -11174,15 +11166,23 @@ function selectJoinRoleChoice(role) {
   selectedJoinChoiceRole = role;
   const cardSpec = document.getElementById('choiceCardSpectator');
   const cardHost = document.getElementById('choiceCardHost');
-  const pinWrapper = document.getElementById('choiceHostPinInputWrapper');
+  const infoBox = document.getElementById('choiceHostInfoBox');
 
   if (cardSpec) cardSpec.classList.toggle('selected', role === 'spectator');
   if (cardHost) cardHost.classList.toggle('selected', role === 'host');
-  if (pinWrapper) {
-    pinWrapper.style.display = role === 'host' ? 'block' : 'none';
+  if (infoBox) {
     if (role === 'host') {
-      const pinInput = document.getElementById('inputChoiceModalHostPin');
-      if (pinInput) pinInput.focus();
+      infoBox.style.display = 'block';
+      const infoContent = document.getElementById('choiceHostInfoContent');
+      if (infoContent) {
+        if (isHostUser()) {
+          infoContent.innerHTML = `<span style="color:#059669; font-weight:800;">✓ Terverifikasi sebagai Host (${escapeHtml(currentUser?.name || 'Admin')}). Akses kontrol penuh.</span>`;
+        } else {
+          infoContent.innerHTML = `<span style="color:#B45309; font-weight:700;">Akses Host memerlukan akun Admin/Host. Silakan login akun Admin untuk kontrol skor.</span>`;
+        }
+      }
+    } else {
+      infoBox.style.display = 'none';
     }
   }
 }
@@ -11190,14 +11190,12 @@ function selectJoinRoleChoice(role) {
 function executeSelectedJoinChoice() {
   if (!pendingJoinRoomId) return;
   if (selectedJoinChoiceRole === 'host') {
-    const pinInput = document.getElementById('inputChoiceModalHostPin');
-    const pin = pinInput ? pinInput.value.trim() : '';
-    if (!pin) {
-      alert('Silakan masukkan PIN Host untuk masuk sebagai Wasit / Host!');
-      if (pinInput) pinInput.focus();
+    if (!isHostUser()) {
+      showToast('Silakan login akun Admin/Host untuk akses kontrol pertandingan.', 'info');
+      openLoginModal();
       return;
     }
-    joinRoomAsHost(pendingJoinRoomId, pin);
+    joinRoomAsHost(pendingJoinRoomId);
   } else {
     joinRoomAsSpectator(pendingJoinRoomId);
   }
@@ -11672,30 +11670,27 @@ function handleRoleSwitchClick() {
 }
 
 // ── CONNECT TO ISOLATED ONLINE ROOM ──
-function connectOnlineRoom(roomId, role = 'host', pin = '1234', isReconnecting = false, isCreator = false) {
+function connectOnlineRoom(roomId, role = null, pin = '', isReconnecting = false, isCreator = false) {
   const cleanRoomId = roomId.trim().toUpperCase();
   currentRoomId = cleanRoomId;
-  hostPin = pin;
+  hostPin = SHARED_HOST_SECRET;
   if (!isReconnecting || !roomStartTime) {
     roomStartTime = Date.now();
   }
-  isHostCreator = !!isCreator;
   isOnlineActive = true;
+
+  // Peran Host murni berbasis akun: cukup login akun Admin atau Host
+  const resolvedRole = role || (isHostUser() ? 'host' : 'spectator');
+  userRole = (isHostUser() && resolvedRole === 'host') ? 'host' : (isHostUser() ? 'host' : 'spectator');
+  isHostCreator = !!isCreator || (userRole === 'host' && isHostCreator);
+  pendingHostCandidatePin = null;
+
+  if (userRole === 'host') {
+    initHostAuthKeys(SHARED_HOST_SECRET, cleanRoomId);
+  }
+
   saveActiveLiveSession();
   recordRoomJoinedByUser(cleanRoomId, { sessionTitle: sessionTitle || ('Room ' + cleanRoomId), sport: currentSport });
-
-  // Jika masuk ke room yang sudah ada sebagai host (bukan pembuat baru dan bukan reconnect),
-  // tahan peran sebagai spectator sementara menunggu verifikasi PIN challenge-response dari host awal.
-  if (role === 'host' && !isCreator && !isReconnecting) {
-    userRole = 'spectator';
-    pendingHostCandidatePin = pin;
-  } else {
-    userRole = role;
-    pendingHostCandidatePin = null;
-    if (role === 'host' && pin) {
-      initHostAuthKeys(pin, cleanRoomId);
-    }
-  }
 
   // Backup sesi offline hanya jika koneksi baru (bukan saat reconnect / refresh)
   if (!isReconnecting && !localStorage.getItem(STORAGE_OFFLINE_BACKUP)) {
@@ -11770,17 +11765,6 @@ function onMqttConnected() {
       startHeartbeatTimer();
       broadcastStateUpdate();
       showToast(`Terhubung ke Room: ${currentRoomId} (Host Aktif)`, 'success');
-    } else if (pendingHostCandidatePin) {
-      pendingPinReqNonce = (window.BadmintonService && BadmintonService.MqttAuth)
-        ? BadmintonService.MqttAuth.generateNonce(16)
-        : String(Date.now());
-      mqttClient.publish(roomTopic, JSON.stringify({
-        type: 'VERIFY_HOST_PIN_INIT',
-        roomId: currentRoomId,
-        senderId: myClientId,
-        reqNonce: pendingPinReqNonce
-      }));
-      showToast(`Memverifikasi PIN Host untuk Room: ${currentRoomId}...`);
     } else {
       saveActiveLiveSession();
       mqttClient.publish(roomTopic, JSON.stringify({
@@ -12190,7 +12174,7 @@ function updateOnlineUI(status) {
       matchCardLiveTitle.title = `LIVE: ${rawTitle}`;
     }
     if (matchCardLiveSub) {
-      matchCardLiveSub.textContent = userRole === 'host' ? `Siaran aktif realtime • PIN Host: ${hostPin}` : 'Sedang menonton siaran live real-time';
+      matchCardLiveSub.textContent = userRole === 'host' ? 'Siaran aktif realtime • Mode Host (Admin)' : 'Sedang menonton siaran live real-time';
     }
     if (matchCardActionBtn) {
       matchCardActionBtn.textContent = 'Kelola';
@@ -12207,11 +12191,10 @@ function updateOnlineUI(status) {
       displayRoomCode.textContent = truncateBroadcastTitle(currentRoomId, 22);
       displayRoomCode.title = currentRoomId;
     }
-    if (displayRoleText) displayRoleText.textContent = `Peran: ${userRole === 'host' ? 'Host Utama / Wasit' : 'Penonton Live'}`;
+    if (displayRoleText) displayRoleText.textContent = `Peran: ${userRole === 'host' ? 'Host Utama / Wasit (Admin)' : 'Penonton Live'}`;
 
     if (userRole === 'host') {
-      if (hostPinBox) hostPinBox.style.display = 'block';
-      if (hostPinVal) hostPinVal.textContent = hostPin;
+      if (hostPinBox) hostPinBox.style.display = 'none';
       if (hostActionBtns) hostActionBtns.style.display = 'flex';
       if (specActionBtns) specActionBtns.style.display = 'none';
       if (spectatorBanner) spectatorBanner.classList.remove('show');
