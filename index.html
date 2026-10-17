@@ -1923,6 +1923,65 @@
   .spectator-live-banner.show {
     display: flex;
   }
+  .app-update-banner {
+    display: none;
+    background: linear-gradient(90deg, #071A33 0%, #0E294D 100%);
+    border-bottom: 2px solid #FF5B14;
+    color: #FFFFFF;
+    padding: 8px 12px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+    z-index: 1001;
+    position: relative;
+    animation: slideDownBanner 0.25s ease-out;
+  }
+  .app-update-banner.show {
+    display: flex;
+  }
+  @keyframes slideDownBanner {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .app-update-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .btn-update-banner-action {
+    background: #FF5B14;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+  }
+  .btn-update-banner-action:hover {
+    background: #E04804;
+  }
+  .btn-update-banner-dismiss {
+    background: transparent;
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-update-banner-dismiss:hover {
+    color: #FFFFFF;
+    border-color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.1);
+  }
   .spectator-banner-left {
     display: flex;
     align-items: center;
@@ -2163,6 +2222,30 @@
   </div>
 </div>
 
+<!-- ── APP UPDATE NOTIFICATION BANNER (NON-INTRUSIF) ── -->
+<div class="app-update-banner" id="appUpdateNotificationBanner" style="display:none;">
+  <div class="app-update-banner-left">
+    <span style="font-size: 1.05rem; line-height: 1; flex-shrink: 0;">🚀</span>
+    <div style="min-width:0; line-height: 1.25;">
+      <div style="font-weight: 800; font-size: 0.76rem; color: #FFFFFF; display: flex; align-items: center; gap: 6px;">
+        <span>Pembaruan Baru Tersedia</span>
+        <span id="updateBannerVersionBadge" style="background: #10B981; color: #fff; padding: 1px 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 800;">v1.2.0</span>
+      </div>
+      <div style="font-size: 0.69rem; color: #CBD5E1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        Pemberitahuan saja — Anda tetap dapat menggunakan versi lama ini secara normal.
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+    <button type="button" class="btn-update-banner-action" onclick="openUpdateModalFromBanner()" title="Lihat Catatan & Unduh">
+      Lihat
+    </button>
+    <button type="button" class="btn-update-banner-dismiss" onclick="dismissUpdateBanner()" title="Tutup pemberitahuan & tetap pakai versi ini">
+      ✕
+    </button>
+  </div>
+</div>
+
 <!-- ── LIVE TOAST NOTIFICATION ── -->
 <div id="liveToastNotification">
   <span class="toast-indicator-dot" id="toastIcon"></span>
@@ -2187,14 +2270,17 @@
 
   <!-- Mini Soccer Config View -->
   <div class="subbar-inner" id="soccerSubbar" style="display: none;">
-    <div class="subbar-picker-label">Jumlah Tim:</div>
+    <div class="subbar-picker-label">Tim:</div>
     <div class="subbar-pills-row">
+      <button class="subbar-pill-btn" onclick="addNewSoccerTeam()" style="background:#059669; color:#FFF; font-weight:800; border-color:#059669; padding:4px 10px;" title="Tambah Tim Baru">
+        + Tambah Tim
+      </button>
       <button class="subbar-pill-btn active" id="team-count-btn-2" onclick="setSoccerTeamCount(2)">2 Tim</button>
       <button class="subbar-pill-btn" id="team-count-btn-3" onclick="setSoccerTeamCount(3)">3 Tim</button>
       <button class="subbar-pill-btn" id="team-count-btn-4" onclick="setSoccerTeamCount(4)">4 Tim</button>
     </div>
     <div style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);" id="soccerPlayerCountLabel">
-      0 Pemain
+      0 Tim
     </div>
   </div>
 </div>
@@ -2203,7 +2289,7 @@
 <main class="app-main-content">
 
   <!-- ============================================================ -->
-  <!-- TAB 1: PEMAIN (Roster Management)                            -->
+  <!-- TAB 1: PEMAIN / TIM (Roster Management)                      -->
   <!-- ============================================================ -->
   <section id="tab-pemain" class="app-tab-pane">
     <div class="os-card">
@@ -2212,8 +2298,8 @@
         <span style="font-size: 0.78rem; color: var(--text-muted); font-weight:800;" id="rosterCountBadge">0 Pemain</span>
       </div>
 
-      <!-- Add Player Form Mobile-Optimized -->
-      <div class="add-player-form-box">
+      <!-- Add Player Form Mobile-Optimized (Badminton) -->
+      <div class="add-player-form-box" id="badmintonAddPlayerForm">
         <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Ketik nama pemain..." onkeypress="if(event.key==='Enter')addNewPlayer()">
         <div class="add-player-options-row">
           <select id="inputSoccerTeamSelect" class="input-styled-os soccer-team-picker" style="display:none; font-weight:800; min-width:130px; background:#F0FDF4; border-color:#86EFAC; color:#166534;" title="Pilih tim pemain"></select>
@@ -2240,19 +2326,35 @@
         </div>
       </div>
 
+      <!-- Add Team Form (Mini Soccer - Cukup Tim Saja) -->
+      <div class="add-player-form-box" id="soccerAddTeamForm" style="display:none; gap:8px;">
+        <input type="text" id="inputSoccerTeamName" class="input-styled-os" placeholder="Ketik nama tim (cth: Tim Garuda, Tim Elang, Tim C)..." style="flex:1;" onkeypress="if(event.key==='Enter')addNewSoccerTeam()">
+        <button class="btn-add-player-submit" onclick="addNewSoccerTeam()" style="background:#059669; border-color:#059669; padding:9px 16px; white-space:nowrap; display:inline-flex; align-items:center; gap:6px;" title="Tambah Tim">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Tambah Tim</span>
+        </button>
+      </div>
+
       <!-- Quick Action Buttons -->
       <div class="quick-actions-row">
-        <button class="btn-quick-pill" id="btnSoccerShuffleRoster" onclick="shuffleSoccerTeamsFromRoster()" style="display:none; background:var(--brand-orange); color:#ffffff; font-weight:800; border-color:var(--brand-orange);" title="Acak susunan pemain ke seluruh tim">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-          <span id="btnSoccerShuffleRosterLabel">🎲 Acak Tim</span>
-        </button>
-        <button class="btn-quick-pill" onclick="exportCSV()">
+        <!-- Badminton Quick Actions -->
+        <button class="btn-quick-pill" id="btnExportCsv" onclick="exportCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>Export CSV</span>
         </button>
-        <button class="btn-quick-pill btn-quick-danger" onclick="clearAllPlayers()" title="Kosongkan Semua Pemain">
+        <button class="btn-quick-pill btn-quick-danger" id="btnClearPlayers" onclick="clearAllPlayers()" title="Kosongkan Semua Pemain">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span>Kosongkan</span>
+        </button>
+        <!-- Soccer Quick Actions -->
+        <button class="btn-quick-pill" id="btnSoccerAddQuickTeam" onclick="addNewSoccerTeam()" style="display:none; background:#059669; color:#fff; font-weight:800; border-color:#059669;" title="Tambah Tim Baru">
+          <span>+ Tambah Tim Baru</span>
+        </button>
+        <button class="btn-quick-pill" id="btnSoccerRegenSchedule" onclick="regenerateSoccerScheduleWithConfirm()" style="display:none; background:var(--brand-orange); color:#fff; font-weight:800; border-color:var(--brand-orange);" title="Acak / Buat Ulang Jadwal Pertandingan">
+          <span>🎲 Acak / Buat Ulang Jadwal Match</span>
+        </button>
+        <button class="btn-quick-pill btn-quick-danger" id="btnSoccerResetTeams" onclick="clearAllSoccerTeams()" style="display:none;" title="Reset Tim Mini Soccer">
+          <span>Reset Tim</span>
         </button>
       </div>
 
@@ -2496,7 +2598,7 @@
     <span class="nav-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
     </span>
-    <span>Pemain</span>
+    <span id="navPemainLabel">Pemain</span>
   </button>
   <button class="nav-item-btn active" id="nav-tab-match" onclick="switchTab('tab-match')">
     <span class="nav-icon">
@@ -3125,9 +3227,9 @@
           <span>Pasang Aplikasi di HP Ini</span>
         </button>
 
-        <a href="https://github.com/4eronn/One-Sport-Badminton/releases" target="_blank" class="btn-court-action" style="width:100%; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; margin-bottom:14px; font-weight:800;">
+        <a href="https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44" target="_blank" class="btn-court-action" style="width:100%; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; margin-bottom:14px; font-weight:800;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Unduh File APK Android (GitHub Releases)</span>
+          <span>Unduh File APK Android (v1.2.0-b44 di GitHub)</span>
         </a>
 
         <div style="text-align:left; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; font-size:0.75rem; color:var(--text-secondary); line-height:1.6;">
@@ -3281,38 +3383,48 @@
 </div>
 
 <!-- ── MODAL: AUTO UPDATE NOTIFICATION ── -->
-<div class="modal-overlay" id="updateModalOverlay" style="z-index: 99999;">
-  <div class="modal-box" style="max-width: 420px; text-align: center;">
+<div class="modal-overlay" id="updateModalOverlay" style="z-index: 99999;" onclick="handleUpdateOverlayClick(event)">
+  <div class="modal-box" style="max-width: 420px; text-align: center; position: relative;">
+    <button class="btn-del-player" onclick="closeUpdateModal()" style="position: absolute; right: 12px; top: 12px; width: 28px; height: 28px; font-size: 0.85rem;" title="Tutup">✕</button>
     <div style="margin-bottom: 8px;">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-blue); margin:0 auto;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     </div>
     <div style="font-weight: 900; font-size: 1.22rem; color: var(--brand-navy-dark); margin-bottom: 4px;">
-      Pembaruan Baru Tersedia!
+      Pembaruan Baru Tersedia
     </div>
-    <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
-      Versi terbaru ONESPORT siap diunduh di GitHub Releases.
+    <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+      Versi terbaru ONESPORT siap diunduh di GitHub Releases. Pembaruan ini opsional dan Anda bebas tetap menggunakan versi saat ini.
     </div>
     
-    <div style="background: var(--brand-navy-light); border: 1.5px solid #BFDBFE; border-radius: var(--radius-lg); padding: 12px; margin-bottom: 16px; text-align: left;">
+    <div style="background: var(--brand-navy-light); border: 1.5px solid #BFDBFE; border-radius: var(--radius-lg); padding: 12px; margin-bottom: 12px; text-align: left;">
       <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 6px;">
         <span style="color: var(--text-secondary);">Versi Anda Saat Ini:</span>
-        <strong id="updateCurrentVersionText" style="color: var(--brand-navy-dark);">v1.0.0</strong>
+        <strong id="updateCurrentVersionText" style="color: var(--brand-navy-dark);">v1.2.0</strong>
       </div>
       <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800;">
         <span style="color: #059669;">Versi Terbaru:</span>
-        <span id="updateLatestVersionBadge" style="background: #059669; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.78rem;">v1.0.1</span>
+        <span id="updateLatestVersionBadge" style="background: #059669; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.78rem;">v1.2.0</span>
       </div>
       <div id="updateNotesBox" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; border-top: 1px dashed #BFDBFE; padding-top: 6px; display: none; max-height: 90px; overflow-y: auto; white-space: pre-wrap;">
       </div>
     </div>
 
+    <!-- Kotak Info: Bebas & aman pakai versi lama -->
+    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-md, 8px); padding: 9px 12px; margin-bottom: 14px; text-align: left; display: flex; align-items: flex-start; gap: 8px; font-size: 0.75rem; color: #166534; line-height: 1.35;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0; margin-top:1px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div>
+        <strong>Tetap Bisa Pakai Versi Lama:</strong> Anda tidak diwajibkan untuk update. Semua fitur aplikasi tetap dapat digunakan secara normal tanpa hambatan.
+      </div>
+    </div>
+
     <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a id="btnGoToReleasePage" href="https://github.com/4eronn/One-Sport-Badminton/releases" target="_blank" class="btn-os-orange" style="width: 100%; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 11px;">
+      <a id="btnGoToReleasePage" href="https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44" target="_blank" class="btn-os-orange" style="width: 100%; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 11px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Unduh Update (Buka GitHub Release)</span>
+        <span>Unduh APK Terbaru (v1.2.0-b44 di GitHub)</span>
       </a>
-      <button class="btn-court-action" style="width: 100%; padding: 10px; font-weight: 700; background: #F1F5F9; color: var(--text-secondary);" onclick="closeUpdateModal()">
-        <span>Nanti Saja</span>
+      <button class="btn-court-action" style="width: 100%; padding: 10px; font-weight: 700; background: #F8FAFC; color: var(--brand-navy-dark); border: 1.5px solid var(--border-color); display:flex; align-items:center; justify-content:center; gap:6px;" onclick="continueUsingCurrentVersion()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #059669;"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Tetap Gunakan Versi Ini (Lanjutkan)</span>
       </button>
     </div>
   </div>
@@ -3397,6 +3509,71 @@
     <div style="display:flex; gap:8px;">
       <button class="btn-court-action" style="flex:1; padding:10px;" onclick="closeDirectScoreModal()">Batal</button>
       <button class="btn-os-orange" style="flex:2; padding:10px; font-weight:800;" onclick="submitDirectScore()">Simpan & Selesai</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: INPUT SKOR MINI SOCCER PER MATCH ── -->
+<div class="modal-overlay" id="soccerScoreModalOverlay" style="z-index: 99997;">
+  <div class="modal-box" style="max-width: 440px;">
+    <div class="modal-header">
+      <div class="modal-title" id="soccerScoreModalTitle">Input Skor Match Soccer</div>
+      <button class="btn-del-player" onclick="closeSoccerScoreModal()">✕</button>
+    </div>
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">
+      Input skor pertandingan. Klasemen poin (Menang: 3, Seri: 1, Kalah: 0) langsung diperbarui otomatis.
+    </div>
+
+    <!-- Match Teams Display -->
+    <div id="soccerScoreModalTeamsHeader" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:10px 14px; margin-bottom:14px;">
+      <!-- Dynamically filled -->
+    </div>
+
+    <!-- Score Steppers -->
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:16px;">
+      <div>
+        <label id="soccerScoreLabelA" style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Tim A</label>
+        <div class="score-stepper-box">
+          <button type="button" class="btn-score-stepper" onclick="stepSoccerModalScore('A', -1)" aria-label="Kurang skor A">−</button>
+          <input type="number" id="inputSoccerModalScoreA" class="score-digit-input" min="0" max="99" value="0" oninput="syncSoccerModalWinnerFromScores()">
+          <button type="button" class="btn-score-stepper plus" onclick="stepSoccerModalScore('A', 1)" aria-label="Tambah skor A">+</button>
+        </div>
+      </div>
+      <div style="font-weight:900; color:var(--text-muted); font-size:1.1rem; margin-top:16px; text-align:center;">VS</div>
+      <div>
+        <label id="soccerScoreLabelB" style="font-size:0.76rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:4px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Tim B</label>
+        <div class="score-stepper-box">
+          <button type="button" class="btn-score-stepper" onclick="stepSoccerModalScore('B', -1)" aria-label="Kurang skor B">−</button>
+          <input type="number" id="inputSoccerModalScoreB" class="score-digit-input" min="0" max="99" value="0" oninput="syncSoccerModalWinnerFromScores()">
+          <button type="button" class="btn-score-stepper plus" onclick="stepSoccerModalScore('B', 1)" aria-label="Tambah skor B">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Winner / Draw Radio Selection -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark); display:block; margin-bottom:6px;">Hasil / Pemenang Match:</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:#FFF; padding:8px 4px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer; text-align:center;">
+          <input type="radio" name="soccer_modal_winner_radio" id="soccerWinRadioA" value="A">
+          <span id="soccerWinTextA">Tim A Menang</span>
+        </label>
+        <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:#FFF; padding:8px 4px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer; text-align:center;">
+          <input type="radio" name="soccer_modal_winner_radio" id="soccerWinRadioD" value="D" checked>
+          <span>Seri (Draw)</span>
+        </label>
+        <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:#FFF; padding:8px 4px; border:1.5px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.74rem; font-weight:800; cursor:pointer; text-align:center;">
+          <input type="radio" name="soccer_modal_winner_radio" id="soccerWinRadioB" value="B">
+          <span id="soccerWinTextB">Tim B Menang</span>
+        </label>
+      </div>
+    </div>
+
+    <input type="hidden" id="soccerScoreTargetMatchIdx" value="0">
+
+    <div style="display:flex; gap:8px;">
+      <button type="button" class="btn-court-action" style="flex:1; padding:10px;" onclick="closeSoccerScoreModal()">Batal</button>
+      <button type="button" class="btn-os-orange" style="flex:2; padding:10px; font-weight:800;" onclick="submitSoccerModalScore()">Simpan Skor Match</button>
     </div>
   </div>
 </div>
@@ -4008,6 +4185,8 @@ function switchSport(sport) {
     subS.style.display = 'none';
     subtitle.textContent = 'Badminton';
 
+    const navPemainLabel = document.getElementById('navPemainLabel');
+    if (navPemainLabel) navPemainLabel.textContent = 'Pemain';
     document.getElementById('navMatchLabel').textContent = 'Lapangan';
     document.getElementById('rosterTitleText').textContent = 'Daftar Pemain Badminton';
     document.getElementById('sportInfoBanner').innerHTML = `
@@ -4016,6 +4195,22 @@ function switchSport(sport) {
       <div>• <strong>Putri vs Putri:</strong> Bagan Putri dikelompokkan sesama perempuan. Khusus <strong>Perempuan Advance</strong> bebas masuk ke bagan Putra/Terbuka.</div>
       <div>• <strong>Edit Role On-The-Fly:</strong> Role pemain bisa diubah langsung di daftar, ronde mendatang otomatis beradaptasi.</div>
     `;
+
+    const bForm = document.getElementById('badmintonAddPlayerForm');
+    const sForm = document.getElementById('soccerAddTeamForm');
+    if (bForm) bForm.style.display = 'flex';
+    if (sForm) sForm.style.display = 'none';
+
+    const btnExp = document.getElementById('btnExportCsv');
+    const btnClr = document.getElementById('btnClearPlayers');
+    const btnSAdd = document.getElementById('btnSoccerAddQuickTeam');
+    const btnSRegen = document.getElementById('btnSoccerRegenSchedule');
+    const btnSReset = document.getElementById('btnSoccerResetTeams');
+    if (btnExp) btnExp.style.display = 'inline-flex';
+    if (btnClr) btnClr.style.display = 'inline-flex';
+    if (btnSAdd) btnSAdd.style.display = 'none';
+    if (btnSRegen) btnSRegen.style.display = 'none';
+    if (btnSReset) btnSReset.style.display = 'none';
 
     document.querySelectorAll('.badminton-role-opt').forEach(el => el.style.display = 'block');
     document.querySelectorAll('.soccer-role-opt').forEach(el => el.style.display = 'none');
@@ -4037,32 +4232,43 @@ function switchSport(sport) {
     subS.style.display = 'flex';
     subtitle.textContent = 'Mini Soccer';
 
+    const navPemainLabel = document.getElementById('navPemainLabel');
+    if (navPemainLabel) navPemainLabel.textContent = 'Tim';
     document.getElementById('navMatchLabel').textContent = 'Pertandingan';
-    document.getElementById('rosterTitleText').textContent = 'Daftar Pemain Mini Soccer';
+    document.getElementById('rosterTitleText').textContent = 'Daftar Tim Mini Soccer';
     document.getElementById('sportInfoBanner').innerHTML = `
-      <strong style="color: var(--brand-navy-dark);">Manajemen Tim Mini Soccer:</strong>
-      <div>• <strong>Input Pemain per Tim:</strong> Tambahkan pemain langsung ke tim masing-masing di bawah, atau paste roster massal sekaligus.</div>
-      <div>• <strong>Bisa Diganti Manual:</strong> Pindahkan pemain antar tim atau tukar pemain langsung dengan sekali klik.</div>
-      <div>• <strong>Tombol Acak Tim:</strong> Gunakan tombol <strong>🎲 Acak Tim</strong> untuk membagi dan menyeimbangkan susunan pemain secara otomatis.</div>
+      <strong style="color: var(--brand-navy-dark);">⚽ Manajemen Turnamen Mini Soccer:</strong>
+      <div>• <strong>Cukup Daftarkan Tim:</strong> Tambahkan nama tim (minimal 2 tim) tanpa perlu memasukkan nama pemain.</div>
+      <div>• <strong>Bisa Tambah Tim Bebas:</strong> Klik tombol <strong>+ Tambah Tim</strong> untuk menambah tim baru kapan saja.</div>
+      <div>• <strong>Jadwal & Skor Otomatis:</strong> Pertandingan antar tim otomatis terjadwal dan skor langsung diperbarui ke klasemen poin.</div>
     `;
 
-    document.querySelectorAll('.badminton-role-opt').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.soccer-role-opt').forEach(el => el.style.display = 'block');
-    document.getElementById('inputPlayerRole').value = 'MF';
+    const bForm = document.getElementById('badmintonAddPlayerForm');
+    const sForm = document.getElementById('soccerAddTeamForm');
+    if (bForm) bForm.style.display = 'none';
+    if (sForm) sForm.style.display = 'flex';
+
+    const btnExp = document.getElementById('btnExportCsv');
+    const btnClr = document.getElementById('btnClearPlayers');
+    const btnSAdd = document.getElementById('btnSoccerAddQuickTeam');
+    const btnSRegen = document.getElementById('btnSoccerRegenSchedule');
+    const btnSReset = document.getElementById('btnSoccerResetTeams');
+    if (btnExp) btnExp.style.display = 'none';
+    if (btnClr) btnClr.style.display = 'none';
+    if (btnSAdd) btnSAdd.style.display = 'inline-flex';
+    if (btnSRegen) btnSRegen.style.display = 'inline-flex';
+    if (btnSReset) btnSReset.style.display = 'inline-flex';
 
     if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
     const sTeamSelect = document.getElementById('inputSoccerTeamSelect');
-    if (sTeamSelect) {
-      sTeamSelect.style.display = 'block';
-      if (typeof updateSoccerTeamSelectOptions === 'function') updateSoccerTeamSelectOptions();
-    }
+    if (sTeamSelect) sTeamSelect.style.display = 'none';
     const btnShuffle = document.getElementById('btnSoccerShuffleRoster');
-    if (btnShuffle) btnShuffle.style.display = 'inline-flex';
+    if (btnShuffle) btnShuffle.style.display = 'none';
 
     bNextSection.style.display = 'none';
     sTeamsSection.style.display = 'block';
     document.getElementById('btnAddMatchLabel').textContent = '+ Tambah Match';
-    document.getElementById('rebalanceBtnText').textContent = 'Acak Tim & Match';
+    document.getElementById('rebalanceBtnText').textContent = 'Acak / Buat Jadwal Match';
   }
 
   updateSessionLabels();
@@ -4131,12 +4337,13 @@ function clearAllPlayers() {
 }
 
 function updateSessionLabels() {
-  const count = currentSport === 'badminton' ? bPlayers.length : sPlayers.length;
-  document.getElementById('sessionPlayerCountLabel').textContent = `${count} Pemain`;
-  document.getElementById('soccerPlayerCountLabel').textContent = `${count} Pemain`;
-  document.getElementById('rosterCountBadge').textContent = `${count} Pemain`;
-
   if (currentSport === 'badminton') {
+    const count = bPlayers.length;
+    const sessCountEl = document.getElementById('sessionPlayerCountLabel');
+    if (sessCountEl) sessCountEl.textContent = `${count} Pemain`;
+    const rosterBadge = document.getElementById('rosterCountBadge');
+    if (rosterBadge) rosterBadge.textContent = `${count} Pemain`;
+
     for (let c = 1; c <= 4; c++) {
       const btn = document.getElementById(`court-btn-${c}`);
       if (btn) {
@@ -4147,10 +4354,18 @@ function updateSessionLabels() {
     const nextCountLabel = document.getElementById('nextRoundCourtsCountLabel');
     if (nextCountLabel) nextCountLabel.textContent = `${bNumCourts} Lapangan`;
   } else {
+    const tCount = Array.isArray(sTeams) ? sTeams.length : (typeof sTeamCount === 'number' ? sTeamCount : 0);
+    const sessCountEl = document.getElementById('sessionPlayerCountLabel');
+    if (sessCountEl) sessCountEl.textContent = `${tCount} Tim`;
+    const soccerCountEl = document.getElementById('soccerPlayerCountLabel');
+    if (soccerCountEl) soccerCountEl.textContent = `${tCount} Tim`;
+    const rosterBadge = document.getElementById('rosterCountBadge');
+    if (rosterBadge) rosterBadge.textContent = `${tCount} Tim`;
+
     for (let t = 2; t <= 4; t++) {
       const btn = document.getElementById(`team-count-btn-${t}`);
       if (btn) {
-        if (t === sTeamCount) btn.classList.add('active');
+        if (t === tCount) btn.classList.add('active');
         else btn.classList.remove('active');
       }
     }
@@ -4169,14 +4384,40 @@ function setCourtsCount(count) {
 
 function setSoccerTeamCount(count) {
   if (!checkEditPermission()) return;
-  sTeamCount = count;
-  if (typeof ensureSoccerTeamsInitialized === 'function') ensureSoccerTeamsInitialized();
-  if (typeof generateSoccerMatchSchedule === 'function') generateSoccerMatchSchedule();
+  if (typeof count !== 'number' || count < 2) count = 2;
+  ensureSoccerTeamsInitialized();
+
+  if (sTeams.length < count) {
+    while (sTeams.length < count) {
+      const idx = sTeams.length;
+      const def = SOCCER_DEFAULT_TEAMS[idx] || { name: `Tim ${String.fromCharCode(65 + idx)}`, key: `team-${String.fromCharCode(97 + idx)}` };
+      sTeams.push({
+        name: def.name,
+        key: def.key + '-' + Date.now(),
+        players: []
+      });
+    }
+  } else if (sTeams.length > count) {
+    const hasScores = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+    if (hasScores) {
+      if (!confirm(`Ubah jumlah tim menjadi ${count} Tim? Tim berlebih dan riwayat match terkait akan dihapus.`)) {
+        updateSessionLabels();
+        return;
+      }
+    }
+    sTeams.splice(count);
+  }
+
+  sTeamCount = sTeams.length;
+  generateSoccerMatchSchedule();
   updateSessionLabels();
   renderPlayersList();
   renderCourtsView();
   renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
   persistAndBroadcast();
+  showToast(`Format turnamen diubah menjadi ${sTeamCount} Tim!`, 'info');
 }
 
 // ── PLAYER ROSTER MANAGEMENT ──
@@ -4839,43 +5080,35 @@ const SOCCER_DEFAULT_TEAMS = [
 
 function ensureSoccerTeamsInitialized() {
   if (!Array.isArray(sTeams)) sTeams = [];
-  if (typeof sTeamCount !== 'number' || sTeamCount < 2 || sTeamCount > 4) {
-    sTeamCount = 2;
+  if (typeof sTeamCount !== 'number' || sTeamCount < 2) {
+    sTeamCount = Math.max(2, sTeams.length || 2);
   }
 
-  // Ensure sTeams has exactly sTeamCount teams
-  while (sTeams.length < sTeamCount) {
+  // Pastikan sTeams memiliki minimal 2 tim default jika kosong
+  while (sTeams.length < 2) {
     const idx = sTeams.length;
     const def = SOCCER_DEFAULT_TEAMS[idx] || { name: `Tim ${String.fromCharCode(65 + idx)}`, key: `team-${String.fromCharCode(97 + idx)}` };
     sTeams.push({
       name: def.name,
-      key: def.key,
+      key: def.key + '-' + Date.now(),
       players: []
     });
   }
 
-  // If sTeams has more than sTeamCount teams, move players from removed teams to remaining teams
-  if (sTeams.length > sTeamCount) {
-    const removed = sTeams.splice(sTeamCount);
-    removed.forEach(rem => {
-      (rem.players || []).forEach((p, pIdx) => {
-        sTeams[pIdx % sTeamCount].players.push(p);
-      });
-    });
-  }
+  sTeamCount = sTeams.length;
 
-  // Ensure every team has valid key, name, and players array
+  // Pastikan setiap tim memiliki key, name, dan players array yang valid
   sTeams.forEach((t, i) => {
-    if (!t.key) t.key = (SOCCER_DEFAULT_TEAMS[i] && SOCCER_DEFAULT_TEAMS[i].key) || `team-${i}`;
-    if (!t.name) t.name = (SOCCER_DEFAULT_TEAMS[i] && SOCCER_DEFAULT_TEAMS[i].name) || `Tim ${i + 1}`;
+    if (!t.key) t.key = (SOCCER_DEFAULT_TEAMS[i] && SOCCER_DEFAULT_TEAMS[i].key) || `team-${i}-${Date.now()}`;
+    if (!t.name) t.name = (SOCCER_DEFAULT_TEAMS[i] && SOCCER_DEFAULT_TEAMS[i].name) || `Tim ${String.fromCharCode(65 + i)}`;
     if (!Array.isArray(t.players)) t.players = [];
   });
 
-  // If sTeams has 0 total players but sPlayers has items (e.g. from older state)
+  // Jika sTeams memiliki 0 total pemain tapi sPlayers terisi (migrasi data lama)
   const totalInTeams = sTeams.reduce((sum, t) => sum + (t.players ? t.players.length : 0), 0);
   if (totalInTeams === 0 && Array.isArray(sPlayers) && sPlayers.length > 0) {
     sPlayers.forEach((p, idx) => {
-      const targetIdx = (typeof p.teamIndex === 'number' && p.teamIndex < sTeamCount) ? p.teamIndex : (idx % sTeamCount);
+      const targetIdx = (typeof p.teamIndex === 'number' && p.teamIndex < sTeams.length) ? p.teamIndex : (idx % sTeams.length);
       sTeams[targetIdx].players.push(p);
     });
   }
@@ -4922,7 +5155,8 @@ function ensureSoccerMatchesInitialized() {
 function generateSoccerMatchSchedule() {
   if (!Array.isArray(sTeams) || sTeams.length < 2) return;
   sMatches = [];
-  if (sTeamCount === 2) {
+
+  if (sTeams.length === 2) {
     for (let r = 1; r <= 3; r++) {
       sMatches.push({
         roundNumber: r,
@@ -4935,20 +5169,341 @@ function generateSoccerMatchSchedule() {
         status: r === 1 ? 'ongoing' : 'pending'
       });
     }
-  } else if (sTeamCount === 3) {
+  } else if (sTeams.length === 3) {
     sMatches = [
       { roundNumber: 1, title: `Match 1 • ${sTeams[0].name} vs ${sTeams[1].name}`, teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'ongoing', restTeam: sTeams[2] },
       { roundNumber: 2, title: `Match 2 • ${sTeams[1].name} vs ${sTeams[2].name}`, teamA: sTeams[1], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending', restTeam: sTeams[0] },
       { roundNumber: 3, title: `Match 3 • ${sTeams[0].name} vs ${sTeams[2].name}`, teamA: sTeams[0], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending', restTeam: sTeams[1] }
     ];
   } else {
-    sMatches = [
-      { roundNumber: 1, title: `Semifinal 1 • ${sTeams[0].name} vs ${sTeams[1].name}`, teamA: sTeams[0], teamB: sTeams[1], scoreA: null, scoreB: null, winner: null, status: 'ongoing' },
-      { roundNumber: 2, title: `Semifinal 2 • ${sTeams[2].name} vs ${sTeams[3].name}`, teamA: sTeams[2], teamB: sTeams[3], scoreA: null, scoreB: null, winner: null, status: 'pending' },
-      { roundNumber: 3, title: `Final Perebutan Juara • ${sTeams[0].name} vs ${sTeams[2].name}`, teamA: sTeams[0], teamB: sTeams[2], scoreA: null, scoreB: null, winner: null, status: 'pending' }
-    ];
+    // Round-robin tournament untuk N >= 4 tim
+    const pairs = [];
+    for (let i = 0; i < sTeams.length; i++) {
+      for (let j = i + 1; j < sTeams.length; j++) {
+        pairs.push([sTeams[i], sTeams[j]]);
+      }
+    }
+    sMatches = pairs.map((pair, idx) => ({
+      roundNumber: idx + 1,
+      title: `Match ${idx + 1} • ${pair[0].name} vs ${pair[1].name}`,
+      teamA: pair[0],
+      teamB: pair[1],
+      scoreA: null,
+      scoreB: null,
+      winner: null,
+      status: idx === 0 ? 'ongoing' : 'pending'
+    }));
   }
   sCurrentMatchIndex = 0;
+}
+
+function addNewSoccerTeam(nameInput) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+
+  let teamName = '';
+  if (typeof nameInput === 'string' && nameInput.trim()) {
+    teamName = nameInput.trim();
+  } else {
+    const domInput = document.getElementById('inputSoccerTeamName');
+    if (domInput && domInput.value.trim()) {
+      teamName = domInput.value.trim();
+      domInput.value = '';
+    } else {
+      const defaultName = `Tim ${String.fromCharCode(65 + sTeams.length)}`;
+      const prompted = prompt('Masukkan nama tim baru:', defaultName);
+      if (!prompted || !prompted.trim()) return;
+      teamName = prompted.trim();
+    }
+  }
+
+  const newKey = 'team-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+  const newTeam = {
+    name: teamName,
+    key: newKey,
+    players: []
+  };
+
+  sTeams.push(newTeam);
+  sTeamCount = sTeams.length;
+
+  // Jadwalkan pertandingan untuk tim baru
+  if (!Array.isArray(sMatches)) sMatches = [];
+  const hasFinishedMatches = sMatches.some(m => m.status === 'finished');
+
+  if (!hasFinishedMatches) {
+    generateSoccerMatchSchedule();
+  } else {
+    const prevCount = sTeams.length - 1;
+    for (let i = 0; i < prevCount; i++) {
+      const opp = sTeams[i];
+      sMatches.push({
+        roundNumber: sMatches.length + 1,
+        title: `Match ${sMatches.length + 1} • ${opp.name} vs ${newTeam.name}`,
+        teamA: opp,
+        teamB: newTeam,
+        scoreA: null,
+        scoreB: null,
+        winner: null,
+        status: 'pending'
+      });
+    }
+  }
+
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+  showToast(`Tim "${newTeam.name}" berhasil ditambahkan! (Total: ${sTeams.length} Tim)`, 'success');
+}
+
+function removeSoccerTeam(teamIdx) {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+  if (!sTeams[teamIdx]) return;
+  if (sTeams.length <= 2) {
+    showToast('Minimal harus ada 2 tim untuk turnamen Mini Soccer.', 'warning');
+    return;
+  }
+
+  const targetTeam = sTeams[teamIdx];
+  if (!confirm(`Hapus tim "${targetTeam.name}" beserta jadwal pertandingannya?`)) return;
+
+  sTeams.splice(teamIdx, 1);
+  sTeamCount = sTeams.length;
+
+  if (Array.isArray(sMatches)) {
+    sMatches = sMatches.filter(m => {
+      const isA = m.teamA && (m.teamA.key === targetTeam.key || m.teamA.name === targetTeam.name);
+      const isB = m.teamB && (m.teamB.key === targetTeam.key || m.teamB.name === targetTeam.name);
+      return !isA && !isB;
+    });
+    sMatches.forEach((m, idx) => {
+      m.roundNumber = idx + 1;
+      const parts = m.title.split('•');
+      const vsPart = parts.length > 1 ? parts[1].trim() : `${m.teamA?.name || 'Tim A'} vs ${m.teamB?.name || 'Tim B'}`;
+      m.title = `Match ${idx + 1} • ${vsPart}`;
+    });
+    if (sMatches.length === 0) {
+      generateSoccerMatchSchedule();
+    }
+  }
+
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+  showToast(`Tim "${targetTeam.name}" telah dihapus.`, 'info');
+}
+
+function clearAllSoccerTeams() {
+  if (!checkEditPermission()) return;
+  if (!confirm('Reset seluruh tim Mini Soccer kembali ke 2 tim awal? Seluruh jadwal dan skor akan direset.')) return;
+
+  sTeams = [
+    { name: 'Tim Garuda (A)', key: 'team-a', players: [] },
+    { name: 'Tim Rajawali (B)', key: 'team-b', players: [] }
+  ];
+  sTeamCount = 2;
+  sPlayers = [];
+  sMatches = [];
+  generateSoccerMatchSchedule();
+
+  updateSessionLabels();
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+  showToast('Tim Mini Soccer berhasil direset ke 2 tim default.', 'info');
+}
+
+function regenerateSoccerScheduleWithConfirm() {
+  if (!checkEditPermission()) return;
+  ensureSoccerTeamsInitialized();
+  const hasScores = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+  if (hasScores) {
+    if (!confirm('Buat ulang seluruh jadwal pertandingan? Semua skor pertandingan yang ada akan direset.')) return;
+  }
+  generateSoccerMatchSchedule();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+  showToast('Jadwal pertandingan Mini Soccer berhasil diacak & dibuat ulang!', 'success');
+}
+
+function changeSoccerMatchScore(matchIdx, team, delta) {
+  if (!checkEditPermission()) return;
+  const m = sMatches[matchIdx];
+  if (!m) return;
+
+  if (m.scoreA === null || m.scoreA === undefined) m.scoreA = 0;
+  if (m.scoreB === null || m.scoreB === undefined) m.scoreB = 0;
+
+  if (team === 'A') {
+    m.scoreA = Math.max(0, Math.min(99, m.scoreA + delta));
+  } else if (team === 'B') {
+    m.scoreB = Math.max(0, Math.min(99, m.scoreB + delta));
+  }
+
+  if (m.scoreA > m.scoreB) m.winner = 'A';
+  else if (m.scoreB > m.scoreA) m.winner = 'B';
+  else m.winner = 'D';
+
+  m.status = 'finished';
+
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+}
+
+function deleteSoccerMatch(matchIdx) {
+  if (!checkEditPermission()) return;
+  if (!sMatches[matchIdx]) return;
+  if (!confirm(`Hapus pertandingan "${sMatches[matchIdx].title}"?`)) return;
+
+  sMatches.splice(matchIdx, 1);
+  sMatches.forEach((m, idx) => {
+    m.roundNumber = idx + 1;
+    const parts = m.title.split('•');
+    const vsPart = parts.length > 1 ? parts[1].trim() : `${m.teamA?.name || 'Tim A'} vs ${m.teamB?.name || 'Tim B'}`;
+    m.title = `Match ${idx + 1} • ${vsPart}`;
+  });
+
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+  showToast('Pertandingan berhasil dihapus.', 'info');
+}
+
+// ── MODAL INPUT SKOR PER MATCH MINI SOCCER ──
+function openSoccerScoreModal(matchIdx) {
+  if (!checkEditPermission()) return;
+  const m = sMatches[matchIdx];
+  if (!m) return;
+
+  const targetInput = document.getElementById('soccerScoreTargetMatchIdx');
+  if (targetInput) targetInput.value = matchIdx;
+
+  const titleEl = document.getElementById('soccerScoreModalTitle');
+  if (titleEl) titleEl.textContent = `Input Skor: ${m.title}`;
+
+  const headerEl = document.getElementById('soccerScoreModalTeamsHeader');
+  if (headerEl) {
+    headerEl.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; font-weight:900;">
+        <span style="color:var(--brand-navy-dark); flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamA.name)}</span>
+        <span style="color:var(--brand-orange); font-size:0.75rem; padding:0 8px;">VS</span>
+        <span style="color:var(--brand-navy-dark); flex:1; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamB.name)}</span>
+      </div>
+    `;
+  }
+
+  const lblA = document.getElementById('soccerScoreLabelA');
+  const lblB = document.getElementById('soccerScoreLabelB');
+  if (lblA) lblA.textContent = m.teamA.name;
+  if (lblB) lblB.textContent = m.teamB.name;
+
+  const winTxtA = document.getElementById('soccerWinTextA');
+  const winTxtB = document.getElementById('soccerWinTextB');
+  if (winTxtA) winTxtA.textContent = `${m.teamA.name.split(' ')[0]} Menang`;
+  if (winTxtB) winTxtB.textContent = `${m.teamB.name.split(' ')[0]} Menang`;
+
+  const sA = (m.scoreA !== null && m.scoreA !== undefined) ? m.scoreA : 0;
+  const sB = (m.scoreB !== null && m.scoreB !== undefined) ? m.scoreB : 0;
+
+  const inputA = document.getElementById('inputSoccerModalScoreA');
+  const inputB = document.getElementById('inputSoccerModalScoreB');
+  if (inputA) inputA.value = sA;
+  if (inputB) inputB.value = sB;
+
+  const curWin = m.winner || (sA > sB ? 'A' : (sB > sA ? 'B' : 'D'));
+  const radioA = document.getElementById('soccerWinRadioA');
+  const radioB = document.getElementById('soccerWinRadioB');
+  const radioD = document.getElementById('soccerWinRadioD');
+  if (radioA) radioA.checked = curWin === 'A';
+  if (radioB) radioB.checked = curWin === 'B';
+  if (radioD) radioD.checked = curWin === 'D';
+
+  const modal = document.getElementById('soccerScoreModalOverlay');
+  if (modal) modal.classList.add('open');
+}
+
+function closeSoccerScoreModal() {
+  const modal = document.getElementById('soccerScoreModalOverlay');
+  if (modal) modal.classList.remove('open');
+}
+
+function stepSoccerModalScore(team, delta) {
+  const input = document.getElementById(team === 'A' ? 'inputSoccerModalScoreA' : 'inputSoccerModalScoreB');
+  if (!input) return;
+  let val = parseInt(input.value, 10);
+  if (isNaN(val)) val = 0;
+  val = Math.max(0, Math.min(99, val + delta));
+  input.value = val;
+  syncSoccerModalWinnerFromScores();
+}
+
+function syncSoccerModalWinnerFromScores() {
+  const sA = parseInt(document.getElementById('inputSoccerModalScoreA')?.value, 10) || 0;
+  const sB = parseInt(document.getElementById('inputSoccerModalScoreB')?.value, 10) || 0;
+  const radioA = document.getElementById('soccerWinRadioA');
+  const radioB = document.getElementById('soccerWinRadioB');
+  const radioD = document.getElementById('soccerWinRadioD');
+
+  if (sA > sB) {
+    if (radioA) radioA.checked = true;
+  } else if (sB > sA) {
+    if (radioB) radioB.checked = true;
+  } else {
+    if (radioD) radioD.checked = true;
+  }
+}
+
+function submitSoccerModalScore() {
+  if (!checkEditPermission()) return;
+  const targetInput = document.getElementById('soccerScoreTargetMatchIdx');
+  if (!targetInput) return;
+  const matchIdx = parseInt(targetInput.value, 10);
+  const m = sMatches[matchIdx];
+  if (!m) return;
+
+  const sA = parseInt(document.getElementById('inputSoccerModalScoreA')?.value, 10) || 0;
+  const sB = parseInt(document.getElementById('inputSoccerModalScoreB')?.value, 10) || 0;
+  const selectedRadio = document.querySelector('input[name="soccer_modal_winner_radio"]:checked');
+  const winner = selectedRadio ? selectedRadio.value : (sA > sB ? 'A' : (sB > sA ? 'B' : 'D'));
+
+  m.scoreA = sA;
+  m.scoreB = sB;
+  m.winner = winner;
+  m.status = 'finished';
+
+  closeSoccerScoreModal();
+  renderCourtsView();
+  renderLeaderboard();
+  renderHistory();
+  renderFinalPodium();
+  persistAndBroadcast();
+
+  const nextMatch = sMatches.find(x => x.status === 'pending');
+  if (nextMatch) {
+    showToast(`Skor disimpan (${sA}-${sB})! Siap-siap match berikutnya: ${nextMatch.teamA.name} vs ${nextMatch.teamB.name}`, 'success');
+  } else {
+    showToast(`Skor disimpan (${sA}-${sB})! Seluruh pertandingan telah selesai 👍`, 'success');
+  }
 }
 
 function updateSoccerTeamSelectOptions() {
@@ -5376,15 +5931,7 @@ function shuffleSoccerTeamsFromRoster(askConfirm = true) {
 }
 
 function generateSoccerTeams() {
-  ensureSoccerTeamsInitialized();
-  const total = sTeams.reduce((sum, t) => sum + (t.players ? t.players.length : 0), 0);
-  if (total >= 2) {
-    shuffleSoccerTeamsFromRoster(false);
-  } else {
-    ensureSoccerMatchesInitialized();
-    renderSoccerTeams();
-    renderCourtsView();
-  }
+  regenerateSoccerScheduleWithConfirm();
 }
 
 function renderSoccerTeams() {
@@ -5395,139 +5942,134 @@ function renderSoccerTeams() {
   if (sTeams.length === 0) {
     container.innerHTML = `
       <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.8rem;">
-        Belum ada tim terbentuk. Tambahkan pemain di tab Pemain.
+        Belum ada tim terdaftar. Tambahkan tim di tab Tim.
       </div>
     `;
     return;
   }
 
-  container.innerHTML = sTeams.map(t => `
-    <div style="margin-bottom:10px;">
-      <div class="team-card-header ${t.key}">
-        <span>${escapeHtml(t.name)}</span>
-        <span style="font-size:0.75rem; font-weight:800;">${(t.players || []).length} Pemain</span>
-      </div>
-      <div class="team-members-list">
-        ${(t.players || []).length === 0 ? `<div style="padding:6px; font-size:0.78rem; color:var(--text-muted); font-style:italic;">Belum ada pemain di tim ini.</div>` : t.players.map(p => `
-          <div class="team-member-item">
-            <span style="font-weight:700; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</span>
-            <span class="pos-badge pos-${(p.role||'MF').toLowerCase()}">${escapeHtml(p.role || 'MF')}</span>
+  const ongoingMatch = Array.isArray(sMatches) ? sMatches.find(m => m.status === 'ongoing') : null;
+  const nextPendingMatch = Array.isArray(sMatches) ? sMatches.find(m => m.status === 'pending') : null;
+
+  const statsList = typeof getSoccerStatsAndRankings === 'function' ? getSoccerStatsAndRankings('wins') : [];
+  const statsMap = {};
+  statsList.forEach(s => { statsMap[s.name] = s; });
+
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px;">
+      ${sTeams.map((t, idx) => {
+        const st = statsMap[t.name] || { p: 0, w: 0, d: 0, l: 0, pts: 0 };
+        const isPlaying = ongoingMatch && (ongoingMatch.teamA.name === t.name || ongoingMatch.teamB.name === t.name);
+        const isNext = !isPlaying && nextPendingMatch && (nextPendingMatch.teamA.name === t.name || nextPendingMatch.teamB.name === t.name);
+
+        let statusBadge = `<span style="background:#F1F5F9; color:#64748B; font-size:0.65rem; font-weight:700; padding:1px 6px; border-radius:4px;">Istirahat</span>`;
+        if (isPlaying) {
+          statusBadge = `<span style="background:#DCFCE7; color:#166534; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">🟢 Main</span>`;
+        } else if (isNext) {
+          statusBadge = `<span style="background:#FEF3C7; color:#92400E; font-size:0.65rem; font-weight:800; padding:1px 6px; border-radius:4px;">⏰ Siap Masuk</span>`;
+        }
+
+        return `
+          <div style="background:#FFF; border:1.5px solid ${isPlaying ? '#86EFAC' : (isNext ? '#FDE68A' : '#CBD5E1')}; border-radius:var(--radius-md); padding:8px 10px; display:flex; flex-direction:column; gap:4px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:4px;">
+              <span style="font-weight:900; font-size:0.82rem; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                ${escapeHtml(t.name)}
+              </span>
+              ${statusBadge}
+            </div>
+            <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">
+              ${st.p} Main · <strong style="color:var(--brand-orange);">${st.pts} Pts</strong>
+            </div>
           </div>
-        `).join('')}
-      </div>
+        `;
+      }).join('')}
     </div>
-  `).join('');
+  `;
 }
 
 function renderSoccerTeamRoster(container) {
   ensureSoccerTeamsInitialized();
   updateSoccerTeamSelectOptions();
 
-  const teamTheme = {
-    0: { border: '#CBD5E1', headerBg: 'var(--brand-navy-dark)', headerColor: '#FFF', badgeBg: 'var(--brand-navy-light)', badgeColor: 'var(--brand-navy)' },
-    1: { border: '#FED7AA', headerBg: 'var(--brand-orange)', headerColor: '#FFF', badgeBg: 'var(--brand-orange-light)', badgeColor: 'var(--brand-orange)' },
-    2: { border: '#A7F3D0', headerBg: '#059669', headerColor: '#FFF', badgeBg: '#ECFDF5', badgeColor: '#065F46' },
-    3: { border: '#DDD6FE', headerBg: '#7C3AED', headerColor: '#FFF', badgeBg: '#F5F3FF', badgeColor: '#5B21B6' }
-  };
+  const teamThemes = [
+    { border: '#CBD5E1', headerBg: 'var(--brand-navy-dark)', headerColor: '#FFF' },
+    { border: '#FED7AA', headerBg: 'var(--brand-orange)', headerColor: '#FFF' },
+    { border: '#A7F3D0', headerBg: '#059669', headerColor: '#FFF' },
+    { border: '#DDD6FE', headerBg: '#7C3AED', headerColor: '#FFF' },
+    { border: '#BAE6FD', headerBg: '#0284C7', headerColor: '#FFF' },
+    { border: '#FBCFE8', headerBg: '#DB2777', headerColor: '#FFF' },
+    { border: '#FDE68A', headerBg: '#D97706', headerColor: '#FFF' },
+    { border: '#C7D2FE', headerBg: '#4F46E5', headerColor: '#FFF' }
+  ];
+
+  const statsList = typeof getSoccerStatsAndRankings === 'function' ? getSoccerStatsAndRankings('wins') : [];
+  const statsMap = {};
+  statsList.forEach(s => { statsMap[s.name] = s; });
 
   const html = `
-    <div style="display:flex; flex-direction:column; gap:14px; margin-top:8px;">
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
       ${sTeams.map((team, tIdx) => {
-        const theme = teamTheme[tIdx] || teamTheme[0];
-        const players = team.players || [];
+        const theme = teamThemes[tIdx % teamThemes.length];
+        const st = statsMap[team.name] || { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
         return `
-          <div class="os-card" style="padding:0; overflow:hidden; border:1.5px solid ${theme.border}; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:0;">
-            <!-- Team Header -->
-            <div style="background:${theme.headerBg}; color:${theme.headerColor}; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-                <span style="font-weight:900; font-size:0.95rem; letter-spacing:-0.2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          <div class="os-card" style="padding:14px; border:1.5px solid ${theme.border}; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:0; border-radius:var(--radius-lg);">
+            <!-- Team Header & Controls -->
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:${theme.headerBg}; color:${theme.headerColor}; font-weight:900; font-size:0.82rem; flex-shrink:0;">
+                  ${tIdx + 1}
+                </span>
+                <span style="font-weight:900; font-size:1.02rem; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                   ${escapeHtml(team.name)}
                 </span>
-                <button type="button" onclick="renameSoccerTeam(${tIdx})" title="Ubah nama tim" style="background:rgba(255,255,255,0.22); border:none; color:#FFF; border-radius:4px; padding:2px 7px; font-size:0.68rem; font-weight:800; cursor:pointer;">
-                  ✎ Ubah Nama
-                </button>
               </div>
               <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-                <span style="font-size:0.75rem; font-weight:800; background:rgba(255,255,255,0.25); padding:3px 9px; border-radius:var(--radius-pill); color:#FFF;">
-                  ${players.length} Pemain
-                </span>
+                <button type="button" onclick="renameSoccerTeam(${tIdx})" title="Ubah nama tim" style="background:#F1F5F9; border:1px solid #CBD5E1; color:var(--brand-navy-dark); border-radius:6px; padding:4px 9px; font-size:0.72rem; font-weight:800; cursor:pointer;">
+                  ✎ Ubah Nama
+                </button>
+                ${sTeams.length > 2 ? `
+                  <button type="button" onclick="removeSoccerTeam(${tIdx})" title="Hapus tim ini" style="background:#FEE2E2; border:1px solid #FCA5A5; color:#DC2626; border-radius:6px; padding:4px 9px; font-size:0.72rem; font-weight:800; cursor:pointer;">
+                    ✕ Hapus
+                  </button>
+                ` : ''}
               </div>
             </div>
 
-            <!-- Direct Inline Input for this Team -->
-            <div style="background:#F8FAFC; padding:10px 12px; border-bottom:1px solid var(--border-color); display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
-              <input type="text" id="inlineSoccerPlayerName_${tIdx}" class="input-styled-os" placeholder="+ Ketik nama pemain..." style="flex:1; min-width:140px; font-size:0.8rem; padding:6px 10px;" onkeypress="if(event.key==='Enter')addSoccerPlayerToTeam(${tIdx})">
-              <select id="inlineSoccerPlayerRole_${tIdx}" class="input-styled-os" style="width:auto; font-weight:700; font-size:0.78rem; padding:6px 8px;">
-                <option value="GK">GK (Kiper)</option>
-                <option value="DF">DF (Bek)</option>
-                <option value="MF" selected>MF (Gelandang)</option>
-                <option value="FW">FW (Penyerang)</option>
-              </select>
-              <select id="inlineSoccerPlayerGender_${tIdx}" class="input-styled-os" style="width:auto; font-size:0.78rem; padding:6px 8px;">
-                <option value="L">Putra (L)</option>
-                <option value="P">Putri (P)</option>
-              </select>
-              <button class="btn-court-quick-action" onclick="addSoccerPlayerToTeam(${tIdx})" style="background:var(--brand-blue); color:#FFF; border:none; font-weight:800; padding:6px 12px; font-size:0.76rem;" title="Tambah pemain langsung ke tim ini">
-                + Tambah
-              </button>
-              <button class="btn-court-quick-action" onclick="openSoccerBulkAddModal(${tIdx})" style="background:#FFFFFF; color:var(--text-secondary); border:1px solid var(--border-color); font-weight:700; padding:6px 10px; font-size:0.74rem;" title="Paste banyak nama sekaligus dari WhatsApp/catatan">
-                📋 Roster Massal
-              </button>
-            </div>
-
-            <!-- Team Player Members List -->
-            <div style="padding:8px 10px; display:flex; flex-direction:column; gap:6px; min-height:46px;">
-              ${players.length === 0 ? `
-                <div style="text-align:center; padding:16px 8px; color:var(--text-muted); font-size:0.78rem; font-style:italic;">
-                  Belum ada pemain di ${escapeHtml(team.name)}. Ketik nama di atas untuk menambah pemain.
-                </div>
-              ` : players.map((p, pIdx) => {
-                const isMale = p.gender === 'L';
-                return `
-                  <div class="player-roster-card" style="margin-bottom:0; padding:8px 10px; background:#FFF; border:1px solid var(--border-color); border-radius:var(--radius-md);">
-                    <div class="player-roster-left" style="gap:8px; align-items:center; flex:1; min-width:0;">
-                      <select class="select-role-inline" onchange="updateSoccerPlayerGender(${p.id}, this.value)" style="color:${isMale ? 'var(--gender-male)' : 'var(--gender-female)'}; font-weight:800; font-size:0.72rem; padding:2px 4px;">
-                        <option value="L" ${isMale ? 'selected' : ''}>L</option>
-                        <option value="P" ${!isMale ? 'selected' : ''}>P</option>
-                      </select>
-
-                      <div style="min-width:0; flex:1;">
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                          <span style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark);">${escapeHtml(p.name)}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:3px;">
-                          <select class="select-role-inline" onchange="updateSoccerPlayerRole(${p.id}, this.value)" style="font-size:0.72rem; padding:2px 6px; font-weight:700;">
-                            <option value="GK" ${p.role === 'GK' ? 'selected' : ''}>GK (Kiper)</option>
-                            <option value="DF" ${p.role === 'DF' ? 'selected' : ''}>DF (Bek)</option>
-                            <option value="MF" ${p.role === 'MF' || !p.role ? 'selected' : ''}>MF (Gelandang)</option>
-                            <option value="FW" ${p.role === 'FW' ? 'selected' : ''}>FW (Penyerang)</option>
-                          </select>
-
-                          <select class="select-role-inline" onchange="moveSoccerPlayerToTeam(${p.id}, parseInt(this.value, 10))" title="Pindahkan pemain ke tim lain" style="font-size:0.72rem; padding:2px 6px; font-weight:700; background:#F0FDF4; border-color:#86EFAC; color:#166534;">
-                            ${sTeams.map((otherTeam, oIdx) => `
-                              <option value="${oIdx}" ${oIdx === tIdx ? 'selected' : ''}>
-                                ${oIdx === tIdx ? '✓ ' + escapeHtml(otherTeam.name) : '➜ Pindah ke ' + escapeHtml(otherTeam.name)}
-                              </option>
-                            `).join('')}
-                          </select>
-
-                          <button type="button" class="btn-court-quick-action" onclick="openSoccerSwapModal(${p.id})" style="font-size:0.68rem; padding:2px 7px;" title="Tukar posisi dengan pemain tim lain">
-                            ⇄ Tukar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <button class="btn-del-player" onclick="removeSoccerPlayer(${p.id})" title="Hapus pemain dari tim">✕</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
+            <!-- Team Stats Quick Summary Bar -->
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 6px; text-align:center;">
+              <div>
+                <div style="font-size:0.65rem; font-weight:800; color:var(--text-muted);">MAIN</div>
+                <div style="font-size:0.92rem; font-weight:900; color:var(--brand-navy-dark);">${st.p || 0}</div>
+              </div>
+              <div>
+                <div style="font-size:0.65rem; font-weight:800; color:#059669;">MENANG</div>
+                <div style="font-size:0.92rem; font-weight:900; color:#059669;">${st.w || 0}</div>
+              </div>
+              <div>
+                <div style="font-size:0.65rem; font-weight:800; color:#D97706;">SERI</div>
+                <div style="font-size:0.92rem; font-weight:900; color:#D97706;">${st.d || 0}</div>
+              </div>
+              <div>
+                <div style="font-size:0.65rem; font-weight:800; color:#DC2626;">KALAH</div>
+                <div style="font-size:0.92rem; font-weight:900; color:#DC2626;">${st.l || 0}</div>
+              </div>
+              <div>
+                <div style="font-size:0.65rem; font-weight:800; color:var(--brand-orange);">POIN</div>
+                <div style="font-size:1.05rem; font-weight:900; color:var(--brand-orange);">${st.pts || 0}</div>
+              </div>
             </div>
           </div>
         `;
       }).join('')}
+
+      <!-- Bottom Add Team Action Box -->
+      <div class="os-card" style="margin-top:4px; background:#FAFDFB; border:1.5px dashed #86EFAC; text-align:center; padding:18px 14px; border-radius:var(--radius-lg);">
+        <div style="font-weight:800; font-size:0.9rem; color:#065F46; margin-bottom:4px;">Turnamen Mini Soccer Berbasis Tim</div>
+        <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px;">Cukup tambahkan tim tanpa perlu menginput pemain. Jadwal dan skor otomatis terkelola.</div>
+        <button type="button" class="btn-os-cyan" onclick="addNewSoccerTeam()" style="display:inline-flex; align-items:center; gap:6px; margin:0 auto; width:auto; font-weight:800; font-size:0.82rem; padding:8px 20px; background:#059669; border-color:#059669;">
+          + Tambah Tim Baru
+        </button>
+      </div>
     </div>
   `;
 
@@ -6735,16 +7277,16 @@ function renderCourtsView() {
     }
   } else {
     // Mini Soccer View
-    benchTitle.textContent = 'Tim Cadangan / Istirahat';
+    benchTitle.textContent = 'Daftar Tim Turnamen';
     renderSoccerTeams();
 
-    if (sPlayers.length === 0 || sMatches.length === 0) {
+    if (sTeams.length < 2 || sMatches.length === 0) {
       activeCourtsContainer.innerHTML = `
         <div class="os-card" style="text-align:center; padding:32px 16px; color:var(--text-muted);">
-          <div style="font-weight:800; font-size:1rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Pemain & Match Soccer</div>
-          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Tambahkan pemain di menu <strong>Pemain</strong> untuk pembagian tim dan jadwal match otomatis.</div>
+          <div style="font-weight:800; font-size:1rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Tim & Match Soccer</div>
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Daftarkan minimal 2 tim di menu <strong>Tim</strong> untuk membuat jadwal pertandingan otomatis.</div>
           <button class="btn-os-cyan" style="display:inline-flex; width:auto; padding:8px 18px; margin:0 auto; font-size:0.82rem;" onclick="switchTab('tab-pemain')">
-            + Tambah Pemain Sekarang
+            + Tambah Tim Sekarang
           </button>
         </div>
       `;
@@ -6752,9 +7294,60 @@ function renderCourtsView() {
       return;
     }
 
-    activeCourtsContainer.innerHTML = sMatches.map((m, idx) => {
+    const ongoingMatch = sMatches.find(m => m.status === 'ongoing');
+    const nextPendingMatch = sMatches.find(m => m.status === 'pending');
+
+    let nextMatchBannerHtml = '';
+    if (nextPendingMatch) {
+      const nextIdx = sMatches.indexOf(nextPendingMatch);
+      nextMatchBannerHtml = `
+        <div class="os-card" style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1.5px solid #FCD34D; border-radius: var(--radius-lg); padding: 12px 14px; margin-top: 10px; margin-bottom: 6px; box-shadow: 0 2px 10px rgba(217,119,6,0.12);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-weight:900; font-size:0.82rem; color:#92400E; display:flex; align-items:center; gap:6px;">
+              <span style="display:inline-block; width:9px; height:9px; border-radius:50%; background:#F59E0B; box-shadow:0 0 0 3px rgba(245,158,11,0.25);"></span>
+              ⏰ TIM SIAP-SIAP MASUK LAPANGAN (PERTANDINGAN BERIKUTNYA)
+            </span>
+            <span class="court-status-chip pending" style="background:#FDE68A; color:#78350F; font-size:0.68rem; font-weight:800;">
+              Match ${nextPendingMatch.roundNumber}
+            </span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#FFFFFF; border:1px solid #FDE68A; border-radius:var(--radius-md); padding:10px 14px; margin-bottom:8px;">
+            <div style="text-align:left; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${escapeHtml(nextPendingMatch.teamA.name)}
+            </div>
+            <div style="font-weight:900; color:#D97706; font-size:0.82rem; text-align:center;">VS</div>
+            <div style="text-align:right; font-weight:900; color:var(--brand-navy-dark); font-size:0.92rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${escapeHtml(nextPendingMatch.teamB.name)}
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-size:0.73rem; color:#78350F; font-weight:700;">
+            <span>${ongoingMatch ? 'Mohon bersiap di pinggir lapangan. Masuk begitu match saat ini selesai!' : 'Lapangan kosong. Tim siap dipersilakan masuk sekarang!'}</span>
+            ${checkEditPermission(false) ? `
+              <button type="button" class="btn-court-quick-action" onclick="startSoccerMatch(${nextIdx})" style="background:#D97706; color:#FFF; border:none; padding:4px 12px; font-size:0.74rem; font-weight:800; border-radius:5px; cursor:pointer;" title="Mulai pertandingan berikutnya">
+                Kickoff Match Ini ▶
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    } else if (sMatches.every(m => m.status === 'finished')) {
+      nextMatchBannerHtml = `
+        <div class="os-card" style="background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%); border: 1.5px solid #86EFAC; border-radius: var(--radius-lg); padding: 12px 14px; margin-top: 10px; margin-bottom: 6px; text-align:center;">
+          <div style="font-weight:900; color:#065F46; font-size:0.9rem; margin-bottom:4px;">🏆 Seluruh Pertandingan Selesai!</div>
+          <div style="font-size:0.75rem; color:#047857; margin-bottom:8px;">Semua match telah dimainkan. Cek klasemen poin atau podium juara akhir.</div>
+          <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-selesai')" style="background:#059669; color:#FFF; border:none; padding:5px 16px; font-size:0.75rem; font-weight:800; border-radius:6px; cursor:pointer;">
+            Lihat Podium Juara 🏆
+          </button>
+        </div>
+      `;
+    }
+
+    const matchesCardsHtml = sMatches.map((m, idx) => {
       const isFinished = m.status === 'finished';
       const isOngoing = m.status === 'ongoing';
+      const isNextPending = m === nextPendingMatch;
 
       if (isFinished && isGuestUser()) {
         return `
@@ -6776,23 +7369,48 @@ function renderCourtsView() {
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px;">
           <div class="card-top-title">
             <span class="card-title-text">${escapeHtml(m.title)}</span>
-            <span class="court-status-chip ${m.status}">${m.status === 'finished' ? 'Selesai' : (isOngoing ? 'Live' : 'Pending')}</span>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; background:#F8FAFC; padding:12px; border-radius:var(--radius-lg); margin-bottom:10px;">
-            <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${escapeHtml(m.teamA.name)}</strong>
-              <div style="font-size:1.8rem; font-weight:900; color:var(--brand-orange);">${m.scoreA !== null ? m.scoreA : '-'}</div>
-            </div>
-            <div style="font-size:0.85rem; font-weight:900; color:var(--text-muted);">VS</div>
-            <div style="text-align:center;">
-              <strong style="color:var(--brand-navy-dark); font-size:1rem;">${escapeHtml(m.teamB.name)}</strong>
-              <div style="font-size:1.8rem; font-weight:900; color:var(--brand-navy-dark);">${m.scoreB !== null ? m.scoreB : '-'}</div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              ${isOngoing ? `<span class="court-status-chip" style="background:#DCFCE7; color:#166534; font-weight:800;">🟢 Sedang Main</span>` : ''}
+              ${isNextPending && !isOngoing ? `<span class="court-status-chip" style="background:#FEF3C7; color:#92400E; font-weight:800;">⚡ Siap-Siap Masuk</span>` : ''}
+              <span class="court-status-chip ${m.status}">${isFinished ? 'Selesai' : (isOngoing ? 'Live' : 'Pending')}</span>
+              ${checkEditPermission(false) ? `
+                <button type="button" onclick="deleteSoccerMatch(${idx})" title="Hapus pertandingan ini" style="background:none; border:none; color:var(--text-muted); font-size:0.85rem; font-weight:800; cursor:pointer; padding:2px 4px; line-height:1;">
+                  ✕
+                </button>
+              ` : ''}
             </div>
           </div>
 
-          <div class="court-control-bar">
-            ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">Mulai Kickoff</button>` : ''}
+          <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; background:#F8FAFC; padding:12px; border-radius:var(--radius-lg); margin-bottom:10px;">
+            <div style="text-align:center;">
+              <strong style="color:var(--brand-navy-dark); font-size:0.95rem; display:block; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamA.name)}</strong>
+              <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'A', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
+                <span style="font-size:1.8rem; font-weight:900; color:var(--brand-orange); min-width:32px; display:inline-block;">${m.scoreA !== null ? m.scoreA : '-'}</span>
+                ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper plus" onclick="changeSoccerMatchScore(${idx}, 'A', 1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Tambah skor">+</button>` : ''}
+              </div>
+            </div>
+            <div style="font-size:0.85rem; font-weight:900; color:var(--text-muted); text-align:center;">VS</div>
+            <div style="text-align:center;">
+              <strong style="color:var(--brand-navy-dark); font-size:0.95rem; display:block; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(m.teamB.name)}</strong>
+              <div style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper" onclick="changeSoccerMatchScore(${idx}, 'B', -1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Kurang skor">−</button>` : ''}
+                <span style="font-size:1.8rem; font-weight:900; color:var(--brand-navy-dark); min-width:32px; display:inline-block;">${m.scoreB !== null ? m.scoreB : '-'}</span>
+                ${checkEditPermission(false) ? `<button type="button" class="btn-score-stepper plus" onclick="changeSoccerMatchScore(${idx}, 'B', 1)" style="width:28px; height:28px; font-size:1rem; border-radius:6px;" title="Tambah skor">+</button>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="court-control-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              ${!isOngoing && !isFinished ? `<button class="btn-court-action start" onclick="startSoccerMatch(${idx})">Mulai Kickoff</button>` : ''}
+              ${checkEditPermission(false) ? `
+                <button class="btn-court-action" style="background:#0F1E36; color:#FFF; font-weight:800; font-size:0.75rem; padding:6px 14px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;" onclick="openSoccerScoreModal(${idx})" title="Input Skor Match">
+                  ⚽ Input Skor
+                </button>
+              ` : ''}
+            </div>
+
             <div class="winner-picker-box">
               <span style="font-size:0.74rem; font-weight:800;">Pemenang:</span>
               <button class="btn-pick-winner ${m.winner === 'A' ? 'active' : ''}" onclick="setSoccerWinner(${idx}, 'A')">${escapeHtml(m.teamA.name.split(' ')[0])}</button>
@@ -6804,7 +7422,9 @@ function renderCourtsView() {
       `;
     }).join('');
 
-    restingWrap.innerHTML = sTeams.length > 2 ? `<span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Rotasi otomatis aktif antar tim.</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">Semua tim bertanding.</span>`;
+    activeCourtsContainer.innerHTML = nextMatchBannerHtml + matchesCardsHtml;
+
+    restingWrap.innerHTML = sTeams.length > 2 ? `<span style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Rotasi turnamen aktif untuk ${sTeams.length} tim.</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">Semua tim bertanding.</span>`;
   }
 }
 
@@ -12466,12 +13086,15 @@ function triggerPwaInstall() {
 }
 
 // ── AUTO UPDATE CHECKER VIA GITHUB RELEASES (HANYA APK ANDROID) ──
-const CURRENT_APP_VERSION = 'v1.1.0';
+const CURRENT_APP_VERSION = 'v1.2.0';
 const GITHUB_REPO = '4eronn/One-Sport-Badminton';
+const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`;
+const GITHUB_LATEST_APP_URL = `https://github.com/${GITHUB_REPO}/releases/tag/v1.2.0-b44`;
 const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 const GITHUB_API_LATEST = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 
-let targetReleaseUrl = GITHUB_RELEASES_URL;
+let targetReleaseUrl = GITHUB_LATEST_APP_URL;
+let cachedLatestUpdateInfo = null;
 
 function isAndroidApk() {
   if (typeof window === 'undefined') return false;
@@ -12516,18 +13139,15 @@ function isNewerVersion(latestTag, currentVersion) {
   if (lat.patch > cur.patch) return true;
   if (lat.patch < cur.patch) return false;
 
-  // Jika major, minor, dan patch sama (misal 1.1.0 vs 1.1.0-b24):
-  // Versinya sudah sama, JANGAN munculkan notifikasi update!
-  if (cur.build > 0 && lat.build > cur.build) return true;
+  // Bandingkan nomor build (misal b44 vs b43, atau b44 vs build 0)
+  if (lat.build > cur.build) return true;
   return false;
 }
 
 async function checkAppUpdates(isManual = false) {
-  // Untuk versi Web: tidak usah pakai pembaruan/notifikasi update
-  if (!isAndroidApk()) {
-    if (isManual) {
-      showToast('Aplikasi Web selalu berjalan pada versi terbaru secara otomatis.', 'info');
-    }
+  // Untuk versi Web di background: tidak usah pakai auto pembaruan,
+  // tapi jika ditekan manual oleh pengguna, tetap layani dan sediakan link rilis APK
+  if (!isAndroidApk() && !isManual) {
     return;
   }
 
@@ -12538,29 +13158,85 @@ async function checkAppUpdates(isManual = false) {
     });
     if (!res.ok) {
       if (isManual) {
-        showToast('Buka halaman GitHub Releases untuk cek rilis terbaru.');
-        window.open(GITHUB_RELEASES_URL, '_blank');
+        showToast('Membuka rilis aplikasi ONESPORT di GitHub...');
+        window.open(targetReleaseUrl || GITHUB_LATEST_APP_URL, '_blank');
       }
       return;
     }
     const data = await res.json();
-    const latestTag = data.tag_name || data.name || '';
-    targetReleaseUrl = data.html_url || GITHUB_RELEASES_URL;
+    const latestTag = data.tag_name || data.name || 'v1.2.0-b44';
+    targetReleaseUrl = data.html_url || GITHUB_LATEST_APP_URL;
     const bodyText = (data.body || '').trim();
 
-    // Jika versi sudah sama atau lebih lama, modal update TIDAK AKAN MUNCUL
+    // Jika ada versi lebih baru
     if (isNewerVersion(latestTag, CURRENT_APP_VERSION)) {
-      showUpdateModal(latestTag, targetReleaseUrl, bodyText);
+      cachedLatestUpdateInfo = { latestTag, url: targetReleaseUrl, notes: bodyText };
+      updateSettingsUpdateBadge(latestTag);
+
+      if (isManual) {
+        // Jika dicek manual oleh pengguna, buka modal detail
+        showUpdateModal(latestTag, targetReleaseUrl, bodyText);
+      } else {
+        // Jika auto-check latar belakang: CUKUP PEMBERITAHUAN BANNER saja!
+        // Tidak memblokir pengguna, pengguna tetap dapat menggunakan versi lama dengan normal
+        const isDismissed = sessionStorage.getItem('onesport_dismiss_update_' + latestTag);
+        if (!isDismissed) {
+          showUpdateBanner(latestTag);
+        }
+      }
     } else {
       if (isManual) {
+        showUpdateModal(latestTag, targetReleaseUrl, bodyText || 'Anda telah menggunakan versi aplikasi terkini.');
         showToast(`ONESPORT sudah dalam versi terbaru (${CURRENT_APP_VERSION})!`, 'success');
       }
     }
   } catch (e) {
     console.warn('Update check failed:', e);
     if (isManual) {
-      window.open(GITHUB_RELEASES_URL, '_blank');
+      window.open(targetReleaseUrl || GITHUB_LATEST_APP_URL, '_blank');
     }
+  }
+}
+
+function showUpdateBanner(latestTag) {
+  const banner = document.getElementById('appUpdateNotificationBanner');
+  const badge = document.getElementById('updateBannerVersionBadge');
+  if (badge) badge.textContent = latestTag;
+  if (banner) {
+    banner.style.display = 'flex';
+    banner.classList.add('show');
+  }
+}
+
+function dismissUpdateBanner() {
+  const banner = document.getElementById('appUpdateNotificationBanner');
+  if (banner) {
+    banner.style.display = 'none';
+    banner.classList.remove('show');
+  }
+  if (cachedLatestUpdateInfo && cachedLatestUpdateInfo.latestTag) {
+    sessionStorage.setItem('onesport_dismiss_update_' + cachedLatestUpdateInfo.latestTag, '1');
+  }
+}
+
+function openUpdateModalFromBanner() {
+  if (cachedLatestUpdateInfo) {
+    showUpdateModal(cachedLatestUpdateInfo.latestTag, cachedLatestUpdateInfo.url, cachedLatestUpdateInfo.notes);
+  } else {
+    showUpdateModal('v1.2.0-b44', GITHUB_LATEST_APP_URL, '');
+  }
+}
+
+function updateSettingsUpdateBadge(latestTag) {
+  const btnUp = document.getElementById('btnCheckAppUpdateSettings');
+  const tabBtnUp = document.getElementById('tabBtnCheckAppUpdate');
+  const badgeHtml = ` <span style="background:#FF5B14; color:#fff; font-size:0.68rem; padding:1px 6px; border-radius:999px; font-weight:800; margin-left:4px;">Tersedia ${latestTag}</span>`;
+  
+  if (btnUp && !btnUp.innerHTML.includes('Tersedia')) {
+    btnUp.innerHTML += badgeHtml;
+  }
+  if (tabBtnUp && !tabBtnUp.innerHTML.includes('Tersedia')) {
+    tabBtnUp.innerHTML += badgeHtml;
   }
 }
 
@@ -12571,11 +13247,12 @@ function showUpdateModal(latestTag, url, notes) {
   const btnGo = document.getElementById('btnGoToReleasePage');
   const notesBox = document.getElementById('updateNotesBox');
 
+  const releaseUrl = url || GITHUB_LATEST_APP_URL;
   if (curVer) curVer.textContent = CURRENT_APP_VERSION;
-  if (latVer) latVer.textContent = latestTag;
+  if (latVer) latVer.textContent = latestTag || 'v1.2.0-b44';
   if (btnGo) {
-    btnGo.href = url;
-    btnGo.onclick = (e) => {
+    btnGo.href = releaseUrl;
+    btnGo.onclick = () => {
       closeUpdateModal();
     };
   }
@@ -12593,6 +13270,18 @@ function showUpdateModal(latestTag, url, notes) {
 function closeUpdateModal() {
   const modal = document.getElementById('updateModalOverlay');
   if (modal) modal.classList.remove('open');
+}
+
+function handleUpdateOverlayClick(e) {
+  if (e.target && e.target.id === 'updateModalOverlay') {
+    closeUpdateModal();
+  }
+}
+
+function continueUsingCurrentVersion() {
+  closeUpdateModal();
+  dismissUpdateBanner();
+  showToast(`Melanjutkan dengan versi saat ini (${CURRENT_APP_VERSION}) 👍`, 'info');
 }
 </script>
 </body>

@@ -4,7 +4,7 @@
   "description": "Match rotation, live scoring, automatic standings, and Vercel database backend for casual badminton sessions",
   "main": "badminton-service.js",
   "scripts": {
-    "test": "node test-badminton.js && node test-mqtt-auth.js",
+    "test": "node test-badminton.js && node test-mqtt-auth.js && node test-minisoccer.js",
     "start": "node -e \"console.log('Serve index.html with any static server or deploy to Vercel')\""
   },
   "dependencies": {

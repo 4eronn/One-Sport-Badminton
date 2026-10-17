@@ -10,7 +10,7 @@
 [![Build Android APK](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml)
 [![Latest release](https://img.shields.io/github/v/release/4eronn/One-Sport-Badminton?label=release)](https://github.com/4eronn/One-Sport-Badminton/releases/latest)
 
-[Live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT) · [Download APK](https://github.com/4eronn/One-Sport-Badminton/releases/latest) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
+[Live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT) · [Download APK (v1.2.0-b44)](https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
 
 </div>
 
@@ -80,7 +80,7 @@ Open the [live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT
 
 ### Install the Android app
 
-Download the latest `ONESPORT-v*.apk` from the [Releases](https://github.com/4eronn/One-Sport-Badminton/releases/latest) page and open it on your device. You will need to allow installation from unknown sources the first time.
+Download the latest `ONESPORT-v*.apk` from the [Releases (v1.2.0-b44)](https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44) page and open it on your device. You will need to allow installation from unknown sources the first time.
 
 ### Run locally
 
