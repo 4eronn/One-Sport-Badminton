@@ -7,10 +7,9 @@
 **Match rotation, live scoring and automatic standings for casual badminton and mini soccer sessions.**
 
 [![Deploy to GitHub Pages](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/deploy.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/deploy.yml)
-[![Build Android APK](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml/badge.svg)](https://github.com/4eronn/One-Sport-Badminton/actions/workflows/build-apk.yml)
-[![Latest release](https://img.shields.io/github/v/release/4eronn/One-Sport-Badminton?label=release)](https://github.com/4eronn/One-Sport-Badminton/releases/latest)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-blue?logo=vercel)](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT)
 
-[Live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT) · [Download APK (v1.2.0-b44)](https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
+[Live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT) · [Report an issue](https://github.com/4eronn/One-Sport-Badminton/issues)
 
 </div>
 
@@ -22,7 +21,7 @@ ONESPORT is a lightweight web app for organizing informal group play sessions, t
 
 Add the players, set the number of courts, and the app builds the rotation, tracks scores as matches finish, and ranks everyone on a leaderboard. A session can also be broadcast live, so players and referees can follow along or enter scores from their own phones.
 
-It runs entirely in the browser with no backend and no build step. It can be used as a website, installed as a PWA, or sideloaded as an Android app.
+It runs smoothly in any modern browser on all devices (including low-end phones and tablets) with no complex build step. It can be used directly as a website or installed instantly as a lightweight PWA.
 
 > The interface is currently in Indonesian.
 
@@ -73,14 +72,11 @@ The leaderboard can also be sorted by total score, score difference or win rate.
 
 Open the [live demo](https://one-sport-badminton.vercel.app/?room=MABAR+ONESPORT). No account or setup is required.
 
-### Install as a PWA
+### Install as a PWA (All Devices)
 
-- **Android (Chrome):** open the site, tap the ⋮ menu, then choose *Install app* or *Add to Home screen*.
+- **Android (Chrome / Edge):** open the site, tap the ⋮ menu, then choose *Install app* or *Add to Home screen*.
 - **iOS (Safari):** open the site, tap *Share*, then choose *Add to Home Screen*.
-
-### Install the Android app
-
-Download the latest `ONESPORT-v*.apk` from the [Releases (v1.2.0-b44)](https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44) page and open it on your device. You will need to allow installation from unknown sources the first time.
+- **PC / Laptop (Chrome / Edge / Brave):** click the install icon (+) in the URL bar.
 
 ### Run locally
 
@@ -114,51 +110,37 @@ Live sync uses MQTT over secure WebSockets. See [Known limitations](#known-limit
 ├── badminton.html          # Redirects to index.html
 ├── badminton-bracket.html  # Redirects to index.html
 ├── manifest.json           # PWA manifest
-├── sw.js                   # Service worker (offline caching)
-├── logo*.png               # App icons and branding
-├── android/                # Android WebView wrapper (Gradle project)
-│   └── app/src/main/
-│       ├── java/com/onesport/app/MainActivity.java
-│       └── assets/         # Copy of the web files, synced by CI at build time
+├── sw.js                   # Service worker (offline caching & edge sync)
+├── logo*.png               # Compressed app icons and branding
+├── api/                    # Vercel serverless database backend (Postgres / KV / Auth)
 └── .github/workflows/
-    ├── deploy.yml          # Publishes the site to GitHub Pages
-    └── build-apk.yml       # Builds the APK and publishes a release
+    └── deploy.yml          # Publishes the site to GitHub Pages
 ```
 
 ## Tech stack
 
 | Area | Technology |
 | --- | --- |
-| Frontend | HTML, CSS and vanilla JavaScript (no framework, no bundler) |
+| Frontend | HTML, CSS and vanilla JavaScript (no heavy framework, optimized for low-end devices) |
+| Performance | Sub-150KB image compression, `content-visibility: auto`, edge cache-control |
 | Realtime | [MQTT.js](https://github.com/mqttjs/MQTT.js) 5.5.0 over WebSockets |
 | QR codes | [qrcodejs](https://github.com/davidshimjs/qrcodejs) |
-| Offline / install | Service Worker and Web App Manifest |
+| Offline / install | Service Worker and Web App Manifest (PWA) |
 | Fonts | Outfit and Plus Jakarta Sans (Google Fonts) |
-| Android | Native WebView wrapper, `minSdk 24`, `targetSdk 34`, Java 17 |
-| CI/CD | GitHub Actions, GitHub Pages and GitHub Releases |
+| Backend & DB | Vercel Serverless Functions, Vercel Postgres, Vercel KV / Redis |
+| CI/CD | GitHub Actions and Vercel Continuous Deployment |
 
 ## Deployment
 
-**Website.** The live demo is hosted on [Vercel](https://vercel.com). The project is a plain static site, so any static host works (Vercel, Netlify, Cloudflare Pages); no build command is needed and the output directory is the repository root.
+**Website & API.** The live app is hosted on [Vercel](https://vercel.com) with automatic database adapters. The project is a static site with optional serverless API routes (`/api/`); no complex build command is needed and the output directory is the repository root.
 
 The repository also includes an optional GitHub Pages workflow (`deploy.yml`) that publishes the root on every push to `main`. To use it, set *Settings → Pages → Source* to **GitHub Actions**; it will not publish anything until that is enabled.
 
-**Android APK.** Every push to `main`, and every tag matching `v*`, runs `build-apk.yml`. The workflow copies the web files into `android/app/src/main/assets`, builds a release APK with JDK 17 and Gradle, and attaches it to a GitHub Release. The app version comes from `versionName` in `android/app/build.gradle`.
-
-To build locally you need JDK 17 and the Android SDK:
-
-```bash
-bash scripts/sync-android-assets.sh
-cd android
-./gradlew assembleRelease
-```
-
 ## Known limitations
 
-- **No backend.** All state lives in the browser. Clearing site data removes a session unless it was exported first.
+- **Client state fallback.** If offline or disconnected from Vercel Cloud DB, state lives in browser `localStorage`.
 - **Public MQTT brokers & Confidentiality.** Live sync relies on public brokers (EMQX, HiveMQ, and Mosquitto test server). While message integrity and role elevation are cryptographically secured (HMAC-SHA256 with PBKDF2 100k iterations, monotonic sequence numbers against replay, and nonce challenge-response PIN verification without transmitting plaintext or hashes), state data is not encrypted end-to-end. Anyone who subscribes to a room topic on a public broker can inspect match scores and player rosters.
 - **Spectator Host Verification (Trust-on-First-Use).** Spectators verify the broadcast host's ephemeral ECDSA signature on a trust-on-first-use (TOFU) basis. Subsequent state updates must match the initial host key, but initial connection trusts the current broadcaster.
-- **Android release signing.** Release APKs are currently signed with the debug keystore. They install fine, but they are not suitable for Play Store distribution as-is.
 
 ## Contributing
 

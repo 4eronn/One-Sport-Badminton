@@ -2158,9 +2158,25 @@
     margin-bottom: 10px;
     box-shadow: 0 2px 6px rgba(15, 30, 54, 0.03);
     transition: all 0.2s;
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 120px;
   }
   .history-item-card:hover {
     border-color: var(--brand-navy-soft);
+  }
+  .history-round-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 160px;
+  }
+
+  /* ── LOW-END DEVICE & REDUCED MOTION OPTIMIZATIONS ── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 </style>
 </head>
@@ -2170,7 +2186,7 @@
 <div id="splashScreen" onclick="dismissSplashScreen()" title="Ketuk untuk langsung masuk">
   <div class="splash-content">
     <div class="splash-kicker">ONESPORT.ID · KOMUNITAS OLAHRAGA</div>
-    <img src="logo.png" alt="ONESPORT" class="splash-logo" onerror="this.src='logo-icon.png'">
+    <img src="logo.png" alt="ONESPORT" class="splash-logo" decoding="async" onerror="this.src='logo-icon.png'">
     <div class="splash-brand-title">one<span>sport</span><span class="splash-brand-dot">.id</span></div>
     <div class="splash-tagline">Teman Main Lebih Dekat · #WaktunyaMainLagi</div>
     <div class="splash-loader-bar">
@@ -2201,7 +2217,7 @@
 <header class="app-header">
   <div class="header-inner">
     <div class="header-brand" onclick="switchTab('tab-match')">
-      <img src="logo-shield.png" alt="ONESPORT" class="header-logo-img" onerror="this.src='logo-icon.png'">
+      <img src="logo-shield.png" alt="ONESPORT" class="header-logo-img" decoding="async" onerror="this.src='logo-icon.png'">
       <div class="header-title-text">
         <div class="app-name">one<span>sport</span><span class="app-dot-id">.id</span></div>
         <div class="app-sub" id="sportHeaderSubtitle">Badminton</div>
@@ -2229,30 +2245,6 @@
   <div class="spectator-banner-left">
     <span class="online-status-dot" style="background:#10B981; flex-shrink:0;"></span>
     <span class="spectator-banner-label">LIVE: <strong id="spectatorBannerRoomCode" title="-">SIARAN LANGSUNG</strong></span>
-  </div>
-</div>
-
-<!-- ── APP UPDATE NOTIFICATION BANNER (NON-INTRUSIF) ── -->
-<div class="app-update-banner" id="appUpdateNotificationBanner" style="display:none;">
-  <div class="app-update-banner-left">
-    <span style="font-size: 1.05rem; line-height: 1; flex-shrink: 0;">🚀</span>
-    <div style="min-width:0; line-height: 1.25;">
-      <div style="font-weight: 800; font-size: 0.76rem; color: #FFFFFF; display: flex; align-items: center; gap: 6px;">
-        <span>Pembaruan Baru Tersedia</span>
-        <span id="updateBannerVersionBadge" style="background: #10B981; color: #fff; padding: 1px 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 800;">v1.2.0</span>
-      </div>
-      <div style="font-size: 0.69rem; color: #CBD5E1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        Pemberitahuan saja — Anda tetap dapat menggunakan versi lama ini secara normal.
-      </div>
-    </div>
-  </div>
-  <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-    <button type="button" class="btn-update-banner-action" onclick="openUpdateModalFromBanner()" title="Lihat Catatan & Unduh">
-      Lihat
-    </button>
-    <button type="button" class="btn-update-banner-dismiss" onclick="dismissUpdateBanner()" title="Tutup pemberitahuan & tetap pakai versi ini">
-      ✕
-    </button>
   </div>
 </div>
 
@@ -2860,10 +2852,6 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
           Buka Mode Online & Siaran Live
         </button>
-        <button class="btn-court-action" id="btnCheckAppUpdateSettings" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          <span id="btnCheckAppUpdateSettingsLabel">Unduh / Periksa Pembaruan APK (v1.2.0)</span>
-        </button>
         <button class="btn-court-action" id="btnSettingsClearPlayers" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers(); closeSettingsModal();">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
         </button>
@@ -3199,10 +3187,11 @@
     </div>
 
     <!-- Tab 2: Histori Siaran (Tersimpan di APK & Web) -->
+    <!-- Tab 2: Histori Siaran (Tersimpan di Lokal & Cloud) -->
     <div id="onlineTabPane-history" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div style="font-size:0.78rem; color:var(--text-secondary); font-weight:700;">
-          Tersimpan: <strong id="historyCountBadge">0</strong> Siaran (APK & Web)
+          Tersimpan: <strong id="historyCountBadge">0</strong> Siaran (Lokal & Cloud)
         </div>
         <button class="btn-court-action" id="btnClearAllHistoryBtn" style="font-size:0.7rem; padding:3px 8px; color:#DC2626; border-color:#FECACA; background:#FFF;" onclick="clearAllLiveHistory()">
           Bersihkan Semua
@@ -3232,27 +3221,23 @@
       </div>
     </div>
 
-    <!-- Tab 4: PWA App Installation -->
+    <!-- Tab 4: PWA Web App Installation -->
     <div id="onlineTabPane-app" style="display:none;">
       <div style="text-align:center; padding:10px 0;">
-        <img src="logo.png" style="height:56px; width:auto; max-width:200px; margin-bottom:8px; object-fit:contain;" alt="ONESPORT">
-        <div style="font-weight:900; font-size:1.05rem; color:var(--brand-navy-dark);">ONESPORT Web & App</div>
-        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px;">Pasang langsung di HP Android atau iPhone tanpa lewat App Store</div>
+        <img src="logo.png" style="height:56px; width:auto; max-width:200px; margin-bottom:8px; object-fit:contain;" alt="ONESPORT" decoding="async">
+        <div style="font-weight:900; font-size:1.05rem; color:var(--brand-navy-dark);">Aplikasi Web ONESPORT</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:16px;">Pasang langsung di HP Android, iPhone, Tablet, atau PC tanpa instalasi file APK</div>
         
-        <button class="btn-os-orange" id="btnInstallPwaModal" style="width:100%; font-size:0.88rem; margin-bottom:10px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="triggerPwaInstall()">
+        <button class="btn-os-orange" id="btnInstallPwaModal" style="width:100%; font-size:0.88rem; margin-bottom:12px; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="triggerPwaInstall()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          <span>Pasang Aplikasi di HP Ini</span>
+          <span>Pasang Web App di Layar Utama</span>
         </button>
 
-        <a href="https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44" target="_blank" class="btn-court-action" style="width:100%; font-size:0.82rem; padding:9px; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; margin-bottom:14px; font-weight:800;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Unduh File APK Android (v1.2.0-b44 di GitHub)</span>
-        </a>
-
-        <div style="text-align:left; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px; font-size:0.75rem; color:var(--text-secondary); line-height:1.6;">
-          <strong>Cara Manual:</strong><br>
-          • <strong>iPhone / Safari:</strong> Tekan tombol Share → Pilih <em>"Add to Home Screen"</em>.<br>
-          • <strong>Android / Chrome:</strong> Tekan titik tiga → Pilih <em>"Install App"</em> atau <em>"Tambahkan ke Layar Utama"</em>.
+        <div style="text-align:left; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; font-size:0.75rem; color:var(--text-secondary); line-height:1.6;">
+          <strong>Cara Pasang Cepat (PWA):</strong><br>
+          • <strong>Android / Chrome / Edge:</strong> Ketuk titik tiga (⋮) di pojok atas browser → Pilih <em>"Install App"</em> atau <em>"Tambahkan ke Layar Utama"</em>.<br>
+          • <strong>iPhone / Safari:</strong> Ketuk tombol Bagikan (Share ⎋) → Geser dan pilih <em>"Tambahkan ke Layar Utama" (Add to Home Screen)</em>.<br>
+          • <strong>Laptop / PC:</strong> Klik ikon install (+) di kolom URL browser untuk memasang sebagai aplikasi web ringan.
         </div>
       </div>
     </div>
@@ -3356,7 +3341,7 @@
       Siaran Live Telah Selesai!
     </div>
     <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
-      Host telah menyelesaikan pertandingan untuk room <strong id="endedNoticeRoomCode">-</strong>. Rekapitulasi hasil dan klasemen telah otomatis disimpan di <strong>Histori Siaran Live</strong> HP Anda (APK & Web).
+      Host telah menyelesaikan pertandingan untuk room <strong id="endedNoticeRoomCode">-</strong>. Rekapitulasi hasil dan klasemen telah otomatis disimpan di <strong>Histori Siaran Live</strong> perangkat Anda (Lokal & Cloud).
     </div>
 
     <div id="endedNoticePodiumBox" style="background:#FFFBEB; border:1.5px solid #FDE68A; border-radius:var(--radius-md); padding:10px; margin-bottom:14px; font-size:0.78rem; text-align:left;">
@@ -3395,54 +3380,6 @@
       </button>
       <button class="btn-os-orange" style="flex:1; padding:9px; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;" onclick="loadCurrentViewingHistoryToApp()">
         <span>Buka ke Papan Skor</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ── MODAL: AUTO UPDATE NOTIFICATION ── -->
-<div class="modal-overlay" id="updateModalOverlay" style="z-index: 99999;" onclick="handleUpdateOverlayClick(event)">
-  <div class="modal-box" style="max-width: 420px; text-align: center; position: relative;">
-    <button class="btn-del-player" onclick="closeUpdateModal()" style="position: absolute; right: 12px; top: 12px; width: 28px; height: 28px; font-size: 0.85rem;" title="Tutup">✕</button>
-    <div style="margin-bottom: 8px;">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-blue); margin:0 auto;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    </div>
-    <div style="font-weight: 900; font-size: 1.22rem; color: var(--brand-navy-dark); margin-bottom: 4px;">
-      Pembaruan Baru Tersedia
-    </div>
-    <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
-      Versi terbaru ONESPORT siap diunduh di GitHub Releases. Pembaruan ini opsional dan Anda bebas tetap menggunakan versi saat ini.
-    </div>
-    
-    <div style="background: var(--brand-navy-light); border: 1.5px solid #BFDBFE; border-radius: var(--radius-lg); padding: 12px; margin-bottom: 12px; text-align: left;">
-      <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 6px;">
-        <span style="color: var(--text-secondary);">Versi Anda Saat Ini:</span>
-        <strong id="updateCurrentVersionText" style="color: var(--brand-navy-dark);">v1.2.0</strong>
-      </div>
-      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 800;">
-        <span style="color: #059669;">Versi Terbaru:</span>
-        <span id="updateLatestVersionBadge" style="background: #059669; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.78rem;">v1.2.0</span>
-      </div>
-      <div id="updateNotesBox" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; border-top: 1px dashed #BFDBFE; padding-top: 6px; display: none; max-height: 90px; overflow-y: auto; white-space: pre-wrap;">
-      </div>
-    </div>
-
-    <!-- Kotak Info: Bebas & aman pakai versi lama -->
-    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-md, 8px); padding: 9px 12px; margin-bottom: 14px; text-align: left; display: flex; align-items: flex-start; gap: 8px; font-size: 0.75rem; color: #166534; line-height: 1.35;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0; margin-top:1px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      <div>
-        <strong>Tetap Bisa Pakai Versi Lama:</strong> Anda tidak diwajibkan untuk update. Semua fitur aplikasi tetap dapat digunakan secara normal tanpa hambatan.
-      </div>
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <a id="btnGoToReleasePage" href="https://github.com/4eronn/One-Sport-Badminton/releases/tag/v1.2.0-b44" target="_blank" class="btn-os-orange" style="width: 100%; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.88rem; padding: 11px;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Unduh APK Terbaru (v1.2.0-b44 di GitHub)</span>
-      </a>
-      <button class="btn-court-action" style="width: 100%; padding: 10px; font-weight: 700; background: #F8FAFC; color: var(--brand-navy-dark); border: 1.5px solid var(--border-color); display:flex; align-items:center; justify-content:center; gap:6px;" onclick="continueUsingCurrentVersion()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #059669;"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Tetap Gunakan Versi Ini (Lanjutkan)</span>
       </button>
     </div>
   </div>
@@ -3796,7 +3733,7 @@
   <div class="modal-box" style="max-width: 400px; padding: 20px;">
     <div class="modal-header" style="margin-bottom: 12px; align-items: center;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <img src="logo-shield.png" alt="ONESPORT" style="height:36px; width:auto; object-fit:contain;" onerror="this.src='logo-icon.png'">
+        <img src="logo-shield.png" alt="ONESPORT" style="height:36px; width:auto; object-fit:contain;" decoding="async" onerror="this.src='logo-icon.png'">
         <div>
           <div class="modal-title" style="font-size: 1.08rem; line-height: 1.2; font-weight:900;">ONESPORT</div>
           <div style="font-size: 0.72rem; color: var(--text-muted); font-weight:600;">Sistem Pertandingan Olahraga</div>
@@ -4432,23 +4369,6 @@ function initApp() {
         openLoginModal(true);
       }
     }, 600);
-  }
-
-  // Auto detect updates in background (Hanya untuk aplikasi Android APK, Web tidak pakai)
-  if (typeof isAndroidApk === 'function' && isAndroidApk()) {
-    setTimeout(() => {
-      checkAppUpdates(false);
-    }, 2500);
-  }
-  const btnUp = document.getElementById('btnCheckAppUpdateSettings');
-  const btnUpLbl = document.getElementById('btnCheckAppUpdateSettingsLabel');
-  if (btnUp) {
-    btnUp.style.display = 'flex';
-    if (btnUpLbl) {
-      btnUpLbl.textContent = (typeof isAndroidApk === 'function' && isAndroidApk())
-        ? 'Periksa Pembaruan APK (v1.2.0)'
-        : 'Unduh / Periksa Pembaruan APK (v1.2.0)';
-    }
   }
 }
 
@@ -9226,7 +9146,7 @@ function renderHistory() {
     }
 
     container.innerHTML = roundsWithMatches.map(group => `
-      <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:12px; margin-bottom:12px;">
+      <div class="history-round-card" style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:12px; margin-bottom:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <span style="font-weight:900; color:var(--brand-orange); font-size:0.88rem;">Babak / Ronde ${group.r.roundNumber || (group.rIdx + 1)}</span>
           <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">${group.finishedMatches.length} Pertandingan Selesai</span>
@@ -9889,7 +9809,6 @@ function renderAccountTab() {
   // CASE 1: HOST ACCOUNT (Gambar 1 + Semua Histori & Rekapan Juara)
   if (isHost) {
     const displayName = getUserDisplayName();
-    const isApk = typeof isAndroidApk === 'function' && isAndroidApk();
     const allHistory = getLiveHistory();
     const adminUsername = 'admin';
     const currentAdminPass = localStorage.getItem('onesport_admin_password') || HOST_PASSWORD;
@@ -9919,7 +9838,7 @@ function renderAccountTab() {
             <div>
               <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Username Login</label>
               <input type="text" class="input-styled-os" value="${escapeHtml(adminUsername)} (${escapeHtml(HOST_EMAIL)})" readonly style="background:#F1F5F9; color:var(--text-secondary); cursor:not-allowed; font-size:0.8rem; padding:7px 10px;">
-              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Gunakan username ini untuk login Admin di semua perangkat (PC, HP, Web, APK).</div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Gunakan username ini untuk login Admin di semua perangkat (PC, HP, Tablet &amp; Web Browser).</div>
             </div>
 
             <div>
@@ -9998,9 +9917,6 @@ function renderAccountTab() {
             <button class="btn-court-action" style="font-size:0.78rem; padding:9px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--brand-blue-soft); color:var(--brand-blue); border-color:var(--brand-blue);" onclick="openOnlineModal();">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path></svg>
               Buka Mode Online & Siaran Live
-            </button>
-            <button class="btn-court-action" id="tabBtnCheckAppUpdate" style="font-size:0.76rem; padding:8px; display:flex; align-items:center; justify-content:center; gap:6px;" onclick="checkAppUpdates(true)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> ${isApk ? 'Periksa Pembaruan APK (v1.2.0)' : 'Unduh / Periksa Pembaruan APK (v1.2.0)'}
             </button>
             <button class="btn-court-action" style="font-size:0.76rem; padding:8px; color:#DC2626; background:#FEF2F2; border-color:#FECACA;" onclick="clearAllPlayers()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Kosongkan / Hapus Semua Pemain
@@ -11588,10 +11504,6 @@ function applyRoleUI() {
   if (btnSettings) {
     btnSettings.style.display = 'inline-flex';
   }
-  const btnUpdateSetting = document.getElementById('btnCheckAppUpdateSettings');
-  if (btnUpdateSetting) {
-    btnUpdateSetting.style.display = (typeof isAndroidApk === 'function' && isAndroidApk()) ? 'flex' : 'none';
-  }
 
   // 3. Spectator Live Room Banner
   const spectatorBanner = document.getElementById('spectatorLiveBanner');
@@ -13099,7 +13011,7 @@ async function executeFinishLiveBroadcast() {
   leaveOnlineRoom(true);
   openOnlineModal();
   switchOnlineTab('history');
-  showToast('Siaran Live Selesai & Berhasil Diarsipkan ke Histori (APK & Web)!');
+  showToast('Siaran Live Selesai & Berhasil Diarsipkan ke Histori (Lokal & Cloud)!');
 }
 
 function deleteActiveLiveBroadcast() {
@@ -13308,7 +13220,7 @@ function leaveOnlineRoom(keepRoomData = false) {
   }
 }
 
-// ── LIVE HISTORY STORAGE & UI (PERSISTENT IN APK & WEB) ──
+// ── LIVE HISTORY STORAGE & UI (PERSISTENT IN BROWSER & CLOUD) ──
 function saveToLiveHistory(record) {
   if (isGuestUser()) return;
   try {
@@ -13373,7 +13285,7 @@ function renderLiveHistoryList() {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         </div><br>
         <strong style="color:var(--brand-navy-dark); font-size:0.9rem;">Belum Ada Histori Siaran Live</strong><br>
-        Setiap kali siaran live selesai, rekapitulasi skor dan klasemen akan otomatis disimpan permanen di sini (tersimpan di APK maupun Web).
+        Setiap kali siaran live selesai, rekapitulasi skor dan klasemen akan otomatis disimpan permanen di sini (tersimpan otomatis di browser & cloud).
       </div>
     `;
     return;
@@ -13533,7 +13445,7 @@ function shareHistoryItemWA(id) {
     text += `\n`;
   }
 
-  text += `Generated with ONESPORT Platform (Disimpan di APK & Web)`;
+  text += `Generated with ONESPORT Platform (Disimpan di Web & Cloud)`;
 
   if (navigator.share) {
     navigator.share({ title: item.sessionTitle || 'Rekap ONESPORT', text: text }).catch(() => {});
@@ -13930,25 +13842,10 @@ function triggerPwaInstall() {
   }
 }
 
-// ── AUTO UPDATE CHECKER VIA GITHUB RELEASES (HANYA APK ANDROID) ──
+// ── WEB VERSION & COMPATIBILITY HELPERS ──
 const CURRENT_APP_VERSION = 'v1.2.0-b44';
-const GITHUB_REPO = '4eronn/One-Sport-Badminton';
-const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`;
-const GITHUB_LATEST_APP_URL = `https://github.com/${GITHUB_REPO}/releases/tag/v1.2.0-b44`;
-const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
-const GITHUB_API_LATEST = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
-
-let targetReleaseUrl = GITHUB_LATEST_APP_URL;
-let cachedLatestUpdateInfo = null;
 
 function isAndroidApk() {
-  if (typeof window === 'undefined') return false;
-  // 1. Virtual domain dari WebViewAssetLoader di Android APK
-  if (window.location.hostname === 'appassets.androidplatform.net') return true;
-  // 2. Protocol file:// saat dijalankan lokal WebView
-  if (window.location.protocol === 'file:') return true;
-  // 3. User agent kustom dari Android MainActivity
-  if (navigator.userAgent && navigator.userAgent.includes('ONESPORT_APK')) return true;
   return false;
 }
 
@@ -13990,143 +13887,9 @@ function isNewerVersion(latestTag, currentVersion) {
 }
 
 async function checkAppUpdates(isManual = false) {
-  // Untuk versi Web di background: tidak usah pakai auto pembaruan,
-  // tapi jika ditekan manual oleh pengguna, tetap layani dan sediakan link rilis APK
-  if (!isAndroidApk() && !isManual) {
-    return;
+  if (isManual) {
+    showToast('Aplikasi Web ONESPORT selalu dalam versi terbaru!', 'success');
   }
-
-  if (isManual) showToast('Memeriksa pembaruan APK di GitHub...');
-  try {
-    const res = await fetch(GITHUB_API_LATEST, {
-      headers: { 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (!res.ok) {
-      if (isManual) {
-        showToast('Membuka rilis aplikasi ONESPORT di GitHub...');
-        window.open(targetReleaseUrl || GITHUB_LATEST_APP_URL, '_blank');
-      }
-      return;
-    }
-    const data = await res.json();
-    const latestTag = data.tag_name || data.name || 'v1.2.0-b44';
-    targetReleaseUrl = data.html_url || GITHUB_LATEST_APP_URL;
-    const bodyText = (data.body || '').trim();
-
-    // Jika ada versi lebih baru
-    if (isNewerVersion(latestTag, CURRENT_APP_VERSION)) {
-      cachedLatestUpdateInfo = { latestTag, url: targetReleaseUrl, notes: bodyText };
-      updateSettingsUpdateBadge(latestTag);
-
-      if (isManual) {
-        // Jika dicek manual oleh pengguna, buka modal detail
-        showUpdateModal(latestTag, targetReleaseUrl, bodyText);
-      } else {
-        // Jika auto-check latar belakang: CUKUP PEMBERITAHUAN BANNER saja!
-        // Tidak memblokir pengguna, pengguna tetap dapat menggunakan versi lama dengan normal
-        const isDismissed = sessionStorage.getItem('onesport_dismiss_update_' + latestTag);
-        if (!isDismissed) {
-          showUpdateBanner(latestTag);
-        }
-      }
-    } else {
-      if (isManual) {
-        showUpdateModal(latestTag, targetReleaseUrl, bodyText || 'Anda telah menggunakan versi aplikasi terkini.');
-        showToast(`ONESPORT sudah dalam versi terbaru (${CURRENT_APP_VERSION})!`, 'success');
-      }
-    }
-  } catch (e) {
-    console.warn('Update check failed:', e);
-    if (isManual) {
-      window.open(targetReleaseUrl || GITHUB_LATEST_APP_URL, '_blank');
-    }
-  }
-}
-
-function showUpdateBanner(latestTag) {
-  const banner = document.getElementById('appUpdateNotificationBanner');
-  const badge = document.getElementById('updateBannerVersionBadge');
-  if (badge) badge.textContent = latestTag;
-  if (banner) {
-    banner.style.display = 'flex';
-    banner.classList.add('show');
-  }
-}
-
-function dismissUpdateBanner() {
-  const banner = document.getElementById('appUpdateNotificationBanner');
-  if (banner) {
-    banner.style.display = 'none';
-    banner.classList.remove('show');
-  }
-  if (cachedLatestUpdateInfo && cachedLatestUpdateInfo.latestTag) {
-    sessionStorage.setItem('onesport_dismiss_update_' + cachedLatestUpdateInfo.latestTag, '1');
-  }
-}
-
-function openUpdateModalFromBanner() {
-  if (cachedLatestUpdateInfo) {
-    showUpdateModal(cachedLatestUpdateInfo.latestTag, cachedLatestUpdateInfo.url, cachedLatestUpdateInfo.notes);
-  } else {
-    showUpdateModal('v1.2.0-b44', GITHUB_LATEST_APP_URL, '');
-  }
-}
-
-function updateSettingsUpdateBadge(latestTag) {
-  const btnUp = document.getElementById('btnCheckAppUpdateSettings');
-  const tabBtnUp = document.getElementById('tabBtnCheckAppUpdate');
-  const badgeHtml = ` <span style="background:#FF5B14; color:#fff; font-size:0.68rem; padding:1px 6px; border-radius:999px; font-weight:800; margin-left:4px;">Tersedia ${latestTag}</span>`;
-  
-  if (btnUp && !btnUp.innerHTML.includes('Tersedia')) {
-    btnUp.innerHTML += badgeHtml;
-  }
-  if (tabBtnUp && !tabBtnUp.innerHTML.includes('Tersedia')) {
-    tabBtnUp.innerHTML += badgeHtml;
-  }
-}
-
-function showUpdateModal(latestTag, url, notes) {
-  const modal = document.getElementById('updateModalOverlay');
-  const curVer = document.getElementById('updateCurrentVersionText');
-  const latVer = document.getElementById('updateLatestVersionBadge');
-  const btnGo = document.getElementById('btnGoToReleasePage');
-  const notesBox = document.getElementById('updateNotesBox');
-
-  const releaseUrl = url || GITHUB_LATEST_APP_URL;
-  if (curVer) curVer.textContent = CURRENT_APP_VERSION;
-  if (latVer) latVer.textContent = latestTag || 'v1.2.0-b44';
-  if (btnGo) {
-    btnGo.href = releaseUrl;
-    btnGo.onclick = () => {
-      closeUpdateModal();
-    };
-  }
-  if (notesBox) {
-    if (notes) {
-      notesBox.textContent = notes.slice(0, 300) + (notes.length > 300 ? '...' : '');
-      notesBox.style.display = 'block';
-    } else {
-      notesBox.style.display = 'none';
-    }
-  }
-  if (modal) modal.classList.add('open');
-}
-
-function closeUpdateModal() {
-  const modal = document.getElementById('updateModalOverlay');
-  if (modal) modal.classList.remove('open');
-}
-
-function handleUpdateOverlayClick(e) {
-  if (e.target && e.target.id === 'updateModalOverlay') {
-    closeUpdateModal();
-  }
-}
-
-function continueUsingCurrentVersion() {
-  closeUpdateModal();
-  dismissUpdateBanner();
-  showToast(`Melanjutkan dengan versi saat ini (${CURRENT_APP_VERSION})`, 'info');
 }
 </script>
 </body>
