@@ -12131,6 +12131,9 @@ function applyReceivedState(incomingData) {
       console.warn(`Mengabaikan state usang: rev masuk ${data.rev} < rev lokal ${currentRev}`);
       return;
     }
+    currentRev = Math.max(currentRev, data.rev);
+  }
+
   if (data.currentSport) {
     if (data.currentSport !== currentSport) {
       switchSport(data.currentSport);
