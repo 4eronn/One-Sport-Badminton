@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#071A33">
@@ -1625,8 +1625,10 @@
   .modal-overlay {
     position: fixed;
     inset: 0;
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: contain;
     background: rgba(15, 30, 54, 0.65);
-    backdrop-filter: blur(4px);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -1647,7 +1649,12 @@
     width: 100%;
     max-width: 440px;
     max-height: 88vh;
+    max-height: 88dvh;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    will-change: transform;
+    transform: translateZ(0);
     padding: 16px 16px 24px 16px;
     box-shadow: var(--shadow-modal);
     animation: modalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1666,6 +1673,8 @@
     .modal-overlay {
       align-items: center;
       padding: 16px;
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
     }
     .modal-box {
       border-radius: var(--radius-xl);
@@ -2162,6 +2171,10 @@
   .history-item-card:hover {
     border-color: var(--brand-navy-soft);
   }
+  /* Auth sheet: fixed min-height so Sign In / Sign Up / Guest don't resize the sheet */
+  #loginModalOverlay .modal-box { min-height: min(500px, 88dvh); animation-duration: 0.18s; }
+  #loginModalOverlay.open .modal-box { animation-name: modalSlideUp; }
+  #loginModalOverlay:not(.open) .modal-box { animation: none; }
 </style>
 </head>
 <body>
@@ -11617,8 +11630,8 @@ function switchLoginAuthTab(tab) {
       btnSignUp.classList.add('active');
     }
     if (paneSignUp) paneSignUp.style.display = 'block';
-    setTimeout(() => {
-      document.getElementById('signUpInputName')?.focus();
+    if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => {
+      document.getElementById('signUpInputName')?.focus({ preventScroll: true });
     }, 120);
   } else if (tab === 'guest') {
     if (btnGuest) {
@@ -11636,8 +11649,8 @@ function switchLoginAuthTab(tab) {
       btnSignIn.classList.add('active');
     }
     if (paneSignIn) paneSignIn.style.display = 'block';
-    setTimeout(() => {
-      document.getElementById('loginInputEmail')?.focus();
+    if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => {
+      document.getElementById('loginInputEmail')?.focus({ preventScroll: true });
     }, 120);
   }
 }
@@ -11668,7 +11681,7 @@ function openLoginModal(isInitial = false) {
     modal.classList.add('open');
     if (inputEmail) {
       inputEmail.value = '';
-      setTimeout(() => inputEmail.focus(), 150);
+      if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => inputEmail.focus({ preventScroll: true }), 150);
     }
     if (inputPass) inputPass.value = '';
   }
