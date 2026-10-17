@@ -1,0 +1,8 @@
+# Ensure binary files are not modified by CRLF line ending conversion
+*.keystore binary
+*.jks binary
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
