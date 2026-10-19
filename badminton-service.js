@@ -262,6 +262,22 @@
     });
   }
 
+  /**
+   * Validasi komposisi gender lapangan:
+   * dua pemain putri tidak boleh satu tim selama lawan memiliki pemain putra.
+   */
+  function isCourtGenderValid(court) {
+    if (!court) return true;
+    const a = (court.teamA || []).filter(Boolean);
+    const b = (court.teamB || []).filter(Boolean);
+    if (a.length !== 2 || b.length !== 2) return true;
+    const fA = a.filter(p => p && p.gender === 'P').length;
+    const fB = b.filter(p => p && p.gender === 'P').length;
+    const totalFemales = fA + fB;
+    if (totalFemales === 0 || totalFemales === 4) return true;
+    return fA !== 2 && fB !== 2;
+  }
+
   function cancelRequestsForPlayer(playerId, players = [], partnerRequests = []) {
     if (!partnerRequests || !Array.isArray(partnerRequests)) return;
     const pIdStr = String(playerId);
@@ -269,12 +285,10 @@
       if (!req || (req.status !== REQUEST_STATUS.PENDING && req.status !== REQUEST_STATUS.APPROVED)) return;
       if (String(req.requesterId) === pIdStr || String(req.targetId) === pIdStr) {
         req.status = REQUEST_STATUS.CANCELLED;
-        if (String(req.requesterId) !== pIdStr) {
-          const reqPlayer = players.find(p => String(p.id) === String(req.requesterId));
-          if (reqPlayer) {
-            reqPlayer.request_used = false;
-          }
-        }
+        const reqPlayer = players.find(p => String(p.id) === String(req.requesterId));
+        if (reqPlayer) reqPlayer.request_used = false;
+        const tgtPlayer = players.find(p => String(p.id) === String(req.targetId));
+        if (tgtPlayer && tgtPlayer !== reqPlayer) tgtPlayer.request_used = false;
       }
     });
   }
@@ -465,17 +479,30 @@
       { t1: [p[0], p[3]], t2: [p[1], p[2]] }
     ];
 
+    // Aturan Ganda Campuran (2 putri + 2 putra):
+    // kedua tim WAJIB berisi 1 putri + 1 putra. Dua putri tidak boleh satu tim.
+    const femaleCount = p.filter(x => x && x.gender === 'P').length;
+    const mustMixedDoubles = femaleCount === 2 && (p.length - femaleCount) === 2;
+    const genderSafePairings = mustMixedDoubles
+      ? pairings.filter(pair => {
+          const femalesInT1 = pair.t1.filter(x => x && x.gender === 'P').length;
+          const femalesInT2 = pair.t2.filter(x => x && x.gender === 'P').length;
+          return femalesInT1 === 1 && femalesInT2 === 1;
+        })
+      : pairings;
+    const basePairings = genderSafePairings.length > 0 ? genderSafePairings : pairings;
+
     // Cek apakah ada request rekan yang aktif di antara 4 pemain ini
     let forcedPairing = null;
     for (const req of approvedRequests) {
       if (req.status === REQUEST_STATUS.APPROVED) {
-        const hasReq = p.some(x => x.id === req.requesterId);
-        const hasTarget = p.some(x => x.id === req.targetId);
+        const hasReq = p.some(x => String(x.id) === String(req.requesterId));
+        const hasTarget = p.some(x => String(x.id) === String(req.targetId));
         if (hasReq && hasTarget) {
           // Cari kombinasi di mana requester dan target berada dalam tim yang sama
-          const matchPair = pairings.find(pair => {
-            const inT1 = pair.t1.some(x => x.id === req.requesterId) && pair.t1.some(x => x.id === req.targetId);
-            const inT2 = pair.t2.some(x => x.id === req.requesterId) && pair.t2.some(x => x.id === req.targetId);
+          const matchPair = basePairings.find(pair => {
+            const inT1 = pair.t1.some(x => String(x.id) === String(req.requesterId)) && pair.t1.some(x => String(x.id) === String(req.targetId));
+            const inT2 = pair.t2.some(x => String(x.id) === String(req.requesterId)) && pair.t2.some(x => String(x.id) === String(req.targetId));
             return inT1 || inT2;
           });
           if (matchPair) {
@@ -487,19 +514,23 @@
     }
 
     // Aturan Wajib: Role Intermadiate dan Advance TIDAK BOLEH 1 tim
-    let validPairings = pairings.filter(pair =>
+    let validPairings = basePairings.filter(pair =>
       !hasInterAndAdvanceTogether(pair.t1) && !hasInterAndAdvanceTogether(pair.t2)
     );
 
     // Fallback jika semua kombinasi melanggar aturan role (misal 3 Adv + 1 Inter)
     if (validPairings.length === 0) {
-      validPairings = pairings;
+      validPairings = basePairings;
     }
 
-    // Jika ada pasangan yang di-request khusus, utamakan jika tidak melanggar role
+    // Jika ada pasangan yang di-request khusus, utamakan jika tidak melanggar role & gender
     if (forcedPairing) {
       const isRoleSafe = !hasInterAndAdvanceTogether(forcedPairing.pair.t1) && !hasInterAndAdvanceTogether(forcedPairing.pair.t2);
-      if (isRoleSafe || validPairings.length === pairings.length) {
+      const isGenderSafe = !mustMixedDoubles || (
+        forcedPairing.pair.t1.filter(x => x && x.gender === 'P').length === 1 &&
+        forcedPairing.pair.t2.filter(x => x && x.gender === 'P').length === 1
+      );
+      if ((isRoleSafe || validPairings.length === pairings.length) && isGenderSafe) {
         const teamA = [...forcedPairing.pair.t1];
         const teamB = [...forcedPairing.pair.t2];
         const k1 = getPairKey(teamA[0].id, teamA[1].id);
@@ -510,8 +541,8 @@
         if (Array.isArray(approvedRequests)) {
           approvedRequests.forEach(req => {
             if (!req || req.status !== REQUEST_STATUS.APPROVED) return;
-            const inA = teamA.some(x => x.id === req.requesterId) && teamA.some(x => x.id === req.targetId);
-            const inB = teamB.some(x => x.id === req.requesterId) && teamB.some(x => x.id === req.targetId);
+            const inA = teamA.some(x => String(x.id) === String(req.requesterId)) && teamA.some(x => String(x.id) === String(req.targetId));
+            const inB = teamB.some(x => String(x.id) === String(req.requesterId)) && teamB.some(x => String(x.id) === String(req.targetId));
             if (inA || inB) {
               usedRequests.push(req);
             }
@@ -584,8 +615,8 @@
     if (Array.isArray(approvedRequests)) {
       approvedRequests.forEach(req => {
         if (!req || req.status !== REQUEST_STATUS.APPROVED) return;
-        const inA = teamA.some(x => x.id === req.requesterId) && teamA.some(x => x.id === req.targetId);
-        const inB = teamB.some(x => x.id === req.requesterId) && teamB.some(x => x.id === req.targetId);
+        const inA = teamA.some(x => String(x.id) === String(req.requesterId)) && teamA.some(x => String(x.id) === String(req.targetId));
+        const inB = teamB.some(x => String(x.id) === String(req.requesterId)) && teamB.some(x => String(x.id) === String(req.targetId));
         if (inA || inB) {
           usedRequests.push(req);
         }
@@ -614,7 +645,7 @@
     if (eligibleQueue.length < 4) return null;
 
     // 1. Cek apakah ada request pasangan yang disetujui dan kedua pemainnya ada di antrian
-    const queueMap = new Map(eligibleQueue.map(p => [p.id, p]));
+    const queueMap = new Map(eligibleQueue.map(p => [String(p.id), p]));
     let reqPair = null;
 
     const approvedReqs = (partnerRequests || []).filter(req => req && req.status === REQUEST_STATUS.APPROVED);
@@ -636,8 +667,8 @@
 
     for (const req of approvedReqs) {
       // Cek jika requester atau target sudah tidak aktif atau terhapus
-      const reqP = allPlayers.length ? allPlayers.find(p => p.id === req.requesterId) : queueMap.get(req.requesterId);
-      const tgtP = allPlayers.length ? allPlayers.find(p => p.id === req.targetId) : queueMap.get(req.targetId);
+      const reqP = allPlayers.length ? allPlayers.find(p => String(p.id) === String(req.requesterId)) : queueMap.get(String(req.requesterId));
+      const tgtP = allPlayers.length ? allPlayers.find(p => String(p.id) === String(req.targetId)) : queueMap.get(String(req.targetId));
       if ((reqP && (reqP.status === PLAYER_STATUS.TIDAK_AKTIF || reqP.is_deleted)) ||
           (tgtP && (tgtP.status === PLAYER_STATUS.TIDAK_AKTIF || tgtP.is_deleted))) {
         req.status = REQUEST_STATUS.CANCELLED;
@@ -647,8 +678,8 @@
         continue;
       }
 
-      if (queueMap.has(req.requesterId) && queueMap.has(req.targetId)) {
-        reqPair = [queueMap.get(req.requesterId), queueMap.get(req.targetId)];
+      if (queueMap.has(String(req.requesterId)) && queueMap.has(String(req.targetId))) {
+        reqPair = [queueMap.get(String(req.requesterId)), queueMap.get(String(req.targetId))];
         break;
       }
     }
@@ -668,11 +699,11 @@
     // jika pasangannya belum ada di antrian dan masih ada 4 pemain lain yang siap bermain
     const playersWaitingForPartner = new Set();
     approvedReqs.forEach(req => {
-      const hasReq = queueMap.has(req.requesterId);
-      const hasTgt = queueMap.has(req.targetId);
+      const hasReq = queueMap.has(String(req.requesterId));
+      const hasTgt = queueMap.has(String(req.targetId));
       if (hasReq !== hasTgt) {
         const waitingId = hasReq ? req.requesterId : req.targetId;
-        const waitingP = queueMap.get(waitingId);
+        const waitingP = queueMap.get(String(waitingId));
         if (waitingP && (waitingP.jumlah_main || 0) === 0) {
           playersWaitingForPartner.add(String(waitingId));
         }
@@ -694,11 +725,18 @@
       return femalePlayers.slice(0, 4);
     }
 
-    // b) Ambil 4 pemain teratas dari antrian yang sudah diprioritaskan
+    // b) Bila tersedia minimal 2 putri dan 2 putra, prioritaskan ganda campuran
+    // (2 putri + 2 putra) agar putri tidak dipasangkan dengan putri saat lawannya putra.
+    const malePlayers = availablePool.filter(p => p && p.gender !== 'P');
+    if (femalePlayers.length >= 2 && malePlayers.length >= 2) {
+      return [...femalePlayers.slice(0, 2), ...malePlayers.slice(0, 2)];
+    }
+
+    // c) Ambil 4 pemain teratas dari antrian yang sudah diprioritaskan
     let candidateFour = availablePool.slice(0, 4);
     const femalesInCandidate = candidateFour.filter(p => p && p.gender === 'P');
 
-    // c) Hindari 3 putra + 1 putri jika ada alternatif putra di sisa antrian (kecuali putri berlevel Advance yang dapat masuk match terbuka)
+    // d) Hindari 3 putra + 1 putri jika ada alternatif putra di sisa antrian (kecuali putri berlevel Advance yang dapat masuk match terbuka)
     if (femalesInCandidate.length === 1 && !isAdvanceRole(femalesInCandidate[0])) {
       const remainingMales = availablePool.slice(4).filter(p => p && p.gender !== 'P');
       if (remainingMales.length > 0) {
@@ -994,7 +1032,16 @@
       });
     }
 
-    const isSourceInterFemale = sourcePlayer && sourcePlayer.gender === 'P' && isIntermediateRole(sourcePlayer);
+    // Deteksi tim lawan untuk regulasi gender & ganda campuran.
+    const otherTeamKey = targetTeamKey === 'teamA' ? 'teamB' : 'teamA';
+    const otherTeam = (court[otherTeamKey] || []).filter(Boolean);
+    const otherTeamFemales = otherTeam.filter(p => p && p.gender === 'P').length;
+    const isOpponentMixed = otherTeam.length === 2 && otherTeamFemales === 1;
+    const teammateIsFemale = !!(teammate && teammate.gender === 'P');
+    const isSourceInterFemale = !!(sourcePlayer && sourcePlayer.gender === 'P' && isIntermediateRole(sourcePlayer));
+
+    // Apakah komposisi lapangan saat ini sudah melanggar aturan gender?
+    const courtGenderInvalid = !isCourtGenderValid(court);
 
     // Filter kandidat yang berstatus 'menunggu'
     const eligibleWaiting = players.filter(p => {
@@ -1003,26 +1050,34 @@
       if (courtPlayerIds.has(pIdStr) || otherCourtsBusyIds.has(pIdStr)) return false;
       if (p.status !== PLAYER_STATUS.MENUNGGU) return false;
 
-      // Regulasi Gender:
-      if (sourcePlayer) {
-        // 1. Jika wanita yang diganti adalah Intermediate -> bisa diganti siapa saja (P atau L)
-        // 2. Jika wanita lain (Pemula/Advance) -> wajib diganti wanita (P)
-        // 3. Jika pria -> wajib diganti pria (L) ATAU wanita dengan role Intermediate
-        let genderCompatible = false;
-        if (sourcePlayer.gender === 'P') {
-          if (isSourceInterFemale) {
-            genderCompatible = true;
-          } else {
-            genderCompatible = (p.gender === 'P');
-          }
-        } else { // sourcePlayer pria
-          genderCompatible = (p.gender === 'L') || (p.gender === 'P' && isIntermediateRole(p));
-        }
+      // Simulasi hasil akhir komposisi gender.
+      const simulated = {
+        teamA: [...(court.teamA || [])],
+        teamB: [...(court.teamB || [])]
+      };
+      if (!simulated[targetTeamKey]) simulated[targetTeamKey] = [null, null];
+      simulated[targetTeamKey][targetIdx] = p;
+      const resultGenderValid = isCourtGenderValid(simulated);
 
-        if (!genderCompatible) return false;
-      } else {
-        // Jika mengisi slot kosong, jika kategori court PUTRI maka wajib wanita
-        if (court.category === 'PUTRI' && p.gender !== 'P') {
+      // Bila lapangan sudah melanggar aturan gender, utamakan pengganti yang
+      // memperbaiki komposisi (mis. 2 putri vs 2 putra -> ganti salah satu putri).
+      const fixesGenderIssue = courtGenderInvalid && resultGenderValid;
+      if (!resultGenderValid) return false;
+
+      if (!fixesGenderIssue) {
+        // Regulasi Gender lama (tetap dipertahankan):
+        if (isOpponentMixed) {
+          const requiredGender = teammate ? (teammateIsFemale ? 'L' : 'P') : null;
+          if (requiredGender && p.gender !== requiredGender) return false;
+        } else if (sourcePlayer) {
+          let genderCompatible = false;
+          if (sourcePlayer.gender === 'P') {
+            genderCompatible = isSourceInterFemale ? true : (p.gender === 'P');
+          } else {
+            genderCompatible = (p.gender === 'L') || (p.gender === 'P' && isIntermediateRole(p));
+          }
+          if (!genderCompatible) return false;
+        } else if (court.category === 'PUTRI' && p.gender !== 'P') {
           return false;
         }
       }
@@ -1124,6 +1179,8 @@
 
     // 5. Update status pemain pengganti jika court sudah 'sedang_main' atau 'ongoing'
     const realReplacement = players.find(p => String(p.id) === String(replacement.id)) || replacement;
+    realReplacement.cooldown_remaining = 0;
+    realReplacement.waitingSince = Date.now();
     if (court.status === COURT_STATUS.SEDANG_MAIN || court.status === 'ongoing') {
       realReplacement.status = PLAYER_STATUS.DI_LAPANGAN;
     } else {
@@ -1642,6 +1699,7 @@
       name: cleanName,
       gender: newPlayerData.gender || 'L',
       role: newPlayerData.role || 'Intermadiate',
+      role_locked: Boolean(newPlayerData.role_locked),
       paid: true,
       status: PLAYER_STATUS.MENUNGGU,
       jumlah_main: 0,
@@ -1870,7 +1928,7 @@
       bCurrentRoundIndex: Number.isInteger(data.bCurrentRoundIndex) && data.bCurrentRoundIndex >= 0 ? data.bCurrentRoundIndex : 0,
       bNumCourts: Number.isInteger(data.bNumCourts) && data.bNumCourts > 0 ? Math.min(data.bNumCourts, 20) : 2,
       bMinPlays: Number.isInteger(data.bMinPlays) && data.bMinPlays >= 0 ? Math.min(data.bMinPlays, 20) : 3,
-      bCooldownMatches: Number.isInteger(data.bCooldownMatches) && data.bCooldownMatches >= 0 ? Math.min(data.bCooldownMatches, 10) : 1,
+      bCooldownMatches: Number.isInteger(data.bCooldownMatches) && data.bCooldownMatches >= 0 ? Math.min(data.bCooldownMatches, 10) : 0,
       bPartnerRequests: [],
       bPartnerHistory: {},
       bOpponentHistory: {},
@@ -1911,6 +1969,7 @@
           name: typeof p.name === 'string' ? p.name.trim().slice(0, 40) : '',
           gender: p.gender === 'P' ? 'P' : 'L',
           role: typeof p.role === 'string' ? p.role.slice(0, 20) : 'Intermadiate',
+          role_locked: Boolean(p.role_locked),
           paid: Boolean(p.paid !== false),
           status: Object.values(PLAYER_STATUS).includes(p.status) ? p.status : PLAYER_STATUS.MENUNGGU,
           jumlah_main: typeof p.jumlah_main === 'number' && p.jumlah_main >= 0 ? Math.floor(p.jumlah_main) : 0,
@@ -2221,6 +2280,7 @@
     processCooldownsOnMatchEnd,
     submitPartnerRequest,
     cancelOrRejectPartnerRequest,
+    cancelRequestsForPlayer,
     splitFourIntoTeamsSmart,
     pickNextFourPlayersForMatch,
     createCourtProposal,

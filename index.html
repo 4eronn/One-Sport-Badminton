@@ -1593,10 +1593,28 @@
     cursor: pointer;
     padding: 4px 2px;
     border-radius: 10px;
-    min-width: 40px;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 76px;
     min-height: 42px;
     touch-action: manipulation;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .nav-item-btn > span:last-child {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 360px) {
+    .nav-item-btn {
+      font-size: 0.56rem;
+      padding: 3px 1px;
+      min-height: 40px;
+    }
+    .nav-item-btn .nav-icon {
+      font-size: 1.02rem;
+    }
   }
   .nav-item-btn:active {
     transform: scale(0.92);
@@ -2245,6 +2263,18 @@
   </div>
 </div>
 
+<!-- ── GUEST MODE BANNER ── -->
+<div id="guestModeBanner" style="display:none; margin:8px 12px 0; padding:10px 12px; background:linear-gradient(135deg,#FFF7ED 0%,#FFEDD5 100%); border:1.5px solid #FDBA74; border-radius:12px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+  <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+    <span style="width:28px; height:28px; border-radius:50%; background:#FFEDD5; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px;">👋</span>
+    <div style="min-width:0;">
+      <div style="font-size:0.8rem; font-weight:900; color:#9A3412;">Mode Tamu Aktif</div>
+      <div style="font-size:0.7rem; color:#B45309; line-height:1.35;">Kamu bisa melihat History, Hasil Akhir &amp; Juara, dan menonton live. Masuk akun Host untuk mengelola pemain, lapangan, dan skor.</div>
+    </div>
+  </div>
+  <button type="button" onclick="openLoginModal(); switchLoginAuthTab('signin');" style="background:var(--brand-orange); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-size:0.75rem; font-weight:900; cursor:pointer; white-space:nowrap;">Masuk Akun</button>
+</div>
+
 <!-- ── LIVE TOAST NOTIFICATION ── -->
 <div id="liveToastNotification">
   <span class="toast-indicator-dot" id="toastIcon"></span>
@@ -2299,7 +2329,8 @@
 
       <!-- Add Player Form Mobile-Optimized (Badminton) -->
       <div class="add-player-form-box" id="badmintonAddPlayerForm">
-        <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Ketik nama pemain..." onkeypress="if(event.key==='Enter')addNewPlayer()">
+        <input type="text" id="inputPlayerName" class="input-styled-os" placeholder="Ketik nama pemain..." oninput="autofillPlayerProfileFromName()" onkeypress="if(event.key==='Enter')addNewPlayer()" list="playerProfileSuggestions" autocomplete="off">
+        <datalist id="playerProfileSuggestions"></datalist>
         <div class="add-player-options-row">
           <select id="inputSoccerTeamSelect" class="input-styled-os soccer-team-picker" style="display:none; font-weight:800; min-width:130px; background:#F0FDF4; border-color:#86EFAC; color:#166534;" title="Pilih tim pemain"></select>
           <select id="inputPlayerGender" class="input-styled-os">
@@ -2534,6 +2565,9 @@
     <!-- 3D Podium for Top 3 -->
     <div class="podium-container" id="podiumTop3Container"></div>
 
+    <!-- Riwayat Juara Sesi Sebelumnya (khusus Tamu) -->
+    <div id="finalGuestArchiveSection"></div>
+
     <!-- Complete Ranked Results Table -->
     <div class="leaderboard-container">
       <table class="lb-table">
@@ -2663,6 +2697,9 @@
     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
       Pilih pemain pengganti untuk: <strong id="swapSourcePlayerName" style="color:var(--brand-navy-dark);"></strong>
     </p>
+    <div style="font-size:0.72rem; color:var(--text-muted); background:#F8FAFC; border:1px dashed var(--border-color); border-radius:var(--radius-sm); padding:7px 9px; margin-bottom:10px; line-height:1.45;">
+      💡 Pilih pemain dengan tanda <strong style="color:#B91C1C;">⚠</strong> dihindari karena akan melanggar aturan ganda campuran (2 putri + 2 putra wajib Putri+Putra vs Putri+Putra).
+    </div>
     <div id="swapCandidatesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto;"></div>
   </div>
 </div>
@@ -3346,7 +3383,10 @@
     </div>
 
     <div style="display:flex; flex-direction:column; gap:8px;">
-      <button class="btn-os-orange" style="width:100%; padding:10px; font-weight:800;" onclick="openHistoryFromEndedNotice()">
+      <button class="btn-os-orange" style="width:100%; padding:10px; font-weight:800;" onclick="openFinalResultsFromEndedNotice()">
+        Lihat Hasil Akhir &amp; Juara
+      </button>
+      <button class="btn-court-action" style="width:100%; padding:9px;" onclick="openHistoryFromEndedNotice()">
         Buka Histori Pertandingan
       </button>
       <button class="btn-court-action" style="width:100%; padding:9px;" onclick="closeLiveEndedNoticeModal()">
@@ -3980,7 +4020,7 @@ let bSchedule = [];
 let bCurrentRoundIndex = 0;
 let bNumCourts = 2;
 let bMinPlays = 3;
-let bCooldownMatches = 1; // Default cooldown 1 match setelah main
+let bCooldownMatches = 0; // Tanpa aturan istirahat: pemain boleh langsung bermain lagi
 let bPartnerRequests = []; // Daftar request rekan tim (Maks. 1x)
 let bPartnerHistory = {}; // Riwayat berpasangan (idA-idB -> count)
 let bOpponentHistory = {}; // Riwayat bertanding lawan (idA-idB -> count)
@@ -4072,7 +4112,9 @@ const VercelDbSync = {
   },
 
   async saveState(roomId, payload) {
-    const targetRoom = roomId || currentRoomId || 'DEFAULT';
+    const targetRoom = roomId || currentRoomId;
+    // Jangan pernah menulis ke room 'DEFAULT': data lokal tidak boleh bocor ke room lain.
+    if (!targetRoom) return false;
     try {
       const baseUrl = this.getBaseApiUrl();
       const res = await fetch(`${baseUrl}/api/state`, {
@@ -4093,7 +4135,8 @@ const VercelDbSync = {
   },
 
   async savePlayer(roomId, player) {
-    const targetRoom = roomId || currentRoomId || 'DEFAULT';
+    const targetRoom = roomId || currentRoomId;
+    if (!targetRoom) return;
     try {
       const baseUrl = this.getBaseApiUrl();
       await fetch(`${baseUrl}/api/players`, {
@@ -4105,7 +4148,8 @@ const VercelDbSync = {
   },
 
   async deletePlayer(roomId, playerId) {
-    const targetRoom = roomId || currentRoomId || 'DEFAULT';
+    const targetRoom = roomId || currentRoomId;
+    if (!targetRoom) return;
     try {
       const baseUrl = this.getBaseApiUrl();
       await fetch(`${baseUrl}/api/players?id=${encodeURIComponent(playerId)}&roomId=${encodeURIComponent(targetRoom)}`, {
@@ -4364,8 +4408,10 @@ function initApp() {
     // Apapun yang terjadi (sukses maupun error), selalu tutup splash screen
     setTimeout(() => {
       dismissSplashScreen();
+      // Aplikasi langsung masuk mode Tamu (Guest) tanpa memaksa login.
+      // Login hanya tersedia melalui tab Akun.
       if (!currentUser && !isGuestSession) {
-        openLoginModal(true);
+        loginAsGuest(true);
       }
     }, 600);
   }
@@ -4508,10 +4554,19 @@ function switchSport(sport) {
 
 // ── TAB SWITCHING ──
 function switchTab(tabId) {
-  // Hanya kunci tab Pemain untuk penonton siaran online
-  if (isOnlineActive && userRole !== 'host' && tabId === 'tab-pemain') {
-    tabId = 'tab-match';
-    showToast('Tab Pemain hanya dapat diakses oleh Host.', 'info');
+  // Penonton/Tamu: History, Hasil Akhir (juara), & Akun (plus Lapangan read-only saat menonton room live).
+  if (!isHostUser()) {
+    const guestAllowed = ['tab-history', 'tab-selesai', 'tab-akun'];
+    const inRoom = !!(isOnlineActive && currentRoomId);
+    if (isGuestUser()) {
+      if (!guestAllowed.includes(tabId) && !(tabId === 'tab-match' && inRoom)) {
+        tabId = 'tab-history';
+        showToast('Mode Tamu hanya dapat membuka History, Hasil Akhir, dan Akun.', 'info');
+      }
+    } else if (tabId === 'tab-pemain') {
+      tabId = 'tab-match';
+      showToast('Tab Pemain hanya dapat diakses oleh Host.', 'info');
+    }
   }
 
   document.querySelectorAll('.app-tab-pane').forEach(el => el.classList.remove('active'));
@@ -4663,6 +4718,127 @@ function setSoccerTeamCount(count) {
 }
 
 // ── PLAYER ROSTER MANAGEMENT ──
+// Profil pemain tersimpan permanen (lintas room/sesi) berdasarkan nama.
+const PLAYER_PROFILES_KEY = 'onesport_player_profiles';
+
+function normalizePlayerNameKey(name) {
+  return String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function loadPlayerProfiles() {
+  try {
+    const raw = localStorage.getItem(PLAYER_PROFILES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+  } catch (e) {
+    console.warn('Load player profiles failed:', e);
+    return {};
+  }
+}
+
+function savePlayerProfiles(profiles) {
+  try {
+    localStorage.setItem(PLAYER_PROFILES_KEY, JSON.stringify(profiles || {}));
+  } catch (e) {
+    console.warn('Save player profiles failed:', e);
+  }
+}
+
+function getPlayerProfile(name) {
+  const key = normalizePlayerNameKey(name);
+  if (!key) return null;
+  const profiles = loadPlayerProfiles();
+  return profiles[key] || null;
+}
+
+function upsertPlayerProfile(player) {
+  if (!player || !player.name) return;
+  const key = normalizePlayerNameKey(player.name);
+  if (!key) return;
+  const profiles = loadPlayerProfiles();
+  const existing = profiles[key] || {};
+  profiles[key] = {
+    name: String(player.name).trim().slice(0, 40),
+    gender: player.gender === 'P' ? 'P' : (player.gender === 'L' ? 'L' : (existing.gender || 'L')),
+    role: typeof player.role === 'string' && player.role ? player.role : (existing.role || 'Intermadiate'),
+    role_locked: typeof player.role_locked === 'boolean' ? player.role_locked : Boolean(existing.role_locked),
+    updatedAt: Date.now()
+  };
+  savePlayerProfiles(profiles);
+  refreshPlayerProfileDatalist();
+}
+
+/**
+ * Terapkan profil permanen ke pemain. Gender & role tersimpan dipakai
+ * agar tidak perlu diisi ulang saat pindah room/sesi.
+ */
+function applyStoredPlayerProfile(player) {
+  if (!player || !player.name) return player;
+  const prof = getPlayerProfile(player.name);
+  if (!prof) return player;
+  if (prof.gender === 'P' || prof.gender === 'L') player.gender = prof.gender;
+  if (prof.role) player.role = prof.role;
+  player.role_locked = Boolean(prof.role_locked);
+  return player;
+}
+
+/** Terapkan profil tersimpan ke seluruh daftar pemain (setelah load/sync room). */
+function applyStoredProfilesToPlayers() {
+  if (!Array.isArray(bPlayers)) return;
+  bPlayers.forEach(p => {
+    if (!p || !p.name) return;
+    const prof = getPlayerProfile(p.name);
+    if (!prof) return;
+    if (prof.gender === 'P' || prof.gender === 'L') p.gender = prof.gender;
+    if (prof.role) p.role = prof.role;
+    if (typeof prof.role_locked === 'boolean') p.role_locked = prof.role_locked;
+  });
+  // Simpan balik profil dari pemain yang belum punya profil (migrasi data lama)
+  bPlayers.forEach(p => {
+    if (p && p.name && !p.is_deleted) upsertPlayerProfile(p);
+  });
+}
+
+/** Auto-isi form tambah pemain dari profil tersimpan saat nama diketik. */
+function autofillPlayerProfileFromName() {
+  const nameInput = document.getElementById('inputPlayerName');
+  const genderInput = document.getElementById('inputPlayerGender');
+  const roleInput = document.getElementById('inputPlayerRole');
+  if (!nameInput) return;
+  const prof = getPlayerProfile(nameInput.value);
+  if (!prof) return;
+  if (genderInput && prof.gender) genderInput.value = prof.gender;
+  if (roleInput && prof.role) roleInput.value = prof.role;
+}
+
+function refreshPlayerProfileDatalist() {
+  const listEl = document.getElementById('playerProfileSuggestions');
+  if (!listEl) return;
+  const profiles = loadPlayerProfiles();
+  listEl.innerHTML = Object.values(profiles)
+    .filter(pr => pr && pr.name)
+    .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+    .map(pr => `<option value="${escapeHtml(pr.name)}"></option>`)
+    .join('');
+}
+
+function togglePlayerRoleLock(id) {
+  if (!checkEditPermission()) return;
+  const p = bPlayers.find(x => String(x.id) === String(id));
+  if (!p) return;
+  p.role_locked = !p.role_locked;
+  upsertPlayerProfile(p);
+  renderPlayersList();
+  persistAndBroadcast();
+  showToast(
+    p.role_locked
+      ? `Role & gender ${p.name} dikunci. Akan otomatis terisi di room/sesi lain.`
+      : `Kunci role ${p.name} dibuka.`,
+    'success'
+  );
+}
+
 function addNewPlayer() {
   if (!checkEditPermission()) return;
   const nameInput = document.getElementById('inputPlayerName');
@@ -4673,11 +4849,15 @@ function addNewPlayer() {
   if (!name) return;
 
   if (currentSport === 'badminton') {
+    const profile = getPlayerProfile(name);
     const newP = BadmintonService.addPlayerIncremental(bPlayers, {
       name,
-      gender: genderInput.value,
-      role: roleInput.value
+      gender: profile ? profile.gender : genderInput.value,
+      role: profile ? profile.role : roleInput.value,
+      role_locked: profile ? Boolean(profile.role_locked) : false
     });
+    if (profile) applyStoredPlayerProfile(newP);
+    upsertPlayerProfile(newP);
     VercelDbSync.savePlayer(currentRoomId, newP);
     if (newP.warning) {
       showToast(`Peringatan: ${newP.warning} Pemain tetap ditambahkan.`, 'warning');
@@ -4724,9 +4904,10 @@ function addNewPlayer() {
 function updatePlayerRole(id, newRole) {
   if (!checkEditPermission()) return;
   if (currentSport === 'badminton') {
-    const p = bPlayers.find(p => p.id === id);
+    const p = bPlayers.find(p => String(p.id) === String(id));
     if (p) {
       p.role = newRole;
+      upsertPlayerProfile(p);
       renderPlayersList();
       renderCourtsView();
       persistAndBroadcast();
@@ -4739,9 +4920,10 @@ function updatePlayerRole(id, newRole) {
 function updatePlayerGender(id, newGender) {
   if (!checkEditPermission()) return;
   if (currentSport === 'badminton') {
-    const p = bPlayers.find(p => p.id === id);
+    const p = bPlayers.find(p => String(p.id) === String(id));
     if (p) {
       p.gender = newGender;
+      upsertPlayerProfile(p);
       renderPlayersList();
       renderCourtsView();
       persistAndBroadcast();
@@ -4776,7 +4958,7 @@ function removePlayer(id) {
 
 function restorePlayer(id) {
   if (!checkEditPermission()) return;
-  const p = bPlayers.find(x => x.id === id);
+  const p = bPlayers.find(x => String(x.id) === String(id));
   if (p) {
     p.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
     p.is_deleted = false;
@@ -4791,7 +4973,7 @@ function restorePlayer(id) {
 
 function endCooldownEarly(id) {
   if (!checkEditPermission()) return;
-  const p = bPlayers.find(x => x.id === id);
+  const p = bPlayers.find(x => String(x.id) === String(id));
   if (p) {
     p.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
     p.cooldown_remaining = 0;
@@ -4851,13 +5033,21 @@ function renderPlayersList() {
     let roleSelectHtml = '';
 
     if (currentSport === 'badminton') {
+      const lockBtnTitle = p.role_locked
+        ? 'Role & gender terkunci (tersimpan permanen). Klik untuk membuka.'
+        : 'Kunci role & gender agar otomatis terisi di room/sesi lain.';
       roleSelectHtml = `
-        <select class="select-role-inline" onchange="updatePlayerRole(${p.id}, this.value)">
-          <option value="Pemula" ${p.role === 'Pemula' ? 'selected' : ''}>Pemula</option>
-          <option value="Amatir" ${p.role === 'Amatir' ? 'selected' : ''}>Amatir</option>
-          <option value="Intermadiate" ${p.role === 'Intermadiate' ? 'selected' : ''}>Intermadiate</option>
-          <option value="Advance" ${p.role === 'Advance' ? 'selected' : ''}>Advance</option>
-        </select>
+        <span style="display:inline-flex; align-items:center; gap:4px;">
+          <select class="select-role-inline" onchange="updatePlayerRole('${escapeHtml(String(p.id))}', this.value)" ${p.role_locked ? 'title="Role dikunci"' : ''}>
+            <option value="Pemula" ${p.role === 'Pemula' ? 'selected' : ''}>Pemula</option>
+            <option value="Amatir" ${p.role === 'Amatir' ? 'selected' : ''}>Amatir</option>
+            <option value="Intermadiate" ${p.role === 'Intermadiate' ? 'selected' : ''}>Intermadiate</option>
+            <option value="Advance" ${p.role === 'Advance' ? 'selected' : ''}>Advance</option>
+          </select>
+          <button type="button" class="btn-role-lock ${p.role_locked ? 'locked' : ''}" onclick="togglePlayerRoleLock('${escapeHtml(String(p.id))}')" title="${lockBtnTitle}" style="background:${p.role_locked ? '#FEF3C7' : '#F1F5F9'}; border:1px solid ${p.role_locked ? '#FCD34D' : '#E2E8F0'}; color:${p.role_locked ? '#92400E' : '#64748B'}; border-radius:6px; font-size:0.66rem; font-weight:800; padding:2px 6px; cursor:pointer; white-space:nowrap;">
+            ${p.role_locked ? '🔒 Terkunci' : '🔓 Kunci'}
+          </button>
+        </span>
       `;
 
       // Status Badge (Poin 1)
@@ -4868,7 +5058,7 @@ function renderPlayersList() {
       } else if (st === BadmintonService.PLAYER_STATUS.DI_LAPANGAN) {
         statusBadge = `<span class="player-status-badge status-di_lapangan">Di Lapangan</span>`;
       } else if (st === BadmintonService.PLAYER_STATUS.ISTIRAHAT) {
-        statusBadge = `<span class="player-status-badge status-istirahat" title="Klik untuk akhiri istirahat" onclick="endCooldownEarly(${p.id})" style="cursor:pointer;">Istirahat (${p.cooldown_remaining || 1} match)</span>`;
+        statusBadge = `<span class="player-status-badge status-istirahat" title="Klik untuk memasukkan kembali ke antrian" onclick="endCooldownEarly('${escapeHtml(String(p.id))}')" style="cursor:pointer;">Istirahat</span>`;
       } else {
         statusBadge = `<span class="player-status-badge status-menunggu">Menunggu</span>`;
       }
@@ -4905,15 +5095,15 @@ function renderPlayersList() {
       const leaveNotice = p.leave_after_match ? `<span style="font-size:0.65rem; color:#DC2626; font-weight:800; background:#FEF2F2; padding:1px 5px; border-radius:4px;">Keluar stlh match</span>` : '';
 
       // Action button
-      let actionBtn = `<button class="btn-del-player" onclick="removePlayer(${p.id})" title="Keluarkan Pemain">✕</button>`;
+      let actionBtn = `<button class="btn-del-player" onclick="removePlayer('${escapeHtml(String(p.id))}')" title="Keluarkan Pemain">✕</button>`;
       if (p.is_deleted || st === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
-        actionBtn = `<button class="btn-court-quick-action" onclick="restorePlayer(${p.id})" title="Aktifkan Kembali">↩ Aktif</button>`;
+        actionBtn = `<button class="btn-court-quick-action" onclick="restorePlayer('${escapeHtml(String(p.id))}')" title="Aktifkan Kembali">↩ Aktif</button>`;
       }
 
       return `
         <div class="player-roster-card ${p.is_deleted ? 'is-deleted' : ''}">
           <div class="player-roster-left">
-            <select class="select-role-inline" onchange="updatePlayerGender(${p.id}, this.value)" style="color:${isMale ? 'var(--gender-male)' : 'var(--gender-female)'};">
+            <select class="select-role-inline" onchange="updatePlayerGender('${escapeHtml(String(p.id))}', this.value)" style="color:${isMale ? 'var(--gender-male)' : 'var(--gender-female)'};" ${p.role_locked ? 'title="Gender terkunci dari profil"' : ''}>
               <option value="L" ${isMale ? 'selected' : ''}>Putra (L)</option>
               <option value="P" ${!isMale ? 'selected' : ''}>Putri (P)</option>
             </select>
@@ -4969,7 +5159,7 @@ function renderPlayersList() {
 // ── FITUR 2: MODAL REQUEST REKAN TIM HANDLERS ──
 function openPartnerRequestModal(playerId) {
   if (!checkEditPermission()) return;
-  const p = bPlayers.find(x => x.id === playerId);
+  const p = bPlayers.find(x => String(x.id) === String(playerId));
   if (!p) return;
 
   if (p.request_used) {
@@ -5018,17 +5208,17 @@ function closePartnerRequestModal() {
 }
 
 function checkPartnerTargetWarning() {
-  const reqId = Number(document.getElementById('partnerReqSourcePlayerId').value);
-  const targetId = Number(document.getElementById('selectPartnerTarget').value);
+  const reqIdRaw = document.getElementById('partnerReqSourcePlayerId').value;
+  const targetIdRaw = document.getElementById('selectPartnerTarget').value;
   const alertEl = document.getElementById('partnerReqWarningAlert');
 
-  if (!reqId || !targetId) {
+  if (!reqIdRaw || !targetIdRaw) {
     alertEl.style.display = 'none';
     return;
   }
 
-  const p1 = bPlayers.find(x => x.id === reqId);
-  const p2 = bPlayers.find(x => x.id === targetId);
+  const p1 = bPlayers.find(x => String(x.id) === String(reqIdRaw));
+  const p2 = bPlayers.find(x => String(x.id) === String(targetIdRaw));
 
   if (p1 && p2 && BadmintonService.hasInterAndAdvanceTogether([p1, p2])) {
     alertEl.style.display = 'block';
@@ -5036,14 +5226,20 @@ function checkPartnerTargetWarning() {
     return;
   }
 
-  const busyReq = bPartnerRequests.find(r => (r.status === 'pending' || r.status === 'approved') && (r.requesterId === targetId || r.targetId === targetId));
+  if (p1 && p2 && p1.gender === 'P' && p2.gender === 'P') {
+    alertEl.style.display = 'block';
+    alertEl.innerHTML = `<strong>Aturan Ganda Campuran:</strong> Dua pemain putri tidak akan dipasangkan dalam satu tim jika lawannya berisi pemain putra.`;
+    return;
+  }
+
+  const busyReq = bPartnerRequests.find(r => (r.status === 'pending' || r.status === 'approved') && (String(r.requesterId) === String(targetIdRaw) || String(r.targetId) === String(targetIdRaw)));
   if (busyReq) {
     alertEl.style.display = 'block';
     alertEl.innerHTML = `<strong>Perhatian:</strong> Rekan yang dipilih sudah memiliki jadwal request aktif lain.`;
     return;
   }
 
-  const k = BadmintonService.getPairKey(reqId, targetId);
+  const k = BadmintonService.getPairKey(reqIdRaw, targetIdRaw);
   const times = bPartnerHistory[k] || 0;
   if (times > 0) {
     alertEl.style.display = 'block';
@@ -5054,8 +5250,8 @@ function checkPartnerTargetWarning() {
 }
 
 function submitPartnerRequestAction() {
-  const reqId = Number(document.getElementById('partnerReqSourcePlayerId').value);
-  const targetId = Number(document.getElementById('selectPartnerTarget').value);
+  const reqId = document.getElementById('partnerReqSourcePlayerId').value;
+  const targetId = document.getElementById('selectPartnerTarget').value;
 
   if (!targetId) {
     showToast('Pilih rekan yang dituju terlebih dahulu.', 'error');
@@ -7587,22 +7783,6 @@ function renderCourtsView() {
 
       // ── 4. MATCH SELESAI (FINISHED) ──
       if (!isHost) {
-        if (isGuestUser()) {
-          return `
-            <div class="os-card is-finished" style="margin-top:8px; border:1.5px dashed #CBD5E1; background:#F8FAFC; text-align:center; padding:18px 12px;">
-              <div class="card-top-title" style="margin-bottom:6px;">
-                <span class="card-title-text" style="color:var(--text-muted);">${escapeHtml(court.courtName || ('Lapangan ' + (cIdx + 1)))}</span>
-                <span class="court-status-chip finished" style="background:#E2E8F0; color:#475569;">Selesai</span>
-              </div>
-              <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Pertandingan Telah Selesai</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data skor dan pemain pertandingan selesai tidak tersedia untuk akun Tamu (Guest).</div>
-              <button class="btn-court-action" style="font-size:0.74rem; padding:6px 14px; width:auto; margin:0 auto; font-weight:800; color:var(--brand-blue); border-color:#BFDBFE; background:#EFF6FF;" onclick="openLoginModal()">
-                Masuk / Daftar Akun
-              </button>
-            </div>
-          `;
-        }
-
         return `
           <div class="os-card is-finished" style="margin-top:8px;">
             <div class="card-top-title">
@@ -7669,12 +7849,14 @@ function renderCourtsView() {
           ` : ''}
 
           <div class="court-control-bar">
-            <button class="btn-court-action" style="background:#0F1E36; color:#FFF; font-size:0.76rem;" onclick="openEditFinishedMatchModal(${bCurrentRoundIndex}, ${cIdx})">
-              Edit Skor
-            </button>
-            <button class="btn-os-cyan" style="font-size:0.76rem; padding:6px 14px; width:auto;" onclick="freeFinishedCourt(${cIdx})">
-              Kosongkan Lapangan
-            </button>
+            ${checkEditPermission(false) ? `
+              <button class="btn-court-action" style="background:#0F1E36; color:#FFF; font-size:0.76rem;" onclick="openEditFinishedMatchModal(${bCurrentRoundIndex}, ${cIdx})">
+                Edit Skor
+              </button>
+              <button class="btn-os-cyan" style="font-size:0.76rem; padding:6px 14px; width:auto;" onclick="freeFinishedCourt(${cIdx})">
+                Kosongkan Lapangan
+              </button>
+            ` : `<div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; padding:4px 0;">Mode penonton · hasil pertandingan hanya dapat dilihat</div>`}
           </div>
         </div>
       `;
@@ -7747,20 +7929,19 @@ function renderCourtsView() {
       }
       drawerHtml += `</div>`;
 
-      // 2. Pemain Istirahat (Cooldown)
+      // 2. Pemain Istirahat (manual, tanpa cooldown)
       if (restingPlayers.length > 0) {
         drawerHtml += `
           <div style="font-size:0.75rem; font-weight:800; color:#B45309; margin-bottom:4px;">
-            Istirahat / Cooldown (${restingPlayers.length} Pemain - Tidak Masuk Antrian)
+            Istirahat / Bangku Cadangan (${restingPlayers.length} Pemain)
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
             ${restingPlayers.map(p => {
               const pIdSafe = escapeHtml(String(p.id));
               return `
-                <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Cooldown: ${p.cooldown_remaining || 1} match lagi">
+                <span class="resting-chip" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;" title="Klik Siap untuk memasukkan kembali ke antrian">
                   <span>${escapeHtml(p.name)}</span>
-                  <span style="font-size:0.65rem; font-weight:800; background:#FEF3C7; padding:1px 5px; border-radius:4px;">${p.cooldown_remaining || 1} match lagi</span>
-                  <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly('${pIdSafe}')" title="Selesai istirahat sekarang">Siap</span>
+                  <span style="color:#059669; font-weight:900; font-size:0.68rem; cursor:pointer;" onclick="endCooldownEarly('${pIdSafe}')" title="Masukkan kembali ke antrian">Siap</span>
                 </span>
               `;
             }).join('')}
@@ -7873,22 +8054,6 @@ function renderCourtsView() {
       const isWinB = isFinished && m.winner === 'B';
       const teamAName = m.teamA?.name || 'Tim A';
       const teamBName = m.teamB?.name || 'Tim B';
-
-      if (isFinished && isGuestUser()) {
-        return `
-          <div class="os-card is-finished" style="margin-top:10px; border:1.5px dashed var(--border-color); background:#F8FAFC; text-align:center; padding:18px 12px;">
-            <div class="card-top-title" style="margin-bottom:6px;">
-              <span class="card-title-text" style="color:var(--text-muted); font-size:0.82rem; font-weight:700;">${escapeHtml(m.title)}</span>
-              <span class="court-status-chip finished" style="background:#E2E8F0; color:#475569; font-weight:700;">Selesai</span>
-            </div>
-            <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Pertandingan Telah Selesai</div>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data skor pertandingan selesai tidak tersedia untuk akun Tamu.</div>
-            <button class="btn-court-action" style="font-size:0.74rem; padding:6px 14px; width:auto; margin:0 auto; font-weight:800; color:var(--brand-blue); border-color:#BFDBFE; background:#EFF6FF;" onclick="openLoginModal()">
-              Masuk / Daftar Akun
-            </button>
-          </div>
-        `;
-      }
 
       return `
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px; border: 1.5px solid ${isOngoing ? 'var(--brand-blue)' : 'var(--border-color)'}; box-shadow: ${isOngoing ? '0 2px 10px rgba(11,116,222,0.08)' : '0 1px 4px rgba(0,0,0,0.03)'}; background:${isFinished ? '#FAFBFD' : '#FFFFFF'};">
@@ -9112,23 +9277,26 @@ function renderLeaderboard() {
 // ── HISTORY ──
 function renderHistory() {
   const container = document.getElementById('historyRoundsContainer');
-  if (isGuestUser()) {
-    container.innerHTML = `
-      <div class="os-card" style="text-align:center; padding:32px 16px; margin-top:8px;">
-        <div style="width:48px; height:48px; border-radius:50%; background:#FEF3C7; color:#D97706; display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+  if (!container) return;
+
+  const guestIntroHtml = isGuestUser() ? `
+    <div class="os-card" style="margin-bottom:12px; background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 65%); border:1.5px solid #FDBA74;">
+      <div style="display:flex; align-items:flex-start; gap:10px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:#FFEDD5; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:19px;">📊</div>
+        <div style="min-width:0; flex:1;">
+          <div style="font-weight:900; font-size:0.92rem; color:var(--brand-navy-dark);">Riwayat Skor</div>
+          <div style="font-size:0.76rem; color:var(--text-muted); line-height:1.45; margin-top:2px;">
+            Semua pertandingan yang sudah selesai akan tampil di sini. Ingin mengelola pemain, lapangan, dan skor? Masuk dengan akun Host.
+          </div>
+          <div style="display:flex; gap:8px; margin-top:9px; flex-wrap:wrap;">
+            <button class="btn-os-orange" style="width:auto; font-size:0.75rem; padding:7px 14px; font-weight:800;" onclick="switchTab('tab-selesai')">Lihat Juara</button>
+            <button class="btn-court-action" style="width:auto; font-size:0.75rem; padding:7px 14px; font-weight:800;" onclick="openOnlineModal('live')">Tonton Live</button>
+            <button class="btn-court-action" style="width:auto; font-size:0.75rem; padding:7px 14px; font-weight:800;" onclick="openLoginModal(); switchLoginAuthTab('signin');">Masuk Akun</button>
+          </div>
         </div>
-        <div style="font-weight:900; font-size:1.02rem; color:var(--brand-navy-dark); margin-bottom:6px;">Riwayat Pertandingan Terkunci</div>
-        <div style="font-size:0.78rem; color:var(--text-muted); max-width:320px; margin:0 auto 16px auto; line-height:1.45;">
-          Data seluruh pertandingan yang telah selesai tidak dapat diakses oleh akun Tamu (Guest). Silakan Sign In atau Sign Up untuk melihat riwayat lengkap.
-        </div>
-        <button class="btn-os-orange" style="font-size:0.8rem; padding:8px 20px; font-weight:800; width:auto; margin:0 auto;" onclick="openLoginModal()">
-          Masuk / Daftar Akun
-        </button>
       </div>
-    `;
-    return;
-  }
+    </div>
+  ` : '';
 
   if (currentSport === 'badminton') {
     const roundsWithMatches = bSchedule.map((r, rIdx) => {
@@ -9140,11 +9308,11 @@ function renderHistory() {
     }).filter(group => group.finishedMatches.length > 0);
 
     if (roundsWithMatches.length === 0) {
-      container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">Belum ada pertandingan selesai.</div>`;
+      container.innerHTML = guestIntroHtml + `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem;">Belum ada pertandingan selesai.</div>`;
       return;
     }
 
-    container.innerHTML = roundsWithMatches.map(group => `
+    container.innerHTML = guestIntroHtml + roundsWithMatches.map(group => `
       <div style="background:#F8FAFC; border:1.5px solid var(--border-color); border-radius:var(--radius-lg); padding:12px; margin-bottom:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <span style="font-weight:900; color:var(--brand-orange); font-size:0.88rem;">Babak / Ronde ${group.r.roundNumber || (group.rIdx + 1)}</span>
@@ -9189,10 +9357,10 @@ function renderHistory() {
   } else {
     const finished = sMatches.filter(m => m.status === 'finished');
     if (finished.length === 0) {
-      container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted);">Belum ada match soccer selesai.</div>`;
+      container.innerHTML = guestIntroHtml + `<div style="text-align:center; padding:24px; color:var(--text-muted);">Belum ada match soccer selesai.</div>`;
       return;
     }
-    container.innerHTML = finished.map(m => `
+    container.innerHTML = guestIntroHtml + finished.map(m => `
       <div style="display:flex; justify-content:space-between; align-items:center; background:#FFF; padding:12px; border-radius:var(--radius-md); border:1.5px solid var(--border-color); margin-bottom:8px;">
         <span style="font-weight:800; color:var(--brand-navy-dark);">${escapeHtml(m.teamA?.name || 'Tim A')}</span>
         <strong style="color:var(--brand-orange); font-size:1.2rem;">${m.scoreA !== null && m.scoreA !== undefined ? m.scoreA : 0} - ${m.scoreB !== null && m.scoreB !== undefined ? m.scoreB : 0}</strong>
@@ -9231,6 +9399,97 @@ function awardSessionWinnerTitle() {
 }
 
 // ── FINAL PODIUM ──
+function renderGuestEmptyFinalState() {
+  const podium = document.getElementById('podiumTop3Container');
+  const tbody = document.getElementById('finalTableBody');
+  const history = (typeof getUserWatchedLiveHistory === 'function' ? getUserWatchedLiveHistory() : getLiveHistory())
+    .filter(item => !item.sport || item.sport === currentSport);
+  if (podium) {
+    podium.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align:center; padding:22px 16px; background:linear-gradient(135deg,#FFF7ED 0%,#FFFFFF 70%); border:1.5px dashed #FDBA74; border-radius:var(--radius-lg); margin-bottom:12px;">
+        <div style="font-size:26px; margin-bottom:4px;">🏆</div>
+        <div style="font-weight:900; font-size:0.95rem; color:var(--brand-navy-dark); margin-bottom:4px;">Belum Ada Juara di Sesi Ini</div>
+        <div style="font-size:0.76rem; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">
+          ${history.length > 0
+            ? 'Sesi yang sedang dibuka belum memiliki hasil. Lihat riwayat juara sesi sebelumnya di bawah ini.'
+            : 'Ikuti siaran live pertandingan, lalu juara sesi akan otomatis muncul di sini setelah pertandingan selesai.'}
+        </div>
+        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn-os-orange" style="width:auto; font-size:0.75rem; padding:7px 14px; font-weight:800;" onclick="openOnlineModal('live')">Tonton Live</button>
+          <button class="btn-court-action" style="width:auto; font-size:0.75rem; padding:7px 14px; font-weight:800;" onclick="switchTab('tab-history')">Buka History</button>
+        </div>
+      </div>
+    `;
+  }
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
+          Belum ada data klasemen untuk sesi ini.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function renderGuestFinalArchive() {
+  const section = document.getElementById('finalGuestArchiveSection');
+  if (!section) return;
+  if (!isGuestUser()) {
+    section.innerHTML = '';
+    return;
+  }
+
+  const history = (typeof getUserWatchedLiveHistory === 'function' ? getUserWatchedLiveHistory() : getLiveHistory())
+    .filter(item => item && ((item.podium && item.podium.length > 0) || (item.leaderboard && item.leaderboard.length > 0)))
+    .filter(item => !item.sport || item.sport === currentSport);
+  if (history.length === 0) {
+    section.innerHTML = '';
+    return;
+  }
+
+  section.innerHTML = `
+    <div class="os-card" style="margin-bottom:12px; padding:12px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:6px; min-width:0;">
+          <span style="font-size:15px;">🏅</span>
+          <span style="font-weight:900; font-size:0.86rem; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Riwayat Juara Sesi</span>
+        </div>
+        <span style="font-size:0.64rem; font-weight:800; color:var(--text-muted); background:#F1F5F9; padding:2px 7px; border-radius:999px; flex-shrink:0;">${history.length} Sesi</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; max-height:230px; overflow-y:auto;">
+        ${history.slice(0, 12).map(item => {
+          let podium = item.podium;
+          if ((!podium || podium.length === 0) && item.leaderboard && item.leaderboard.length > 0) {
+            podium = item.leaderboard.slice(0, 3).map((s, idx) => ({
+              rank: idx + 1,
+              label: idx === 0 ? 'Juara 1' : (idx === 1 ? 'Juara 2' : 'Juara 3'),
+              name: s.name,
+              score: `${s.wins !== undefined ? s.wins : (s.w || 0)}M · Skor ${s.diff !== undefined ? s.diff : (s.gd || 0)} (${s.totalScore !== undefined ? s.totalScore : 0} Poin)`
+            }));
+          }
+          const champion = (podium || [])[0];
+          return `
+            <button type="button" onclick="openHistoryDetailModal('${escapeHtml(item.id)}')"
+              style="width:100%; text-align:left; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:8px 10px; display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <span style="width:26px; height:26px; border-radius:50%; background:#FEF3C7; display:inline-flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0;">🥇</span>
+              <span style="min-width:0; flex:1;">
+                <span style="display:block; font-size:0.78rem; font-weight:900; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  ${escapeHtml(champion ? champion.name : 'Juara belum tercatat')}
+                </span>
+                <span style="display:block; font-size:0.66rem; color:var(--text-muted); font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  Room ${escapeHtml(item.roomId || '-')} · ${escapeHtml(item.dateFormatted || '')}${item.timeFormatted ? ' · ' + escapeHtml(item.timeFormatted) : ''}
+                </span>
+              </span>
+              <span style="font-size:0.65rem; font-weight:800; color:var(--brand-orange); flex-shrink:0;">Detail ›</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderFinalPodium() {
   if (userRole === 'host') {
     const awarded = awardSessionWinnerTitle();
@@ -9246,33 +9505,16 @@ function renderFinalPodium() {
     btnNewMabar.style.display = (userRole === 'host') ? 'inline-flex' : 'none';
   }
 
-  if (isGuestUser()) {
-    if (podium) {
-      podium.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align:center; padding:24px 16px; background:#F8FAFC; border:1.5px dashed #CBD5E1; border-radius:var(--radius-lg); margin-bottom:12px;">
-          <div style="font-weight:900; font-size:0.95rem; color:var(--brand-navy-dark); margin-bottom:4px;">Podium & Klasemen Akhir Terkunci</div>
-          <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Data podium dan rekapitulasi hasil pertandingan selesai tidak tersedia untuk akun Tamu (Guest).</div>
-          <button class="btn-os-orange" style="font-size:0.75rem; padding:6px 16px; font-weight:800; width:auto; margin:0 auto;" onclick="openLoginModal()">
-            Masuk / Daftar Akun
-          </button>
-        </div>
-      `;
-    }
-    if (tbody) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.82rem;">
-            Klasemen akhir pertandingan hanya tersedia untuk Pengguna terdaftar dan Host.
-          </td>
-        </tr>
-      `;
-    }
-    return;
-  }
+  renderGuestFinalArchive();
 
   if (currentSport === 'badminton') {
     const list = getBadmintonStatsAndRankings('wins');
     const p1 = list[0], p2 = list[1], p3 = list[2];
+
+    if (list.length === 0 && isGuestUser()) {
+      renderGuestEmptyFinalState();
+      return;
+    }
 
     podium.innerHTML = `
       <div class="podium-column">
@@ -9329,6 +9571,11 @@ function renderFinalPodium() {
     // Mini Soccer Podium
     const list = getSoccerStatsAndRankings('wins');
     const t1 = list[0], t2 = list[1], t3 = list[2];
+
+    if (list.length === 0 && isGuestUser()) {
+      renderGuestEmptyFinalState();
+      return;
+    }
 
     podium.innerHTML = `
       <div class="podium-column">
@@ -9388,6 +9635,28 @@ function shareFinalResults() {
   const isBadm = currentSport === 'badminton';
   const list = isBadm ? getBadmintonStatsAndRankings('wins') : getSoccerStatsAndRankings('wins');
   if (list.length === 0) {
+    if (isGuestUser()) {
+      const archive = (typeof getUserWatchedLiveHistory === 'function' ? getUserWatchedLiveHistory() : getLiveHistory())
+        .filter(item => item && ((item.podium && item.podium.length > 0) || (item.leaderboard && item.leaderboard.length > 0)));
+      const latest = archive[0];
+      if (latest) {
+        let text = `*HASIL AKHIR & PENENTUAN JUARA*\n`;
+        text += `${(latest.sessionTitle || 'Sesi Mabar').toUpperCase()} (Room ${latest.roomId || '-'})\n`;
+        text += `${latest.dateFormatted || ''}${latest.timeFormatted ? ' · ' + latest.timeFormatted : ''}\n\n`;
+        (latest.podium || []).slice(0, 3).forEach(p => {
+          text += `*${(p.label || '').toUpperCase()}:* ${p.name}${p.score ? ' — ' + p.score : ''}\n`;
+        });
+        text += `\nGenerated with ONESPORT Platform`;
+        if (navigator.share) {
+          navigator.share({ title: latest.sessionTitle || 'Hasil Akhir', text: text }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(text);
+          if (typeof showToast === 'function') showToast('Rekap juara berhasil disalin!');
+          else alert('Rekap berhasil disalin ke clipboard.');
+        }
+        return;
+      }
+    }
     alert('Belum ada data pertandingan.');
     return;
   }
@@ -9754,7 +10023,6 @@ function findHistoryItemById(id) {
 }
 
 function updateWatchedRoomLiveRecap(roomId) {
-  if (isGuestUser()) return;
   try {
     if (!roomId) return;
     const currentUname = (getUserUsername() || 'user').toLowerCase();
@@ -10097,7 +10365,7 @@ function renderAccountTab() {
               </div>
               <div>
                 <div style="font-size:0.85rem; font-weight:800; color:var(--brand-navy-dark);">Tamu (Penonton)</div>
-                <div style="font-size:0.72rem; color:var(--text-muted);">Akses Sementara · Hanya Penonton</div>
+                <div style="font-size:0.72rem; color:var(--text-muted);">Akses History &amp; Tonton Live</div>
               </div>
             </div>
             <span class="auth-role-tag" style="font-size:0.65rem; padding:3px 9px; background:var(--brand-orange); color:#FFF; font-weight:800; border-radius:999px;">GUEST</span>
@@ -10105,21 +10373,25 @@ function renderAccountTab() {
 
           <!-- Informasi Akses Tamu -->
           <div style="background:#FFFDF7; border:1px solid #FDE68A; border-radius:var(--radius-sm); padding:10px 12px; font-size:0.73rem; color:#92400E; line-height:1.5;">
-            <div>• <strong>Mode Penonton:</strong> Anda hanya dapat memantau siaran langsung pertandingan.</div>
-            <div>• <strong>Tanpa Data Selesai:</strong> Data skor dan rekapan pertandingan yang telah selesai tidak dapat diakses.</div>
-            <div>• <strong>Sesi Sementara:</strong> Jika Anda me-refresh atau keluar dari app/web, Anda akan kembali ke tampilan login.</div>
+            <div>• <strong>Mode Tamu:</strong> Anda dapat melihat <strong>History</strong> pertandingan dan menonton siaran live.</div>
+            <div>• <strong>Fitur Host:</strong> Kelola pemain, lapangan, dan skor hanya tersedia setelah masuk akun Host.</div>
+            <div>• <strong>Sesi Otomatis:</strong> Aplikasi langsung terbuka dalam mode Tamu, tanpa perlu login.</div>
           </div>
 
           <div style="display:flex; flex-direction:column; gap:8px;">
-            <button type="button" class="btn-os-orange" style="width:100%; padding:10px; font-weight:800; font-size:0.8rem;" onclick="openLoginModal(); switchLoginAuthTab('signin');">
-              Masuk ke Akun (Sign In)
-            </button>
+            <!-- Form login langsung di fitur Akun -->
+            <div style="background:#FFFFFF; border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:12px;">
+              <div style="font-size:0.8rem; font-weight:900; color:var(--brand-navy-dark); margin-bottom:8px;">Masuk ke Akun</div>
+              <input type="text" id="guestInlineUsername" class="input-styled-os" placeholder="Username / Email" autocomplete="username" style="margin-bottom:8px;">
+              <input type="password" id="guestInlinePassword" class="input-styled-os" placeholder="Password" autocomplete="current-password" onkeypress="if(event.key==='Enter')submitGuestInlineLogin()" style="margin-bottom:8px;">
+              <div id="guestInlineLoginError" style="display:none; font-size:0.73rem; color:#DC2626; font-weight:700; margin-bottom:8px;"></div>
+              <button type="button" class="btn-os-orange" style="width:100%; padding:10px; font-weight:800; font-size:0.8rem;" onclick="submitGuestInlineLogin()">
+                Masuk
+              </button>
+            </div>
+
             <button type="button" class="btn-os-cyan" style="width:100%; padding:10px; font-weight:800; font-size:0.8rem;" onclick="openLoginModal(); switchLoginAuthTab('signup');">
               Daftar Akun Baru (Sign Up)
-            </button>
-            <button type="button" class="btn-court-action" style="font-size:0.78rem; padding:9px 12px; color:#DC2626; background:#FEF2F2; border-color:#FECACA; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer;" onclick="logoutUser()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-              <span>Keluar dari Mode Tamu</span>
             </button>
           </div>
         </div>
@@ -10317,6 +10589,28 @@ function saveRegularUserAccount() {
 
   showToast('Perubahan nama & password berhasil disimpan ke database!', 'success');
   renderAccountTab();
+}
+
+function submitGuestInlineLogin() {
+  const uInput = document.getElementById('guestInlineUsername');
+  const pInput = document.getElementById('guestInlinePassword');
+  const errEl = document.getElementById('guestInlineLoginError');
+  if (errEl) errEl.style.display = 'none';
+
+  const u = uInput ? uInput.value.trim() : '';
+  const p = pInput ? pInput.value.trim() : '';
+  if (!u || !p) {
+    if (errEl) {
+      errEl.textContent = 'Harap masukkan username/email dan password.';
+      errEl.style.display = 'block';
+    }
+    return;
+  }
+  const ok = loginUser(u, p);
+  if (!ok && errEl) {
+    errEl.textContent = 'Username/email atau password salah.';
+    errEl.style.display = 'block';
+  }
 }
 
 function submitTabAccountLogin() {
@@ -10698,7 +10992,8 @@ function loadFromLocalStorage() {
     if (typeof data.bCurrentRoundIndex === 'number') bCurrentRoundIndex = data.bCurrentRoundIndex;
     if (typeof data.bNumCourts === 'number') bNumCourts = data.bNumCourts;
     if (typeof data.bMinPlays === 'number') bMinPlays = data.bMinPlays;
-    if (typeof data.bCooldownMatches === 'number') bCooldownMatches = data.bCooldownMatches;
+    // Regulasi istirahat/cooldown sudah dihapus: selalu 0 agar pemain bisa langsung main lagi.
+    bCooldownMatches = 0;
     if (Array.isArray(data.bPartnerRequests)) bPartnerRequests = data.bPartnerRequests;
     if (data.bPartnerHistory && typeof data.bPartnerHistory === 'object') bPartnerHistory = data.bPartnerHistory;
     if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object') bOpponentHistory = data.bOpponentHistory;
@@ -10731,6 +11026,11 @@ function loadFromLocalStorage() {
       BadmintonService.syncActivePlayerStatuses(bPlayers, curCourts);
     }
 
+    // Terapkan profil permanen & bersihkan cooldown lama (regulasi istirahat dihapus)
+    applyStoredProfilesToPlayers();
+    clearLegacyCooldowns();
+    refreshPlayerProfileDatalist();
+
     return true;
   } catch (e) {
     console.warn('LocalStorage load failed:', e);
@@ -10738,7 +11038,7 @@ function loadFromLocalStorage() {
   }
 }
 
-function persistAndBroadcast(skipBroadcast = false) {
+async function persistAndBroadcast(skipBroadcast = false) {
   if (userRole === 'host' || isCollabMode) {
     currentRev++;
   }
@@ -10751,13 +11051,18 @@ function persistAndBroadcast(skipBroadcast = false) {
   }
   saveToLocalStorage();
 
-  // Sinkronisasi otomatis ke Database Vercel
-  if (userRole === 'host' || isCollabMode) {
-    VercelDbSync.saveState(currentRoomId, appState);
+  // Sinkronisasi otomatis ke Database Vercel (hanya jika benar-benar di dalam room).
+  // Tunggu hingga tersimpan agar perangkat lain / reload memuat state terbaru.
+  if ((userRole === 'host' || isCollabMode) && currentRoomId) {
+    try {
+      await VercelDbSync.saveState(currentRoomId, appState);
+    } catch(e) {
+      console.warn('Cloud save warning:', e);
+    }
   }
 
   if (!skipBroadcast && isOnlineActive && mqttClient && currentRoomId && (userRole === 'host' || isCollabMode)) {
-    broadcastStateUpdate();
+    broadcastStateUpdate(true);
   }
 }
 
@@ -10768,10 +11073,12 @@ function isEditAllowed() {
   return false;
 }
 
-function checkEditPermission() {
+function checkEditPermission(silent = false) {
   if (isEditAllowed()) return true;
-  showToast('Aksi ini memerlukan login Host (Admin).', 'warning');
-  openLoginModal();
+  if (!silent) {
+    showToast('Aksi ini memerlukan login Host (Admin). Silakan masuk melalui tab Akun.', 'warning');
+    switchTab('tab-akun');
+  }
   return false;
 }
 
@@ -10857,6 +11164,55 @@ function syncRoundResting(round) {
   });
 }
 
+/**
+ * Cek apakah memasukkan `player` ke slot tertentu akan melanggar aturan
+ * ganda campuran (2 putri + 2 putra wajib campuran di kedua tim).
+ * Mengembalikan pesan masalah atau null bila aman.
+ *
+ * `origin` opsional: { court, teamProp, pIdx } posisi asal pemain. Bila diisi,
+ * simulasi dilakukan sebagai pertukaran dua arah (pemain asal pindah ke slot
+ * yang dikosongkan), bukan sekadar menimpa slot.
+ */
+function getMixedRuleIssue(court, teamProp, pIdx, player, origin = null) {
+  if (!court || !teamProp || !player) return null;
+  const simCourt = {
+    teamA: [...(court.teamA || [])],
+    teamB: [...(court.teamB || [])]
+  };
+  if (!simCourt[teamProp]) simCourt[teamProp] = [null, null];
+  const prev = simCourt[teamProp][pIdx] || null;
+  simCourt[teamProp][pIdx] = player;
+
+  if (origin && origin.court) {
+    const oCourt = origin.court;
+    const oTeam = origin.teamProp;
+    const oIdx = origin.pIdx;
+    if (oCourt === court) {
+      // Pertukaran posisi dalam tim yang sama tidak mengubah komposisi gender.
+      if (oTeam === teamProp) {
+        return null;
+      }
+      if (!simCourt[oTeam]) simCourt[oTeam] = [null, null];
+      simCourt[oTeam][oIdx] = prev;
+      const res = checkMixedDoublesComposition(simCourt);
+      return res.valid ? null : res.message;
+    }
+    // Pertukaran antar lapangan: validasi kedua lapangan.
+    const simOther = {
+      teamA: [...(oCourt.teamA || [])],
+      teamB: [...(oCourt.teamB || [])]
+    };
+    if (!simOther[oTeam]) simOther[oTeam] = [null, null];
+    simOther[oTeam][oIdx] = prev;
+    const resCurrent = checkMixedDoublesComposition(simCourt);
+    const resOther = checkMixedDoublesComposition(simOther);
+    return !resCurrent.valid ? resCurrent.message : (!resOther.valid ? resOther.message : null);
+  }
+
+  const res = checkMixedDoublesComposition(simCourt);
+  return res.valid ? null : res.message;
+}
+
 function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
   if (!checkEditPermission()) return;
   const round = (bSchedule && bSchedule[rIdx]) ? bSchedule[rIdx] : ensureBadmintonCourtsInitialized();
@@ -10872,6 +11228,10 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
   }
 
   const teamProp = (teamKey === 'teamA' || teamKey === 'teamB') ? teamKey : (teamKey === 'A' ? 'teamA' : 'teamB');
+  if (!Number.isInteger(pIdx) || pIdx < 0 || pIdx > 1) {
+    showToast('Posisi pemain tidak valid.', 'warning');
+    return;
+  }
   swapContext = { rIdx, cIdx, teamKey: teamProp, pIdx, pId, mode: 'fromCourt' };
 
   const sourcePlayer = currentCourt[teamProp] ? currentCourt[teamProp][pIdx] : null;
@@ -10909,8 +11269,9 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
     const isResting = p.status === BadmintonService.PLAYER_STATUS.ISTIRAHAT || (typeof p.cooldown_remaining === 'number' && p.cooldown_remaining > 0);
     candidates.push({
       player: p,
-      location: isResting ? `Istirahat (Cooldown ${p.cooldown_remaining || 1} match)` : 'Antrian Menunggu (Siap Main)',
-      targetType: 'pool'
+      location: isResting ? 'Bangku Cadangan / Istirahat' : 'Antrian Menunggu (Siap Main)',
+      targetType: 'pool',
+      genderIssue: getMixedRuleIssue(currentCourt, teamProp, pIdx, p)
     });
   });
 
@@ -10929,7 +11290,8 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
             targetType: 'court',
             otherCIdx: cIdx,
             otherTeamKey: otherTeamProp,
-            otherPIdx
+            otherPIdx,
+            genderIssue: getMixedRuleIssue(currentCourt, teamProp, pIdx, otherP, { court: currentCourt, teamProp: otherTeamProp, pIdx: otherPIdx })
           });
         }
       });
@@ -10947,21 +11309,28 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
       ['teamA', 'teamB'].forEach(otherTeamProp => {
         (otherC[otherTeamProp] || []).forEach((otherP, otherPIdx) => {
           if (!otherP || otherP.is_deleted || otherP.status === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) return;
+          const crossIssue = getMixedRuleIssue(currentCourt, teamProp, pIdx, otherP, { court: otherC, teamProp: otherTeamProp, pIdx: otherPIdx });
           candidates.push({
             player: otherP,
             location: `${otherC.courtName || ('Lapangan ' + (otherCIdx + 1))} • ${otherTeamProp === 'teamA' ? 'Tim A' : 'Tim B'}`,
             targetType: 'court',
             otherCIdx,
             otherTeamKey: otherTeamProp,
-            otherPIdx
+            otherPIdx,
+            genderIssue: crossIssue
           });
         });
       });
     });
   }
 
-  // Urutkan candidates: prioritas yang main paling sedikit dulu
-  candidates.sort((a, b) => ((a.player && a.player.jumlah_main) || 0) - ((b.player && b.player.jumlah_main) || 0));
+  // Urutkan candidates: yang aman & main paling sedikit dulu
+  candidates.sort((a, b) => {
+    const issueA = a.genderIssue ? 1 : 0;
+    const issueB = b.genderIssue ? 1 : 0;
+    if (issueA !== issueB) return issueA - issueB;
+    return ((a.player && a.player.jumlah_main) || 0) - ((b.player && b.player.jumlah_main) || 0);
+  });
 
   let autoSwapBannerHtml = '';
   const bestCand = BadmintonService.findBestCourtReplacementPlayer({
@@ -10996,18 +11365,22 @@ function openSwapModal(rIdx, cIdx, teamKey, pIdx, pId) {
   if (candidates.length === 0) {
     listEl.innerHTML = autoSwapBannerHtml + `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain lain yang tersedia untuk ditukar secara manual.</div>`;
   } else {
-    listEl.innerHTML = autoSwapBannerHtml + candidates.map((cand, idx) => `
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwap(${idx})">
-        <div style="display:flex; align-items:center; gap:8px;">
+    listEl.innerHTML = autoSwapBannerHtml + candidates.map((cand, idx) => {
+      const issue = cand.genderIssue;
+      return `
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:${issue ? '#FFF7F7' : '#F8FAFC'}; border:1px solid ${issue ? '#FECACA' : 'var(--border-color)'}; border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s; margin-bottom:6px; opacity:${issue ? '0.85' : '1'};" onmouseover="this.style.background='${issue ? '#FEF2F2' : '#F1F5F9'}'" onmouseout="this.style.background='${issue ? '#FFF7F7' : '#F8FAFC'}'" onclick="executeSwap(${idx})">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
-          <div>
+          <div style="min-width:0;">
             <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)} <span style="font-size:0.75rem; color:var(--brand-orange); font-weight:800;">(Main: ${cand.player.jumlah_main || 0}x)</span></div>
             <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
+            ${issue ? `<div style="font-size:0.68rem; color:#B91C1C; font-weight:700; margin-top:3px;">⚠ ${escapeHtml(issue)}</div>` : ''}
           </div>
         </div>
-        <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Pilih</button>
+        <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:${issue ? '#94A3B8' : 'var(--brand-orange)'}; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap;">Pilih</button>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   window._swapCandidates = candidates;
@@ -11047,7 +11420,8 @@ function openSwapFromResting(rIdx, restingPlayerId) {
               cIdx,
               teamKey: teamProp,
               pIdx,
-              targetType: 'courtSlot'
+              targetType: 'courtSlot',
+              genderIssue: getMixedRuleIssue(c, teamProp, pIdx, restingPlayer)
             });
           }
         });
@@ -11055,21 +11429,25 @@ function openSwapFromResting(rIdx, restingPlayerId) {
     });
   });
 
+  // Tampilkan kandidat yang aman lebih dulu
+  candidates.sort((a, b) => (a.genderIssue ? 1 : 0) - (b.genderIssue ? 1 : 0));
+
   if (candidates.length === 0) {
     listEl.innerHTML = `<div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">Tidak ada pemain yang sedang di lapangan untuk diganti.</div>`;
   } else {
     listEl.innerHTML = `
       <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px; font-weight:700;">Pilih pemain di lapangan yang ingin digantikan oleh ${escapeHtml(restingPlayer.name)}:</div>
     ` + candidates.map((cand, idx) => `
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s; margin-bottom:6px;" onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='#F8FAFC'" onclick="executeSwapFromResting(${idx})">
-        <div style="display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:9px 12px; background:${cand.genderIssue ? '#FFF7F7' : '#F8FAFC'}; border:1px solid ${cand.genderIssue ? '#FECACA' : 'var(--border-color)'}; border-radius:var(--radius-md); cursor:pointer; transition:all 0.2s; margin-bottom:6px; opacity:${cand.genderIssue ? '0.85' : '1'};" onmouseover="this.style.background='${cand.genderIssue ? '#FEF2F2' : '#F1F5F9'}'" onmouseout="this.style.background='${cand.genderIssue ? '#FFF7F7' : '#F8FAFC'}'" onclick="executeSwapFromResting(${idx})">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
           <span class="gender-badge ${cand.player.gender === 'L' ? 'male' : 'female'}" style="font-size:0.68rem; padding:2px 6px;">${cand.player.gender === 'L' ? 'Putra' : 'Putri'}</span>
-          <div>
+          <div style="min-width:0;">
             <div style="font-weight:800; font-size:0.88rem; color:var(--brand-navy-dark);">${escapeHtml(cand.player.name)}</div>
             <div style="font-size:0.72rem; color:var(--text-muted);">${escapeHtml(cand.location)} • <span class="role-pill ${(cand.player.role || 'Pemula').toLowerCase()}">${escapeHtml(cand.player.role)}</span></div>
+            ${cand.genderIssue ? `<div style="font-size:0.68rem; color:#B91C1C; font-weight:700; margin-top:3px;">⚠ ${escapeHtml(cand.genderIssue)}</div>` : ''}
           </div>
         </div>
-        <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:var(--brand-orange); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800;">Gantikan</button>
+        <button class="btn-court-action" style="font-size:0.75rem; padding:5px 12px; background:${cand.genderIssue ? '#94A3B8' : 'var(--brand-orange)'}; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:800; white-space:nowrap;">Gantikan</button>
       </div>
     `).join('');
   }
@@ -11077,6 +11455,62 @@ function openSwapFromResting(rIdx, restingPlayerId) {
   window._restingSwapCandidates = { restingPlayer, candidates };
   const modal = document.getElementById('swapModalOverlay');
   if (modal) modal.classList.add('open');
+}
+
+function getTeamGenderCount(team) {
+  const list = (team || []).filter(Boolean);
+  return {
+    total: list.length,
+    females: list.filter(p => p && p.gender === 'P').length
+  };
+}
+
+/** True bila lapangan berisi tepat 2 putri + 2 putra yang terbagi 1P+1L vs 1P+1L. */
+function isMixedDoublesCourt(court) {
+  if (!court) return false;
+  const a = getTeamGenderCount(court.teamA);
+  const b = getTeamGenderCount(court.teamB);
+  return a.total === 2 && b.total === 2 && a.females === 1 && b.females === 1;
+}
+
+/**
+ * Validasi aturan ganda campuran.
+ * Inti aturan: dua pemain putri TIDAK BOLEH berada dalam satu tim selama
+ * tim lawan memiliki pemain putra. Artinya, bila satu tim berisi 2 putri,
+ * keempat pemain lapangan harus putri semua (match khusus putri).
+ */
+function checkMixedDoublesComposition(court) {
+  if (!court) return { valid: true };
+  const a = getTeamGenderCount(court.teamA);
+  const b = getTeamGenderCount(court.teamB);
+  // Hanya validasi bila kedua tim sudah lengkap 2 pemain.
+  if (a.total !== 2 || b.total !== 2) return { valid: true };
+  const totalFemales = a.females + b.females;
+
+  // Semua putra atau semua putri: aman.
+  if (totalFemales === 0 || totalFemales === 4) return { valid: true };
+
+  // Ada tim berisi 2 putri sementara masih ada pemain putra di lapangan.
+  if (a.females === 2 || b.females === 2) {
+    return {
+      valid: false,
+      message: 'Aturan ganda campuran: 2 pemain putri tidak boleh satu tim selama lawan memiliki pemain putra. Wajib Putri+Putra vs Putri+Putra.'
+    };
+  }
+
+  return { valid: true };
+}
+
+function clearLegacyCooldowns() {
+  if (!Array.isArray(bPlayers)) return;
+  bPlayers.forEach(p => {
+    if (!p) return;
+    p.cooldown_remaining = 0;
+    if (p.status === BadmintonService.PLAYER_STATUS.ISTIRAHAT) {
+      p.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
+      p.waitingSince = p.waitingSince || Date.now();
+    }
+  });
 }
 
 function executeSwapFromResting(candidateIdx) {
@@ -11088,10 +11522,21 @@ function executeSwapFromResting(candidateIdx) {
   if (!round || !round.courts || !round.courts[target.cIdx]) return;
 
   const targetCourt = round.courts[target.cIdx];
-  const playerInCourt = targetCourt[target.teamKey][target.pIdx];
+  if (targetCourt.status === 'finished' || targetCourt.status === BadmintonService.COURT_STATUS.FINISHED) {
+    showToast('Pertandingan lapangan tujuan sudah selesai.', 'warning');
+    return;
+  }
+  const playerInCourt = targetCourt[target.teamKey] ? targetCourt[target.teamKey][target.pIdx] : null;
 
-  // Masukkan resting player ke slot lapangan
+  // Simulasi komposisi: tolak bila melanggar aturan ganda campuran
+  const prevSlot = playerInCourt || null;
   targetCourt[target.teamKey][target.pIdx] = restingPlayer;
+  const composition = checkMixedDoublesComposition(targetCourt);
+  if (!composition.valid) {
+    targetCourt[target.teamKey][target.pIdx] = prevSlot;
+    showToast(composition.message, 'error');
+    return;
+  }
 
   // Pemain lama yang keluar kembali ke antrian menunggu
   if (playerInCourt) {
@@ -11102,13 +11547,16 @@ function executeSwapFromResting(candidateIdx) {
     BadmintonService.cancelRequestsForPlayer(realPlayerInCourt.id, bPlayers, bPartnerRequests);
   }
 
-  // Update status pemain baru jika court sedang_main
+  // Update status pemain baru (reset cooldown agar tidak kembali istirahat)
   const realRestingPlayer = bPlayers.find(p => String(p.id) === String(restingPlayer.id)) || restingPlayer;
+  realRestingPlayer.cooldown_remaining = 0;
+  realRestingPlayer.waitingSince = Date.now();
   if (targetCourt.status === BadmintonService.COURT_STATUS.SEDANG_MAIN || targetCourt.status === 'ongoing') {
     realRestingPlayer.status = BadmintonService.PLAYER_STATUS.DI_LAPANGAN;
   } else {
     realRestingPlayer.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
   }
+  BadmintonService.cancelRequestsForPlayer(realRestingPlayer.id, bPlayers, bPartnerRequests);
 
   updateCourtMetadataAfterPlayerChange(targetCourt);
   BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
@@ -11137,22 +11585,55 @@ function executeSwap(candidateIdx) {
   if (!round || !round.courts || !round.courts[cIdx]) return;
 
   const currentCourt = round.courts[cIdx];
+  if (currentCourt.status === 'finished' || currentCourt.status === BadmintonService.COURT_STATUS.FINISHED) {
+    showToast('Pertandingan sudah selesai, pemain tidak dapat diganti.', 'warning');
+    return;
+  }
   const teamProp = (teamKey === 'teamA' || teamKey === 'teamB') ? teamKey : (teamKey === 'A' ? 'teamA' : 'teamB');
-  const sourcePlayer = currentCourt[teamProp][pIdx];
+  if (!currentCourt[teamProp]) currentCourt[teamProp] = [null, null];
+  if (!Number.isInteger(pIdx) || pIdx < 0 || pIdx > 1) {
+    showToast('Posisi pemain tidak valid.', 'warning');
+    return;
+  }
+  const sourcePlayer = currentCourt[teamProp][pIdx] || null;
+  const incomingPlayer = cand.player || null;
 
+  // Tolak pertukaran yang melanggar aturan ganda campuran
   if (cand.targetType === 'court') {
     const otherCourt = round.courts[cand.otherCIdx];
-    if (otherCourt && otherCourt[cand.otherTeamKey]) {
-      otherCourt[cand.otherTeamKey][cand.otherPIdx] = sourcePlayer;
-      currentCourt[teamProp][pIdx] = cand.player;
-      updateCourtMetadataAfterPlayerChange(otherCourt);
+    if (!otherCourt || !otherCourt[cand.otherTeamKey]) return;
+    if (otherCourt.status === 'finished' || otherCourt.status === BadmintonService.COURT_STATUS.FINISHED) {
+      showToast('Lapangan asal pemain sudah selesai, pemain tidak dapat dipindahkan.', 'warning');
+      return;
     }
+    if (!otherCourt[cand.otherTeamKey]) otherCourt[cand.otherTeamKey] = [null, null];
+
+    const prevCurrent = currentCourt[teamProp][pIdx] || null;
+    const prevOther = otherCourt[cand.otherTeamKey][cand.otherPIdx] || null;
+    currentCourt[teamProp][pIdx] = incomingPlayer;
+    otherCourt[cand.otherTeamKey][cand.otherPIdx] = sourcePlayer;
+
+    const checkCurrent = checkMixedDoublesComposition(currentCourt);
+    const checkOther = checkMixedDoublesComposition(otherCourt);
+    if (!checkCurrent.valid || !checkOther.valid) {
+      currentCourt[teamProp][pIdx] = prevCurrent;
+      otherCourt[cand.otherTeamKey][cand.otherPIdx] = prevOther;
+      showToast((!checkCurrent.valid ? checkCurrent.message : checkOther.message), 'error');
+      return;
+    }
+    updateCourtMetadataAfterPlayerChange(otherCourt);
   } else {
-    // cand dari pool / bench
-    currentCourt[teamProp][pIdx] = cand.player;
+    const prevCurrent = currentCourt[teamProp][pIdx] || null;
+    currentCourt[teamProp][pIdx] = incomingPlayer;
+    const checkCurrent = checkMixedDoublesComposition(currentCourt);
+    if (!checkCurrent.valid) {
+      currentCourt[teamProp][pIdx] = prevCurrent;
+      showToast(checkCurrent.message, 'error');
+      return;
+    }
   }
 
-  // Update status pemain lama yang keluar: status kembali ke MENUNGGU tanpa cooldown
+  // Update status pemain lama yang keluar: kembali ke MENUNGGU tanpa cooldown
   if (sourcePlayer) {
     const realSourcePlayer = bPlayers.find(p => String(p.id) === String(sourcePlayer.id)) || sourcePlayer;
     realSourcePlayer.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
@@ -11161,14 +11642,17 @@ function executeSwap(candidateIdx) {
     BadmintonService.cancelRequestsForPlayer(realSourcePlayer.id, bPlayers, bPartnerRequests);
   }
 
-  // Update status pemain baru jika court sudah sedang_main / ongoing
-  if (cand.player) {
-    const realNewPlayer = bPlayers.find(p => String(p.id) === String(cand.player.id)) || cand.player;
+  // Update status pemain baru (reset cooldown agar tidak kembali istirahat)
+  if (incomingPlayer) {
+    const realNewPlayer = bPlayers.find(p => String(p.id) === String(incomingPlayer.id)) || incomingPlayer;
+    realNewPlayer.cooldown_remaining = 0;
+    realNewPlayer.waitingSince = Date.now();
     if (currentCourt.status === BadmintonService.COURT_STATUS.SEDANG_MAIN || currentCourt.status === 'ongoing') {
       realNewPlayer.status = BadmintonService.PLAYER_STATUS.DI_LAPANGAN;
     } else {
       realNewPlayer.status = BadmintonService.PLAYER_STATUS.MENUNGGU;
     }
+    BadmintonService.cancelRequestsForPlayer(realNewPlayer.id, bPlayers, bPartnerRequests);
   }
 
   updateCourtMetadataAfterPlayerChange(currentCourt);
@@ -11178,7 +11662,7 @@ function executeSwap(candidateIdx) {
   BadmintonService.logHostAction(bAuditLog, 'PLAYER_SWAPPED', {
     courtNumber: cIdx + 1,
     oldPlayer: sourcePlayer ? sourcePlayer.name : '(Slot Kosong)',
-    newPlayer: cand.player ? cand.player.name : '(Kosong)'
+    newPlayer: incomingPlayer ? incomingPlayer.name : '(Kosong)'
   });
 
   closeSwapModal();
@@ -11371,6 +11855,8 @@ async function toggleCollabSetting(enabled) {
 function startHostRoom() {
   if (!isHostUser()) {
     showToast('Hanya akun Host yang dapat membuat room siaran baru. Silakan login sebagai Host.', 'error');
+    closeOnlineModal();
+    switchTab('tab-akun');
     openLoginModal();
     return;
   }
@@ -11422,6 +11908,9 @@ function joinRoomAsSpectator(roomId) {
 function joinRoomAsHost(roomId) {
   if (!isHostUser()) {
     showToast('Hanya akun Admin / Host yang dapat masuk dengan kontrol Host.', 'error');
+    closeJoinChoiceModal();
+    closeOnlineModal();
+    switchTab('tab-akun');
     openLoginModal();
     return;
   }
@@ -11474,6 +11963,9 @@ function executeSelectedJoinChoice() {
   if (selectedJoinChoiceRole === 'host') {
     if (!isHostUser()) {
       showToast('Silakan login akun Admin/Host untuk akses kontrol pertandingan.', 'info');
+      closeJoinChoiceModal();
+      closeOnlineModal();
+      switchTab('tab-akun');
       openLoginModal();
       return;
     }
@@ -11492,6 +11984,7 @@ function closeJoinChoiceModal() {
 // ── ROLE & UI ACCESS MANAGEMENT (LOGIN AUTHENTICATION) ──
 function applyRoleUI() {
   const isHost = isHostUser();
+  const isGuest = isGuestUser();
   userRole = isHost ? 'host' : 'spectator';
   const inRoom = !!(isOnlineActive && currentRoomId);
 
@@ -11518,6 +12011,12 @@ function applyRoleUI() {
     }
   }
 
+  // 3b. Guest mode banner
+  const guestBanner = document.getElementById('guestModeBanner');
+  if (guestBanner) {
+    guestBanner.style.display = isGuest ? 'flex' : 'none';
+  }
+
   // 4. Sub-header Bar (Picker Lapangan & Jumlah Pemain)
   const appSubbar = document.querySelector('.app-subbar');
   if (appSubbar) {
@@ -11525,13 +12024,26 @@ function applyRoleUI() {
   }
 
   // 5. Bottom Navigation Tabs:
-  // Non-host: Lapangan, Skor, History, Selesai (tab pemain hanya untuk Host)
-  // Host: Semua tab terbuka (Pemain, Lapangan, Skor, Siaran, History, Selesai)
+  // Tamu (Guest): History + Hasil Akhir (podium juara) + Akun
+  // (plus Lapangan read-only bila ikut room live)
+  // Host: semua tab terbuka
   const navPemain = document.getElementById('nav-tab-pemain');
   if (navPemain) navPemain.style.display = isHost ? 'flex' : 'none';
 
+  const navMatch = document.getElementById('nav-tab-match');
+  if (navMatch) navMatch.style.display = (isGuest && !inRoom) ? 'none' : 'flex';
+
+  const navScores = document.getElementById('nav-tab-skor');
+  if (navScores) navScores.style.display = isGuest ? 'none' : 'flex';
+
   const navOnline = document.getElementById('nav-tab-online');
-  if (navOnline) navOnline.style.display = 'flex';
+  if (navOnline) navOnline.style.display = isGuest ? 'none' : 'flex';
+
+  const navHistory = document.getElementById('nav-tab-history');
+  if (navHistory) navHistory.style.display = 'flex';
+
+  const navSelesai = document.getElementById('nav-tab-selesai');
+  if (navSelesai) navSelesai.style.display = 'flex';
 
   const navAkun = document.getElementById('nav-tab-akun');
   if (navAkun) navAkun.style.display = 'flex';
@@ -11574,9 +12086,19 @@ function applyRoleUI() {
     if (btnSubJoin) btnSubJoin.classList.add('active');
   }
 
-  // Sinkronkan tab aktif jika non-host berada di tab pemain
+  // Sinkronkan tab aktif jika tab tidak tersedia untuk peran saat ini
   const activeTab = document.querySelector('.app-tab-pane.active')?.id;
-  if (!isHost && activeTab === 'tab-pemain') {
+  if (isGuest) {
+    if (!['tab-history', 'tab-selesai', 'tab-akun'].includes(activeTab) && !(activeTab === 'tab-match' && inRoom)) {
+      switchTab('tab-history');
+    } else if (activeTab === 'tab-history') {
+      renderHistory();
+    } else if (activeTab === 'tab-selesai') {
+      renderFinalPodium();
+    } else if (activeTab === 'tab-akun') {
+      renderAccountTab();
+    }
+  } else if (!isHost && activeTab === 'tab-pemain') {
     switchTab('tab-match');
   } else if (activeTab === 'tab-match') {
     renderCourtsView();
@@ -11662,6 +12184,13 @@ function handleLoginOverlayClick(e) {
 }
 
 function openLoginModal(isInitial = false) {
+  // Login UI hanya berada di fitur Akun. Bila dipanggil dari luar tab Akun,
+  // arahkan pengguna ke tab Akun terlebih dahulu.
+  const accountTabActive = document.getElementById('tab-akun')?.classList.contains('active');
+  if (!isInitial && !accountTabActive) {
+    switchTab('tab-akun');
+  }
+
   const modal = document.getElementById('loginModalOverlay');
   const closeBtn = document.getElementById('btnLoginModalCloseBtn');
   const inputEmail = document.getElementById('loginInputEmail');
@@ -11687,15 +12216,15 @@ function openLoginModal(isInitial = false) {
   }
 }
 
-function closeLoginModal() {
+function closeLoginModal(force = false) {
   const modal = document.getElementById('loginModalOverlay');
   const errEl = document.getElementById('loginErrorMessage');
   const signErrEl = document.getElementById('signUpErrorMessage');
   if (errEl) errEl.style.display = 'none';
   if (signErrEl) signErrEl.style.display = 'none';
 
-  if (!currentUser && !isGuestSession) {
-    loginAsGuest();
+  if (!force && !currentUser && !isGuestSession) {
+    loginAsGuest(true);
     return;
   }
 
@@ -11817,7 +12346,7 @@ function submitSignUpForm() {
   showToast(`Pendaftaran berhasil! Selamat datang, ${currentUser.name}.`, 'success');
 }
 
-function loginAsGuest() {
+function loginAsGuest(silent = false) {
   isGuestSession = true;
   currentUser = {
     role: 'guest',
@@ -11828,12 +12357,12 @@ function loginAsGuest() {
   localStorage.removeItem('onesport_auth_user');
   localStorage.removeItem('onesport_user_role');
   localStorage.setItem('onesport_guest_session', 'true');
-  closeLoginModal();
+  closeLoginModal(true);
   applyRoleUI();
   if (document.getElementById('tab-akun')?.classList.contains('active')) {
     renderAccountTab();
   }
-  showToast('Masuk sebagai Tamu. Mode penonton aktif.', 'info');
+  if (!silent) showToast('Masuk sebagai Tamu. Mode penonton aktif.', 'info');
 }
 
 function loginUser(email, password) {
@@ -12006,12 +12535,10 @@ function logoutUser() {
     localStorage.removeItem('onesport_auth_user');
     localStorage.removeItem('onesport_guest_session');
     localStorage.setItem('onesport_user_role', 'spectator');
-    applyRoleUI();
-    if (document.getElementById('tab-akun')?.classList.contains('active')) {
-      renderAccountTab();
-    }
-    showToast('Anda telah keluar.', 'info');
-    openLoginModal(true);
+    // Setelah logout kembali ke mode Tamu, bukan memaksa modal login.
+    loginAsGuest(true);
+    showToast('Anda telah keluar. Mode Tamu aktif.', 'info');
+    switchTab('tab-akun');
   }
 }
 
@@ -12027,14 +12554,34 @@ function handleRoleSwitchClick() {
 }
 
 // ── CONNECT TO ISOLATED ONLINE ROOM ──
-function connectOnlineRoom(roomId, role = null, pin = '', isReconnecting = false, isCreator = false) {
-  const cleanRoomId = roomId.trim().toUpperCase();
+async function connectOnlineRoom(roomId, role = null, pin = '', isReconnecting = false, isCreator = false) {
+  const cleanRoomId = String(roomId || '').trim().toUpperCase();
+  if (!cleanRoomId) {
+    showToast('Kode room tidak valid.', 'error');
+    return;
+  }
+
+  const previousRoomId = currentRoomId;
+  const isRoomChanged = previousRoomId !== cleanRoomId;
+
   currentRoomId = cleanRoomId;
   hostPin = SHARED_HOST_SECRET;
   if (!isReconnecting || !roomStartTime) {
     roomStartTime = Date.now();
   }
   isOnlineActive = true;
+
+  // Reset state sinkronisasi per-room agar replay/seq dari room lama tidak
+  // menyebabkan state baru ditolak sebagai "usang" atau "replay".
+  if (isRoomChanged) {
+    roomLastSeenSeq = 0;
+    trustedHostPubHex = null;
+    currentRev = 0;
+    hostSeq = 0;
+  }
+  // hostSeq harus selalu monoton dan lebih besar dari nilai terakhir yang dipakai
+  hostSeq = Math.max(hostSeq || 0, Date.now() * 1000);
+  roomLastSeenSeq = Math.max(0, Number(roomLastSeenSeq) || 0);
 
   // Peran Host murni berbasis akun: cukup login akun Admin atau Host
   const resolvedRole = role || (isHostUser() ? 'host' : 'spectator');
@@ -12043,7 +12590,7 @@ function connectOnlineRoom(roomId, role = null, pin = '', isReconnecting = false
   pendingHostCandidatePin = null;
 
   if (userRole === 'host') {
-    initHostAuthKeys(SHARED_HOST_SECRET, cleanRoomId);
+    await initHostAuthKeys(SHARED_HOST_SECRET, cleanRoomId);
   }
 
   saveActiveLiveSession();
@@ -12057,12 +12604,18 @@ function connectOnlineRoom(roomId, role = null, pin = '', isReconnecting = false
     } catch(e){}
   }
 
-  // Sinkronisasi data dari Database Cloud Vercel untuk room ini
+  // Sinkronisasi data dari Database Cloud Vercel untuk room ini.
+  // Tunggu sampai state cloud selesai dimuat/diunggah sebelum broadcast MQTT,
+  // agar host baru tidak menimpa room dengan state lokal kosong.
   if (typeof VercelDbSync !== 'undefined') {
-    if (isCreator) {
-      VercelDbSync.saveState(cleanRoomId, getCurrentAppState());
-    } else {
-      VercelDbSync.loadInitialState(cleanRoomId);
+    try {
+      if (isCreator) {
+        await VercelDbSync.saveState(cleanRoomId, getCurrentAppState());
+      } else {
+        await VercelDbSync.loadInitialState(cleanRoomId);
+      }
+    } catch (e) {
+      console.warn('Room cloud sync warning:', e);
     }
   }
 
@@ -12165,10 +12718,23 @@ function onMqttConnected() {
   updateLiveRoomsDirectoryUI();
 }
 
-async function broadcastStateUpdate() {
+async function broadcastStateUpdate(fromPersist = false) {
   if (!isOnlineActive || !mqttClient || !currentRoomId) return;
   const stateTopic = `onesport/v3/room/${currentRoomId}/state`;
   const roomTopic = `onesport/v3/room/${currentRoomId}`;
+
+  // Saat dipanggil langsung (mis. REQUEST_STATE), naikkan revisi dan simpan
+  // ke cloud dulu agar penonton yang me-refresh memuat state terbaru.
+  if (!fromPersist && userRole === 'host') {
+    currentRev++;
+    if (typeof VercelDbSync !== 'undefined') {
+      try {
+        await VercelDbSync.saveState(currentRoomId, getCurrentAppState());
+      } catch (e) {
+        console.warn('Cloud state save before broadcast failed:', e);
+      }
+    }
+  }
 
   const rawPayload = {
     version: 3,
@@ -12213,6 +12779,10 @@ async function handleIncomingMessage(topic, rawText) {
           delete activeLiveRooms[deletedRoomId];
           updateLiveRoomsDirectoryUI();
         }
+      } else if (currentRoomId && topic === `onesport/v3/room/${currentRoomId}/state` && userRole !== 'host') {
+        // Retained state dibersihkan oleh Host => siaran berakhir.
+        showLiveEndedNoticeModal(currentRoomId, null);
+        leaveOnlineRoom(false);
       }
       return;
     }
@@ -12348,6 +12918,9 @@ async function handleIncomingMessage(topic, rawText) {
           return;
         }
         roomLastSeenSeq = msg.seq;
+        // Pastikan seq broadcast kita berikutnya selalu lebih besar dari
+        // seq terakhir yang pernah dilihat di room ini (multi-device host).
+        hostSeq = Math.max(hostSeq || 0, msg.seq);
         if (verifyRes.newHostPub && !trustedHostPubHex) {
           trustedHostPubHex = verifyRes.newHostPub;
         }
@@ -12380,11 +12953,6 @@ async function handleIncomingMessage(topic, rawText) {
     }
 
     if (msg.type === 'ROOM_FINALIZED') {
-      if (isGuestUser()) {
-        showToast('Pertandingan siaran langsung telah selesai.', 'info');
-        showLiveEndedNoticeModal(msg.roomId, null);
-        return;
-      }
       if (msg.summary) {
         const currentUname = (getUserUsername() || 'user').toLowerCase();
         const viewerRecord = {
@@ -12428,7 +12996,6 @@ function applyReceivedState(incomingData) {
     }
     currentRev = Math.max(currentRev, data.rev);
   }
-
   if (data.currentSport) {
     if (data.currentSport !== currentSport) {
       switchSport(data.currentSport);
@@ -12443,7 +13010,8 @@ function applyReceivedState(incomingData) {
   if (typeof data.bCurrentRoundIndex === 'number') bCurrentRoundIndex = data.bCurrentRoundIndex;
   if (typeof data.bNumCourts === 'number') bNumCourts = data.bNumCourts;
   if (typeof data.bMinPlays === 'number') bMinPlays = data.bMinPlays;
-  if (typeof data.bCooldownMatches === 'number') bCooldownMatches = data.bCooldownMatches;
+  // Regulasi istirahat/cooldown dihapus: abaikan nilai lama dari state tersimpan.
+  bCooldownMatches = 0;
   if (Array.isArray(data.bPartnerRequests)) bPartnerRequests = data.bPartnerRequests;
   if (data.bPartnerHistory && typeof data.bPartnerHistory === 'object') bPartnerHistory = data.bPartnerHistory;
   if (data.bOpponentHistory && typeof data.bOpponentHistory === 'object') bOpponentHistory = data.bOpponentHistory;
@@ -12457,6 +13025,12 @@ function applyReceivedState(incomingData) {
     const curCourts = (bSchedule[bCurrentRoundIndex] && bSchedule[bCurrentRoundIndex].courts) || [];
     BadmintonService.syncActivePlayerStatuses(bPlayers, curCourts);
   }
+  // Profil pemain tersimpan (role/gender terkunci) diterapkan juga pada state dari room.
+  // Hanya Host yang menerapkan profil lokal agar data siaran tidak diubah penonton.
+  if (userRole === 'host') {
+    applyStoredProfilesToPlayers();
+  }
+  clearLegacyCooldowns();
   if (Array.isArray(data.sPlayers)) sPlayers = data.sPlayers;
   if (typeof data.sTeamCount === 'number') sTeamCount = data.sTeamCount;
   if (Array.isArray(data.sTeams)) sTeams = data.sTeams;
@@ -13130,27 +13704,34 @@ function showLiveEndedNoticeModal(roomId, summary) {
 
   if (codeEl) codeEl.textContent = roomId;
   if (box) {
-    if (isGuestUser()) {
+    if (summary) {
+      let podiumHtml = (summary.podium || []).map(p => `
+        <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:3px;">
+          <span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(p.label)}: <strong>${escapeHtml(p.name)}</strong></span>
+          <span style="color:var(--brand-orange); font-weight:700; flex-shrink:0;">${escapeHtml(p.score || '')}</span>
+        </div>
+      `).join('');
+      if (isGuestUser()) {
+        podiumHtml = `
+          <div style="font-size:0.68rem; font-weight:800; color:#92400E; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:5px;">🏆 Juara Sesi Ini</div>
+          ${podiumHtml || '<div style="color:var(--text-muted);">Pertandingan selesai dengan sukses.</div>'}
+          <div style="margin-top:6px; font-size:0.66rem; color:var(--text-muted);">Rekap lengkap otomatis tersimpan di History perangkat ini.</div>
+        `;
+      }
+      box.innerHTML = podiumHtml || 'Pertandingan selesai dengan sukses.';
+    } else if (isGuestUser()) {
       box.innerHTML = `
-        <div style="text-align:center; padding:8px 4px;">
+        <div style="text-align:center; padding:6px 4px;">
           <div style="font-weight:800; font-size:0.86rem; color:var(--brand-navy-dark); margin-bottom:4px;">Pertandingan Siaran Selesai</div>
-          <div style="font-size:0.75rem; color:var(--text-muted); line-height:1.45;">
-            Data rekapan dan skor akhir pertandingan yang telah selesai tidak tersedia untuk akun Tamu (Guest). Silakan Sign In atau Sign Up untuk melihat rekapan riwayat pertandingan.
+          <div style="font-size:0.74rem; color:var(--text-muted); line-height:1.45;">
+            Rekap juara sesi ini dapat dilihat di tab <strong>Hasil Akhir</strong> dan <strong>History</strong>.
           </div>
         </div>
       `;
-    } else if (summary) {
-      let podiumHtml = (summary.podium || []).map(p => `
-        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-          <span>${escapeHtml(p.label)}: <strong>${escapeHtml(p.name)}</strong></span>
-          <span style="color:var(--brand-orange); font-weight:700;">${escapeHtml(p.score || '')}</span>
-        </div>
-      `).join('');
-      box.innerHTML = podiumHtml || 'Pertandingan selesai dengan sukses.';
     }
   }
 
-  window._endedNoticeHistoryId = (!isGuestUser() && summary) ? summary.id : null;
+  window._endedNoticeHistoryId = summary ? summary.id : null;
   if (modal) modal.classList.add('open');
 }
 
@@ -13162,44 +13743,68 @@ function closeLiveEndedNoticeModal() {
 
 function openHistoryFromEndedNotice() {
   closeLiveEndedNoticeModal();
-  if (isGuestUser()) {
-    openLoginModal();
-    return;
-  }
+  // Tamu juga dapat membuka History (fitur yang diizinkan untuk mode Tamu).
   openOnlineModal();
   switchOnlineTab('history');
 }
 
-function leaveOnlineRoom(keepRoomData = false) {
+function openFinalResultsFromEndedNotice() {
+  closeLiveEndedNoticeModal();
+  switchTab('tab-selesai');
+}
+
+function leaveOnlineRoom(keepRoomData = true) {
   stopHeartbeatTimer();
   peerHeartbeats.clear();
   connectedPeersCount = 1;
   clearActiveLiveSession();
-  if (mqttClient && isOnlineActive && currentRoomId) {
-    const leftRoom = currentRoomId;
+
+  const leftRoomId = currentRoomId;
+
+  // Beritahu room bahwa siaran berakhir & bersihkan retained state agar
+  // penonton tidak menerima state basi setelah host keluar.
+  // HANYA Host yang boleh mengakhiri siaran; penonton cukup berhenti mendengarkan.
+  if (mqttClient && isOnlineActive && leftRoomId) {
     try {
-      mqttClient.unsubscribe(`onesport/v3/room/${leftRoom}`);
-      mqttClient.unsubscribe(`onesport/v3/room/${leftRoom}/state`);
+      const roomTopic = `onesport/v3/room/${leftRoomId}`;
+      const stateTopic = `onesport/v3/room/${leftRoomId}/state`;
+      if (userRole === 'host') {
+        const endedMsg = {
+          type: 'LIVE_ENDED',
+          roomId: leftRoomId,
+          senderId: myClientId,
+          timestamp: Date.now()
+        };
+        mqttClient.publish(roomTopic, JSON.stringify(endedMsg));
+        mqttClient.publish(stateTopic, '', { qos: 1, retain: true });
+        mqttClient.publish(`onesport/v3/lobby/rooms/${leftRoomId}`, '', { qos: 1, retain: true });
+      }
+      mqttClient.unsubscribe(roomTopic);
+      mqttClient.unsubscribe(stateTopic);
     } catch(e){}
-    delete activeLiveRooms[leftRoom];
+    delete activeLiveRooms[leftRoomId];
   }
 
   isOnlineActive = false;
-  const leftRoomId = currentRoomId;
   currentRoomId = null;
   currentRoomPinHash = '';
   pendingHostCandidatePin = null;
-  userRole = localStorage.getItem('onesport_user_role') || 'host';
   isHostCreator = false;
+  roomLastSeenSeq = 0;
+  trustedHostPubHex = null;
+  // Peran dikembalikan berdasarkan akun, bukan default 'host'.
+  userRole = isHostUser() ? 'host' : 'spectator';
+  isCollabMode = false;
 
+  // Data lokal pengguna dipertahankan; hanya cache room yang dibersihkan.
+  if (leftRoomId) {
+    try {
+      localStorage.removeItem('onesport_room_cache_' + leftRoomId);
+    } catch(e){}
+  }
   if (!keepRoomData) {
     try {
-      resetToCleanEmptyState();
-      localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(STORAGE_OFFLINE_BACKUP);
-      if (leftRoomId) {
-        localStorage.removeItem('onesport_room_cache_' + leftRoomId);
-      }
     } catch(e){}
   }
 
@@ -13213,7 +13818,7 @@ function leaveOnlineRoom(keepRoomData = false) {
 
 // ── LIVE HISTORY STORAGE & UI (PERSISTENT IN BROWSER & CLOUD) ──
 function saveToLiveHistory(record) {
-  if (isGuestUser()) return;
+  // Tamu tetap boleh menyimpan riwayat siaran yang ditonton (fitur History terbuka untuk Tamu).
   try {
     const currentUname = (getUserUsername() || 'user').toLowerCase();
     if (!record.viewerUsername && currentUser) {
@@ -13447,11 +14052,6 @@ function shareHistoryItemWA(id) {
 }
 
 function openHistoryDetailModal(id) {
-  if (isGuestUser()) {
-    showToast('Data detail riwayat pertandingan selesai tidak tersedia untuk akun Tamu.', 'warning');
-    openLoginModal();
-    return;
-  }
   const item = findHistoryItemById(id);
   if (!item) return;
 

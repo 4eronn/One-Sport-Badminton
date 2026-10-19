@@ -16,6 +16,7 @@ const {
   processCooldownsOnMatchEnd,
   submitPartnerRequest,
   cancelOrRejectPartnerRequest,
+  cancelRequestsForPlayer,
   splitFourIntoTeamsSmart,
   pickNextFourPlayersForMatch,
   createCourtProposal,
@@ -997,6 +998,124 @@ it('Q-3: pickNextFourPlayersForMatch mengelompokkan >= 4 putri dan menghindari 3
   assert.strictEqual(fourAvoidingOdd.every(p => p.gender === 'L'), true, 'hindari 3 putra + 1 putri bila ada putra alternatif');
 });
 
+it('Ganda Campuran: 2 putri + 2 putra wajib dipasangkan putri+putra vs putri+putra', () => {
+  const four = [
+    { id: 1, name: 'Putri 1', gender: 'P', role: 'Pemula' },
+    { id: 2, name: 'Putri 2', gender: 'P', role: 'Pemula' },
+    { id: 3, name: 'Putra 1', gender: 'L', role: 'Pemula' },
+    { id: 4, name: 'Putra 2', gender: 'L', role: 'Pemula' }
+  ];
+
+  // Uji semua rotasi urutan masukan agar aturan tetap konsisten
+  const rotations = [four, [four[1], four[2], four[3], four[0]], [four[2], four[3], four[0], four[1]]];
+  rotations.forEach(order => {
+    const split = splitFourIntoTeamsSmart(order, {}, {}, []);
+    const femalesA = split.teamA.filter(p => p.gender === 'P').length;
+    const femalesB = split.teamB.filter(p => p.gender === 'P').length;
+    assert.strictEqual(femalesA, 1, 'Tim A wajib berisi tepat 1 putri');
+    assert.strictEqual(femalesB, 1, 'Tim B wajib berisi tepat 1 putri');
+  });
+});
+
+it('Ganda Campuran: pickNextFourPlayersForMatch memprioritaskan komposisi 2 putri + 2 putra', () => {
+  const queue = [
+    { id: 1, name: 'Putra 1', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 2, name: 'Putra 2', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 3, name: 'Putra 3', gender: 'L', role: 'Pemula', jumlah_main: 0 },
+    { id: 4, name: 'Putri 1', gender: 'P', role: 'Pemula', jumlah_main: 0 },
+    { id: 5, name: 'Putri 2', gender: 'P', role: 'Pemula', jumlah_main: 0 }
+  ];
+  const picked = pickNextFourPlayersForMatch(queue, [], {}, queue);
+  const females = picked.filter(p => p.gender === 'P').length;
+  const males = picked.filter(p => p.gender === 'L').length;
+  assert.strictEqual(females, 2, 'Harus memilih 2 putri');
+  assert.strictEqual(males, 2, 'Harus memilih 2 putra');
+});
+
+it('Ganda Campuran: pengganti pemain tidak boleh merusak komposisi putri+putra', () => {
+  const court = {
+    category: 'CAMPURAN',
+    status: COURT_STATUS.SEDANG_MAIN,
+    teamA: [
+      { id: 1, name: 'Putri A', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 },
+      { id: 2, name: 'Putra A', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 }
+    ],
+    teamB: [
+      { id: 3, name: 'Putri B', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 },
+      { id: 4, name: 'Putra B', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 }
+    ]
+  };
+  const players = [
+    ...court.teamA,
+    ...court.teamB,
+    { id: 5, name: 'Putra Cadangan', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 },
+    { id: 6, name: 'Putri Cadangan', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 }
+  ];
+
+  // Mengganti Putra B (pria) dengan putri cadangan akan membuat Tim B 2 putri.
+  const res = replaceCourtPlayerAuto({
+    court,
+    targetPlayerId: 4,
+    players,
+    partnerRequests: [],
+    partnerHistory: {},
+    activeCourts: [court],
+    minPlays: 3,
+    setToRest: false
+  });
+
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.gender, 'L', 'Pengganti pemain pria di ganda campuran wajib pria');
+});
+
+it('Ganda Campuran: putri tidak boleh menjadi rekan satu tim dengan putri lain saat lawan berisi putra', () => {
+  const court = {
+    category: 'CAMPURAN',
+    status: COURT_STATUS.SEDANG_MAIN,
+    teamA: [
+      { id: 1, name: 'Putri A', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 },
+      { id: 2, name: 'Putri B', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 }
+    ],
+    teamB: [
+      { id: 3, name: 'Putra B1', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 },
+      { id: 4, name: 'Putra B2', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.DI_LAPANGAN, jumlah_main: 1 }
+    ]
+  };
+  const players = [
+    ...court.teamA,
+    ...court.teamB,
+    { id: 5, name: 'Putra Cadangan', gender: 'L', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 },
+    { id: 6, name: 'Putri Cadangan', gender: 'P', role: 'Pemula', status: PLAYER_STATUS.MENUNGGU, jumlah_main: 0 }
+  ];
+
+  // Mengganti salah satu putri dengan putri lain tetap menghasilkan 2 putri vs 2 putra
+  // (satu tim 2 putri) => harus ditolak, dan pengganti yang dipilih harus putra.
+  const res = replaceCourtPlayerAuto({
+    court,
+    targetPlayerId: 1,
+    players,
+    partnerRequests: [],
+    partnerHistory: {},
+    activeCourts: [court],
+    minPlays: 3,
+    setToRest: false
+  });
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.newPlayer.gender, 'L', 'Tim tidak boleh berisi 2 putri saat lawan berisi putra');
+});
+
+it('cancelRequestsForPlayer diekspor untuk dipakai alur ganti pemain', () => {
+  assert.strictEqual(typeof cancelRequestsForPlayer, 'function');
+  const players = [
+    { id: 'p1', name: 'P1', request_used: true },
+    { id: 'p2', name: 'P2', request_used: true }
+  ];
+  const reqs = [{ id: 'r1', requesterId: 'p1', targetId: 'p2', status: REQUEST_STATUS.APPROVED }];
+  cancelRequestsForPlayer('p1', players, reqs);
+  assert.strictEqual(players[0].request_used, false);
+  assert.strictEqual(reqs[0].status, REQUEST_STATUS.CANCELLED);
+});
+
 // ── TEST 8: Rekan Tim Harus Berbeda-beda (Fitur 8) ──
 console.log('\n--- 8. Rekan Tim Harus Berbeda-beda (Fitur 8) ---');
 
@@ -1199,6 +1318,21 @@ it('validateAndNormalizeState memvalidasi tipe, membatasi panjang nama, membuang
   assert.strictEqual(validateAndNormalizeState(null), null);
   assert.strictEqual(validateAndNormalizeState('invalid'), null);
   assert.strictEqual(validateAndNormalizeState([1, 2, 3]), null);
+});
+
+it('validateAndNormalizeState mempertahankan role_locked dan default cooldown 0', () => {
+  const normalized = validateAndNormalizeState({
+    bPlayers: [
+      { id: 1, name: 'Andi', role: 'Advance', role_locked: true },
+      { id: 2, name: 'Budi', role: 'Pemula' }
+    ]
+  });
+  assert.ok(normalized);
+  assert.strictEqual(normalized.bPlayers[0].role_locked, true);
+  assert.strictEqual(normalized.bPlayers[1].role_locked, false);
+  assert.strictEqual(normalized.bCooldownMatches, 0);
+  // Nilai lama yang eksplisit tetap dihormati
+  assert.strictEqual(validateAndNormalizeState({ bCooldownMatches: 2 }).bCooldownMatches, 2);
 });
 
 console.log('\n--- 9. Robustness & Fix Audit (Edge Cases) ---');
