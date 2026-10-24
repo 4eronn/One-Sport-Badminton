@@ -719,9 +719,10 @@
     }
 
     // 2. Gender-aware selection (Q-3):
-    // a) Bila >= 4 pemain putri menunggu, buat match khusus putri (4 pemain putri)
+    // a) Bila > 4 pemain putri menunggu, buat match khusus putri (4 pemain putri)
+    //    Jika hanya 4 putri, tetap prioritaskan ganda campuran agar semua pemain main
     const femalePlayers = availablePool.filter(p => p && p.gender === 'P');
-    if (femalePlayers.length >= 4) {
+    if (femalePlayers.length > 4) {
       return femalePlayers.slice(0, 4);
     }
 
@@ -1913,6 +1914,164 @@
       .replace(/`/g, '&#96;');
   }
 
+  // ── 12b. GENERATE SCHEDULE UNTIL MINIMUM PLAYS REQUIREMENT TERCAPAI ──
+  /**
+   * Generate match schedule otomatis hingga semua pemain minimal main 3x.
+   * Proses:
+   * 1. Reset jumlah_main setiap pemain ke 0
+   * 2. Ulang kali buat proposal lapangan -> approve -> record finish
+   *    sampai seluruh pemain memiliki jumlah_main >= minPlays (default 3)
+   * 3. Kembalikan schedule lengkap beserta metadata cada ronde
+   *
+   * @param {Array} players - Daftar pemain yang sudah diinput
+   * @param {number} minPlays - Minimal jumlah main yang wajib (default 3)
+   * @param {number} [maxRounds=100] - Maksimal ronde untuk mencegah infinite loop
+   * @returns {Object} { players, schedule, message }
+   */
+  function generateScheduleMinPlays(players = [], minPlays = 3, maxRounds = 100) {
+    // 1. Copy players dan reset statistik
+    const schedule = [];
+    let workingPlayers = players.map(p => ({
+      ...p,
+      jumlah_main: 0,
+      cooldown_remaining: 0,
+      status: PLAYER_STATUS.MENUNGGU,
+      request_used: false,
+      leave_after_match: false,
+      is_deleted: false,
+      waitingSince: Date.now()
+    }));
+
+    // 2. Inisialisasi partnerHistory dan opponentHistory kosong
+    let partnerHistory = {};
+    let opponentHistory = {};
+    let partnerRequests = [];
+
+    // 3. Loop ronde sampai semua pemain sudah memenuhi kuota main minimal
+    for (let roundNum = 1; roundNum <= maxRounds; roundNum++) {
+      // Cek apakah semua pemain sudah mencapai minimal plays
+      const allMet = workingPlayers.every(p => (p.jumlah_main || 0) >= minPlays);
+      if (allMet) break;
+
+      // Reset status pemain ke MENUNGGU dan cooldown ke 0 untuk ronde selanjutnya
+      // (Karena fitur ini otomatis generate schedule, kita reset status agar pemain bisa main kembali)
+      workingPlayers.forEach(p => {
+        if (!p.is_deleted) {
+          p.status = PLAYER_STATUS.MENUNGGU;
+          p.cooldown_remaining = 0;
+          p.waitingSince = Date.now();
+        }
+      });
+
+      // Buat proposal lapangan untuk ronde ini
+      // Urutkan antrian berdasarkan prioritas main paling sedikit
+      const eligibleQueue = getEligibleQueue(workingPlayers);
+      const prioritized = prioritizeQueue(eligibleQueue, minPlays);
+
+      if (prioritized.length < 4) {
+        // Tidak cukup pemain antrian, hentikan atau beri pesan
+        break;
+      }
+
+      // Buat proposal lapangan nomor 1 (atau bisa dibagi ke multiple courts)
+      const proposalResult = createCourtProposal({
+        courtNumber: roundNum,
+        courtName: `Lapangan ${roundNum}`,
+        players: workingPlayers,
+        partnerHistory,
+        opponentHistory,
+        partnerRequests,
+        minPlays
+      });
+
+      if (!proposalResult.court || proposalResult.court.status !== 'menunggu_acc') {
+        // Gagal membuat proposal, hentikan
+        break;
+      }
+
+      // Auto-approve proposal (seperti host menekan tombol ACC)
+      const approvalResult = approveCourtProposal(proposalResult.court, workingPlayers, partnerRequests);
+      if (!approvalResult.success) {
+        break;
+      }
+
+      // Simpan court proposal ke schedule
+      const courtRecord = {
+        roundNumber: roundNum,
+        courtNumber: proposalResult.court.courtNumber,
+        courtName: proposalResult.court.courtName,
+        status: COURT_STATUS.SEDANG_MAIN,
+        category: proposalResult.court.category,
+        categoryLabel: proposalResult.court.categoryLabel,
+        teamA: [...(proposalResult.court.teamA || [])],
+        teamB: [...(proposalResult.court.teamB || [])],
+        startedAt: proposalResult.court.startedAt
+      };
+      schedule.push(courtRecord);
+
+      // Record match finished dengan skor acak/placeholder untuk keperluan perhitungan Main
+      // Gunakan skor dummy agar match terbaca sebagai finished
+      const dummyScoreA = 21;
+      const dummyScoreB = 15;
+      const dummyWinner = 'A';
+
+      const finishResult = recordMatchFinished({
+        court: proposalResult.court,
+        scoreA: dummyScoreA,
+        scoreB: dummyScoreB,
+        winner: dummyWinner,
+        players: workingPlayers,
+        partnerHistory,
+        opponentHistory,
+        partnerRequests,
+        defaultCooldown: 1
+      });
+
+      // Update partnerHistory dan opponentHistory dari recordMatchFinished
+      if (finishResult.partnerHistory) {
+        partnerHistory = { ...partnerHistory, ...finishResult.partnerHistory };
+      }
+      if (finishResult.opponentHistory) {
+        opponentHistory = { ...opponentHistory, ...finishResult.opponentHistory };
+      }
+      if (finishResult.partnerRequests) {
+        partnerRequests = finishResult.partnerRequests;
+      }
+
+      // Catat ronde selesai ke schedule
+      const finishedCourtRecord = {
+        roundNumber: roundNum,
+        courtNumber: proposalResult.court.courtNumber,
+        courtName: proposalResult.court.courtName,
+        status: COURT_STATUS.FINISHED,
+        category: proposalResult.court.category,
+        categoryLabel: proposalResult.court.categoryLabel,
+        teamA: [...(proposalResult.court.teamA || [])],
+        teamB: [...(proposalResult.court.teamB || [])],
+        scoreA: finishResult.court.scoreA,
+        scoreB: finishResult.court.scoreB,
+        winner: finishResult.court.winner,
+        finishedAt: finishResult.court.finishedAt
+      };
+      // Replace the ongoing record with finished record
+      schedule[schedule.length - 1] = finishedCourtRecord;
+    }
+
+    const finalRound = schedule.length;
+    const unmetPlayers = workingPlayers.filter(p => (p.jumlah_main || 0) < minPlays);
+    const message = unmetPlayers.length > 0
+      ? `Selesai ${finalRound} ronde. ${unmetPlayers.length} pemain belum mencapai ${minPlays} main (tercapai oleh ${workingPlayers.length - unmetPlayers.length} dari ${workingPlayers.length} pemain).`
+      : `Semua ${workingPlayers.length} pemain telah mencapai minimal ${minPlays} main setelah ${finalRound} ronde.`;
+
+    return {
+      players: workingPlayers,
+      schedule,
+      message,
+      totalRounds: schedule.length,
+      minPlays
+    };
+  }
+
   // ── 12. STATE VALIDATION & NORMALIZATION (SEC-1 / Q-6) ──
   function validateAndNormalizeState(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
@@ -2300,6 +2459,7 @@
     createDefaultShuttlecockInventory,
     getShuttlecockSummary,
     resetBadmintonSession,
+    generateScheduleMinPlays,
     calculateActivePeers,
     logHostAction,
     escapeHtml,
