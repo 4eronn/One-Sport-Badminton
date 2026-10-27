@@ -2263,18 +2263,6 @@
   </div>
 </div>
 
-<!-- ── GUEST MODE BANNER ── -->
-<div id="guestModeBanner" style="display:none; margin:8px 12px 0; padding:10px 12px; background:linear-gradient(135deg,#FFF7ED 0%,#FFEDD5 100%); border:1.5px solid #FDBA74; border-radius:12px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-  <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-    <span style="width:28px; height:28px; border-radius:50%; background:#FFEDD5; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px;">👋</span>
-    <div style="min-width:0;">
-      <div style="font-size:0.8rem; font-weight:900; color:#9A3412;">Mode Tamu Aktif</div>
-      <div style="font-size:0.7rem; color:#B45309; line-height:1.35;">Kamu bisa melihat History, Hasil Akhir &amp; Juara, dan menonton live. Masuk akun Host untuk mengelola pemain, lapangan, dan skor.</div>
-    </div>
-  </div>
-  <button type="button" onclick="openLoginModal(); switchLoginAuthTab('signin');" style="background:var(--brand-orange); color:#fff; border:none; border-radius:8px; padding:7px 14px; font-size:0.75rem; font-weight:900; cursor:pointer; white-space:nowrap;">Masuk Akun</button>
-</div>
-
 <!-- ── LIVE TOAST NOTIFICATION ── -->
 <div id="liveToastNotification">
   <span class="toast-indicator-dot" id="toastIcon"></span>
@@ -2310,6 +2298,21 @@
     </div>
     <div style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);" id="soccerPlayerCountLabel">
       0 Tim
+    </div>
+  </div>
+
+  <!-- Mini Soccer Group Phase Config -->
+  <div class="subbar-inner" id="soccerGroupSubbar" style="display: none;">
+    <div class="subbar-picker-label">Grup:</div>
+    <div class="subbar-pills-row">
+      <button class="subbar-pill-btn" onclick="setSoccerGroupCount(2)">2 Grup</button>
+      <button class="subbar-pill-btn" onclick="setSoccerGroupCount(3)">3 Grup</button>
+      <button class="subbar-pill-btn" onclick="setSoccerGroupCount(4)">4 Grup</button>
+      <button class="subbar-pill-btn" onclick="setSoccerGroupCount(5)">5 Grup</button>
+      <button class="subbar-pill-btn" onclick="setSoccerGroupCount(6)">6 Grup</button>
+    </div>
+    <div style="font-size:0.75rem; font-weight:800; color:var(--brand-navy-dark);" id="soccerGroupCountLabel">
+      0 Grup
     </div>
   </div>
 </div>
@@ -3848,9 +3851,7 @@
           <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Konfirmasi Password</label>
           <input type="password" id="signUpInputPasswordConfirm" class="input-styled-os" placeholder="Ketik ulang password..." autocomplete="new-password" required>
         </div>
-        <button type="submit" class="btn-os-cyan" style="width: 100%; padding: 10px; font-weight: 800; margin-top: 4px;">
-          Daftar Akun Baru (Sign Up)
-        </button>
+        
       </form>
     </div>
 
@@ -9286,7 +9287,7 @@ function renderHistory() {
         <div style="min-width:0; flex:1;">
           <div style="font-weight:900; font-size:0.92rem; color:var(--brand-navy-dark);">Riwayat Skor</div>
           <div style="font-size:0.76rem; color:var(--text-muted); line-height:1.45; margin-top:2px;">
-            Semua pertandingan yang sudah selesai akan tampil di sini. Ingin mengelola pemain, lapangan, dan skor? Masuk dengan akun Host.
+            
           </div>
           <div style="display:flex; gap:8px; margin-top:9px; flex-wrap:wrap;">
             <button class="btn-os-orange" style="width:auto; font-size:0.75rem; padding:7px 14px; font-weight:800;" onclick="switchTab('tab-selesai')">Lihat Juara</button>
@@ -10390,9 +10391,7 @@ function renderAccountTab() {
               </button>
             </div>
 
-            <button type="button" class="btn-os-cyan" style="width:100%; padding:10px; font-weight:800; font-size:0.8rem;" onclick="openLoginModal(); switchLoginAuthTab('signup');">
-              Daftar Akun Baru (Sign Up)
-            </button>
+            
           </div>
         </div>
 
@@ -10445,9 +10444,7 @@ function renderAccountTab() {
       </form>
 
       <div style="display:flex; gap:8px;">
-        <button type="button" class="btn-court-action" style="flex:1; padding:8px; font-size:0.75rem; font-weight:700;" onclick="openLoginModal(); switchLoginAuthTab('signup');">
-          Daftar Akun Baru
-        </button>
+        
         <button type="button" class="btn-court-action" style="flex:1; padding:8px; font-size:0.75rem; font-weight:700;" onclick="loginAsGuest();">
           Masuk Tamu (Guest)
         </button>
@@ -12009,12 +12006,6 @@ function applyRoleUI() {
     } else {
       spectatorBanner.style.display = 'none';
     }
-  }
-
-  // 3b. Guest mode banner
-  const guestBanner = document.getElementById('guestModeBanner');
-  if (guestBanner) {
-    guestBanner.style.display = isGuest ? 'flex' : 'none';
   }
 
   // 4. Sub-header Bar (Picker Lapangan & Jumlah Pemain)
