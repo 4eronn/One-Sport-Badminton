@@ -2461,6 +2461,7 @@
     resetBadmintonSession,
     generateScheduleMinPlays,
     createLeagueTournament,
+    createMiniSoccerLiga,
     calculateActivePeers,
     logHostAction,
     escapeHtml,
