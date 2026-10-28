@@ -2460,6 +2460,7 @@
     getShuttlecockSummary,
     resetBadmintonSession,
     generateScheduleMinPlays,
+    createLeagueTournament,
     calculateActivePeers,
     logHostAction,
     escapeHtml,
