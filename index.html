@@ -23,7 +23,7 @@
 <!-- Realtime WebSockets & QR Code Libraries -->
 <script src="vendor/mqtt.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
-<script src="badminton-service.js"></script>
+<script src="badminton-service.js?v=8"></script>
 <script>
   window.addEventListener('load', function() {
     if (typeof mqtt === 'undefined') {
@@ -8987,7 +8987,31 @@ function renderGroupStageWidgets() {
   // 2. MATCH BANNER WIDGET (Tab Lapangan / Match)
   if (matchBannerEl) {
     if (!cfg.enabled) {
-      matchBannerEl.innerHTML = '';
+      if (!isHost) {
+        matchBannerEl.innerHTML = '';
+      } else {
+        matchBannerEl.innerHTML = `
+          <div class="gs-panel" style="margin-top:8px; padding:10px 14px;">
+            <div class="gs-header-row">
+              <div class="gs-title-wrap">
+                <div class="gs-icon-badge" style="width:28px; height:28px; border-radius:8px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <div>
+                  <div class="gs-title-main" style="font-size:0.82rem;">
+                    <span>Tahap Penyisihan Grup</span>
+                    <span class="gs-status-pill optional">Opsional</span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="gs-switch-btn" onclick="toggleGroupStageMode(true)" title="Aktifkan Penyisihan Grup">
+                <span class="gs-switch-dot"></span>
+                <span>Aktifkan Grup</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
     } else {
       const curFilter = cfg.filterGroup || 'ALL';
       const analysis = getCurrentGroupStageAnalysis();
