@@ -512,6 +512,74 @@ it('isNewerVersion mengidentifikasi build v1.2.0-b44 secara akurat', () => {
   assert.strictEqual(isNewerVersion('v1.1.9', 'v1.2.0-b44'), false);
 });
 
+// ----------------------------------------------------------------------------
+// 10. Penyisihan Grup & Tahap Grup Opsional (Badminton & Mini Soccer)
+// ----------------------------------------------------------------------------
+console.log('\n--- 10. Penyisihan Grup & Tahap Grup Opsional ---');
+
+it('createMiniSoccerLiga membagi tim ke Grup A & Grup B, membuat jadwal grup, dan menyusun babak gugur', () => {
+  const teams = [
+    { name: 'Garuda', key: 't1', group: 'A' },
+    { name: 'Rajawali', key: 't2', group: 'A' },
+    { name: 'Elang', key: 't3', group: 'B' },
+    { name: 'Harimau', key: 't4', group: 'B' }
+  ];
+  const liga = BadmintonService.createMiniSoccerLiga({
+    teams,
+    matches: [],
+    groupCount: 2,
+    topAdvance: 2
+  });
+  assert.strictEqual(liga.groupLabels.length, 2);
+  assert.strictEqual(liga.groupMatches.length, 2);
+  assert.strictEqual(liga.groupMatches[0].group, 'A');
+  assert.strictEqual(liga.groupMatches[1].group, 'B');
+  assert.strictEqual(liga.qualifiers.length, 4);
+  assert.strictEqual(liga.championshipMatches.length, 4); // SF1, SF2, THIRD, FINAL
+});
+
+it('generateSoccerMatchSchedule tetap mode reguler saat sGroupStage.enabled === false dan mode grup saat enabled === true', () => {
+  sTeams = [
+    { name: 'Tim 1', key: 't1', group: 'A', players: [] },
+    { name: 'Tim 2', key: 't2', group: 'A', players: [] },
+    { name: 'Tim 3', key: 't3', group: 'B', players: [] },
+    { name: 'Tim 4', key: 't4', group: 'B', players: [] }
+  ];
+  global.sGroupStage = { enabled: false, groupCount: 2, topAdvance: 2 };
+  generateSoccerMatchSchedule();
+  assert.strictEqual(sMatches.length, 6, 'Mode reguler 4 tim menghasilkan 6 match round-robin');
+
+  global.sGroupStage = { enabled: true, groupCount: 2, topAdvance: 2 };
+  generateSoccerMatchSchedule();
+  assert.strictEqual(sMatches.length, 2, 'Mode penyisihan 2 grup (masing-masing 2 tim) menghasilkan 2 match penyisihan grup');
+  assert.strictEqual(sMatches[0].stage, 'GROUP');
+  global.sGroupStage = { enabled: false, groupCount: 2, topAdvance: 2 };
+});
+
+it('createLeagueTournament menghitung klasemen per grup Badminton dan kelolosan babak gugur', () => {
+  const players = [
+    { id: 1, name: 'Andi', gender: 'L', role: 'Pemula', group: 'A' },
+    { id: 2, name: 'Budi', gender: 'L', role: 'Pemula', group: 'A' },
+    { id: 3, name: 'Cici', gender: 'P', role: 'Pemula', group: 'A' },
+    { id: 4, name: 'Dedi', gender: 'L', role: 'Pemula', group: 'A' },
+    { id: 5, name: 'Eka', gender: 'L', role: 'Pemula', group: 'B' },
+    { id: 6, name: 'Fajar', gender: 'L', role: 'Pemula', group: 'B' },
+    { id: 7, name: 'Gita', gender: 'P', role: 'Pemula', group: 'B' },
+    { id: 8, name: 'Hadi', gender: 'L', role: 'Pemula', group: 'B' }
+  ];
+  const res = BadmintonService.createLeagueTournament({
+    players,
+    schedule: [],
+    groupCount: 2,
+    topAdvance: 2
+  });
+  assert.strictEqual(res.groupLabels.length, 2);
+  assert.strictEqual(res.groups.A.length, 4);
+  assert.strictEqual(res.groups.B.length, 4);
+  assert.strictEqual(res.qualifiers.length, 4);
+  assert.ok(res.championshipMatches.length >= 1);
+});
+
 console.log(`\n======================================================`);
 console.log(`MINI SOCCER TEST RESULTS: ${passCount} / ${testCount} Passed (${Math.round((passCount/testCount)*100)}%)`);
 console.log(`======================================================\n`);

@@ -2072,6 +2072,412 @@
     };
   }
 
+  // ── 12c. PENYISIHAN GRUP & TAHAP GRUP (OPSIONAL - FLEKSIBEL BADMINTON & MINI SOCCER) ──
+  /**
+   * Membuat dan mengelola turnamen / liga dengan Penyisihan Grup & Tahap Grup (Opsional)
+   * serta kelanjutan ke Babak Gugur / Final (Semifinal, Perebutan Juara 3, Final).
+   */
+  function createLeagueTournament({
+    participants = [],
+    players = [],
+    schedule = [],
+    groupCount = 2,
+    topAdvance = 2,
+    sport = 'badminton',
+    shuffle = false,
+    existingGroups = null
+  } = {}) {
+    const numGroups = Math.max(2, Math.min(8, Math.floor(Number(groupCount) || 2)));
+    const advancePerGroup = Math.max(1, Math.min(4, Math.floor(Number(topAdvance) || 2)));
+    const groupLabels = Array.from({ length: numGroups }, (_, i) => String.fromCharCode(65 + i));
+
+    const sourceList = (Array.isArray(players) && players.length > 0) ? players.filter(p => p && !p.is_deleted) : (Array.isArray(participants) ? participants : []);
+    let items = [...sourceList];
+    if (shuffle) {
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [items[i], items[j]] = [items[j], items[i]];
+      }
+    }
+
+    const groups = {};
+    groupLabels.forEach(g => { groups[g] = []; });
+
+    items.forEach((item, idx) => {
+      if (!item) return;
+      const existingG = existingGroups && item.key && existingGroups[item.key]
+        ? existingGroups[item.key]
+        : (item.group && groupLabels.includes(String(item.group).toUpperCase()) ? String(item.group).toUpperCase() : null);
+      const targetGroup = (existingG && groupLabels.includes(existingG) && !shuffle)
+        ? existingG
+        : groupLabels[idx % numGroups];
+      item.group = targetGroup;
+      groups[targetGroup].push(item);
+    });
+
+    // Generate round-robin matches per group (Penyisihan Grup)
+    const groupMatches = [];
+    const perGroupPairs = {};
+    groupLabels.forEach(g => {
+      const gItems = groups[g] || [];
+      perGroupPairs[g] = [];
+      for (let i = 0; i < gItems.length; i++) {
+        for (let j = i + 1; j < gItems.length; j++) {
+          perGroupPairs[g].push({
+            group: g,
+            stage: 'GROUP',
+            stageLabel: `Penyisihan Grup ${g}`,
+            teamA: gItems[i],
+            teamB: gItems[j]
+          });
+        }
+      }
+    });
+
+    // Interleave matches across groups (Grup A match 1, Grup B match 1, ...) agar jadwal merata
+    let maxPairs = 0;
+    groupLabels.forEach(g => {
+      if (perGroupPairs[g].length > maxPairs) maxPairs = perGroupPairs[g].length;
+    });
+    let matchCounter = 1;
+    for (let pIdx = 0; pIdx < maxPairs; pIdx++) {
+      groupLabels.forEach(g => {
+        const pair = perGroupPairs[g][pIdx];
+        if (pair) {
+          groupMatches.push({
+            roundNumber: matchCounter,
+            matchNumber: matchCounter,
+            group: g,
+            stage: 'GROUP',
+            stageLabel: `Penyisihan Grup ${g}`,
+            title: `Grup ${g} • ${pair.teamA.name || 'Tim A'} vs ${pair.teamB.name || 'Tim B'}`,
+            teamA: pair.teamA,
+            teamB: pair.teamB,
+            scoreA: null,
+            scoreB: null,
+            winner: null,
+            status: matchCounter === 1 ? 'ongoing' : 'pending'
+          });
+          matchCounter++;
+        }
+      });
+    }
+
+    // Hitung klasemen per grup untuk Badminton jika players diberikan
+    const groupStandings = {};
+    const qualifiers = [];
+    groupLabels.forEach(g => {
+      const gItems = groups[g] || [];
+      const statsMap = {};
+      const h2h = {};
+      gItems.forEach(p => {
+        const pid = String(p.id !== undefined ? p.id : p.name);
+        statsMap[pid] = {
+          id: p.id,
+          player: p,
+          name: p.name,
+          group: g,
+          matches: 0,
+          wins: 0,
+          losses: 0,
+          ties: 0,
+          scored: 0,
+          conceded: 0,
+          diff: 0,
+          totalScore: 0,
+          titles: p.titles || 0,
+          winRate: 0,
+          qualified: false,
+          tieBreakNote: ''
+        };
+        h2h[pid] = {};
+      });
+
+      if (Array.isArray(schedule)) {
+        schedule.forEach(r => {
+          const allCourts = [...(r.courts || []), ...(r.finishedCourts || [])];
+          allCourts.forEach(c => {
+            if (!c || (c.status !== 'finished' && c.status !== COURT_STATUS.FINISHED)) return;
+            const sA = Number(c.scoreA ?? (c.winner === 'A' ? 21 : 0));
+            const sB = Number(c.scoreB ?? (c.winner === 'B' ? 21 : 0));
+            const isWinA = c.winner === 'A';
+            const isWinB = c.winner === 'B';
+
+            (c.teamA || []).forEach(p => {
+              if (!p) return;
+              const pid = String(p.id !== undefined ? p.id : p.name);
+              if (!statsMap[pid]) return;
+              statsMap[pid].matches++;
+              statsMap[pid].scored += sA;
+              statsMap[pid].conceded += sB;
+              if (isWinA) statsMap[pid].wins++;
+              else if (isWinB) statsMap[pid].losses++;
+            });
+
+            (c.teamB || []).forEach(p => {
+              if (!p) return;
+              const pid = String(p.id !== undefined ? p.id : p.name);
+              if (!statsMap[pid]) return;
+              statsMap[pid].matches++;
+              statsMap[pid].scored += sB;
+              statsMap[pid].conceded += sA;
+              if (isWinB) statsMap[pid].wins++;
+              else if (isWinA) statsMap[pid].losses++;
+            });
+          });
+        });
+      }
+
+      const list = Object.values(statsMap).map(s => {
+        s.diff = s.scored - s.conceded;
+        s.totalScore = s.scored;
+        s.winRate = s.matches > 0 ? Math.round((s.wins / s.matches) * 100) : 0;
+        return s;
+      });
+
+      const sorted = resolveStandingsByRules(list, () => 0);
+      sorted.forEach((row, idx) => {
+        row.rank = idx + 1;
+        row.qualified = idx < advancePerGroup;
+        if (row.qualified && row.player) {
+          qualifiers.push(row.player);
+        }
+      });
+      groupStandings[g] = sorted;
+    });
+
+    const championshipMatches = [];
+    if (qualifiers.length >= 4) {
+      const split = splitFourIntoTeamsSmart(qualifiers.slice(0, 4), {}, {}, []);
+      championshipMatches.push({
+        stage: 'FINAL',
+        title: 'Grand Final • Top Kualifikasi Grup',
+        teamA: split.teamA,
+        teamB: split.teamB
+      });
+    }
+
+    return {
+      sport,
+      groupCount: numGroups,
+      topAdvance: advancePerGroup,
+      groupLabels,
+      groups,
+      groupMatches,
+      groupStandings,
+      qualifiers,
+      championshipMatches
+    };
+  }
+
+  /**
+   * Engine Liga & Penyisihan Grup Mini Soccer beserta perhitungan klasemen per grup
+   * dan pembuatan bagan Babak Gugur / Championship (Semifinal, Juara 3, Final).
+   */
+  function createMiniSoccerLiga({
+    teams = [],
+    matches = [],
+    groupCount = 2,
+    topAdvance = 2,
+    shuffle = false
+  } = {}) {
+    const base = createLeagueTournament({
+      participants: teams,
+      groupCount,
+      topAdvance,
+      sport: 'minisoccer',
+      shuffle
+    });
+
+    // Hitung klasemen per grup dari matches yang berstatus finished & stage grup
+    const groupStandings = {};
+    const qualifiers = [];
+    base.groupLabels.forEach(g => {
+      const gTeams = base.groups[g] || [];
+      const statsMap = {};
+      const h2h = {};
+      gTeams.forEach(t => {
+        statsMap[t.name] = {
+          team: t,
+          name: t.name,
+          group: g,
+          p: 0, w: 0, d: 0, l: 0,
+          wins: 0, losses: 0, ties: 0,
+          gf: 0, ga: 0, gd: 0, diff: 0,
+          pts: 0, totalScore: 0, titles: 0,
+          winRate: 0, qualified: false, tieBreakNote: ''
+        };
+        h2h[t.name] = {};
+        gTeams.forEach(t2 => { h2h[t.name][t2.name] = 0; });
+      });
+
+      const activeMatches = (Array.isArray(matches) && matches.length > 0) ? matches : base.groupMatches;
+      activeMatches.forEach(m => {
+        if (!m || m.status !== 'finished') return;
+        if (m.stage && m.stage !== 'group' && m.stage !== 'GROUP') return;
+        const nameA = m.teamA && m.teamA.name;
+        const nameB = m.teamB && m.teamB.name;
+        if (!nameA || !nameB || !statsMap[nameA] || !statsMap[nameB]) return;
+
+        const tA = statsMap[nameA];
+        const tB = statsMap[nameB];
+        const sA = Number(m.scoreA || 0);
+        const sB = Number(m.scoreB || 0);
+        tA.p++; tB.p++;
+        tA.gf += sA; tA.ga += sB;
+        tB.gf += sB; tB.ga += sA;
+
+        if (m.winner === 'A') {
+          tA.w++; tA.wins++; tA.pts += 3;
+          tB.l++; tB.losses++;
+          h2h[nameA][nameB] = (h2h[nameA][nameB] || 0) + 1;
+          h2h[nameB][nameA] = (h2h[nameB][nameA] || 0) - 1;
+        } else if (m.winner === 'B') {
+          tB.w++; tB.wins++; tB.pts += 3;
+          tA.l++; tA.losses++;
+          h2h[nameB][nameA] = (h2h[nameB][nameA] || 0) + 1;
+          h2h[nameA][nameB] = (h2h[nameA][nameB] || 0) - 1;
+        } else {
+          tA.d++; tA.ties++; tA.pts += 1;
+          tB.d++; tB.ties++; tB.pts += 1;
+        }
+      });
+
+      const list = Object.values(statsMap).map(s => {
+        s.gd = s.gf - s.ga;
+        s.diff = s.gd;
+        s.totalScore = s.gf;
+        s.winRate = s.p > 0 ? Math.round((s.w / s.p) * 100) : 0;
+        return s;
+      });
+
+      const getH2H = (a, b) => {
+        if (!h2h[a.name] || h2h[a.name][b.name] === undefined) return 0;
+        return h2h[a.name][b.name] > 0 ? 1 : (h2h[a.name][b.name] < 0 ? -1 : 0);
+      };
+
+      const sorted = resolveStandingsByRules(list, getH2H);
+      sorted.forEach((row, idx) => {
+        row.rank = idx + 1;
+        row.qualified = idx < base.topAdvance;
+        if (row.qualified && row.team) {
+          qualifiers.push(row.team);
+        }
+      });
+      groupStandings[g] = sorted;
+    });
+
+    // Susun bagan Babak Gugur / Championship dari klasemen grup
+    const knockoutMatches = [];
+    const gLabels = base.groupLabels;
+    if (gLabels.length >= 2) {
+      const gA = groupStandings[gLabels[0]] || [];
+      const gB = groupStandings[gLabels[1]] || [];
+      const a1 = (gA[0] && gA[0].team) || { name: `Juara Grup ${gLabels[0]}`, key: 'tbd-a1' };
+      const a2 = (gA[1] && gA[1].team) || { name: `Runner-up Grup ${gLabels[0]}`, key: 'tbd-a2' };
+      const b1 = (gB[0] && gB[0].team) || { name: `Juara Grup ${gLabels[1]}`, key: 'tbd-b1' };
+      const b2 = (gB[1] && gB[1].team) || { name: `Runner-up Grup ${gLabels[1]}`, key: 'tbd-b2' };
+
+      if (base.topAdvance >= 2 && gA.length >= 2 && gB.length >= 2) {
+        knockoutMatches.push({
+          stage: 'KNOCKOUT',
+          stageLabel: 'Semifinal 1',
+          knockoutLabel: 'Semifinal 1',
+          knockoutId: 'SF1',
+          knockoutCode: 'SF1',
+          title: `Semifinal 1 • ${a1.name} vs ${b2.name}`,
+          teamA: a1,
+          teamB: b2,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+        knockoutMatches.push({
+          stage: 'KNOCKOUT',
+          stageLabel: 'Semifinal 2',
+          knockoutLabel: 'Semifinal 2',
+          knockoutId: 'SF2',
+          knockoutCode: 'SF2',
+          title: `Semifinal 2 • ${b1.name} vs ${a2.name}`,
+          teamA: b1,
+          teamB: a2,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+        knockoutMatches.push({
+          stage: 'KNOCKOUT',
+          stageLabel: 'Perebutan Juara 3',
+          knockoutLabel: 'Perebutan Juara 3',
+          knockoutId: 'THIRD',
+          knockoutCode: '3RD',
+          title: `Perebutan Juara 3 • Kalah SF1 vs Kalah SF2`,
+          teamA: { name: 'Kalah Semifinal 1', key: 'loser-sf1' },
+          teamB: { name: 'Kalah Semifinal 2', key: 'loser-sf2' },
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+        knockoutMatches.push({
+          stage: 'KNOCKOUT',
+          stageLabel: 'Grand Final',
+          knockoutLabel: 'Grand Final',
+          knockoutId: 'FINAL',
+          knockoutCode: 'FINAL',
+          title: `Grand Final • Pemenang SF1 vs Pemenang SF2`,
+          teamA: { name: 'Pemenang Semifinal 1', key: 'winner-sf1' },
+          teamB: { name: 'Pemenang Semifinal 2', key: 'winner-sf2' },
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+      } else {
+        if (gA.length >= 2 && gB.length >= 2) {
+          knockoutMatches.push({
+            stage: 'KNOCKOUT',
+            stageLabel: 'Perebutan Juara 3',
+            knockoutLabel: 'Perebutan Juara 3',
+            knockoutId: 'THIRD',
+            knockoutCode: '3RD',
+            title: `Perebutan Juara 3 • ${a2.name} vs ${b2.name}`,
+            teamA: a2,
+            teamB: b2,
+            scoreA: null,
+            scoreB: null,
+            winner: null,
+            status: 'pending'
+          });
+        }
+        knockoutMatches.push({
+          stage: 'KNOCKOUT',
+          stageLabel: 'Grand Final',
+          knockoutLabel: 'Grand Final',
+          knockoutId: 'FINAL',
+          knockoutCode: 'FINAL',
+          title: `Grand Final • ${a1.name} vs ${b1.name}`,
+          teamA: a1,
+          teamB: b1,
+          scoreA: null,
+          scoreB: null,
+          winner: null,
+          status: 'pending'
+        });
+      }
+    }
+
+    return {
+      ...base,
+      groupStandings,
+      qualifiers,
+      knockoutMatches,
+      championshipMatches: knockoutMatches
+    };
+  }
+
   // ── 12. STATE VALIDATION & NORMALIZATION (SEC-1 / Q-6) ──
   function validateAndNormalizeState(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
@@ -2104,8 +2510,42 @@
       sTeamCount: Number.isInteger(data.sTeamCount) && data.sTeamCount >= 2 ? Math.min(data.sTeamCount, 10) : 2,
       sTeams: [],
       sMatches: [],
-      sCurrentMatchIndex: Number.isInteger(data.sCurrentMatchIndex) && data.sCurrentMatchIndex >= 0 ? data.sCurrentMatchIndex : 0
+      sCurrentMatchIndex: Number.isInteger(data.sCurrentMatchIndex) && data.sCurrentMatchIndex >= 0 ? data.sCurrentMatchIndex : 0,
+      bGroupStage: {
+        enabled: false,
+        groupCount: 2,
+        topAdvance: 2,
+        currentPhase: 'group',
+        filterGroup: 'ALL'
+      },
+      sGroupStage: {
+        enabled: false,
+        groupCount: 2,
+        topAdvance: 2,
+        currentPhase: 'group',
+        filterGroup: 'ALL'
+      }
     };
+
+    if (data.bGroupStage && typeof data.bGroupStage === 'object') {
+      clean.bGroupStage = {
+        enabled: Boolean(data.bGroupStage.enabled),
+        groupCount: Number.isInteger(data.bGroupStage.groupCount) && data.bGroupStage.groupCount >= 2 ? Math.min(data.bGroupStage.groupCount, 8) : 2,
+        topAdvance: Number.isInteger(data.bGroupStage.topAdvance) && data.bGroupStage.topAdvance >= 1 ? Math.min(data.bGroupStage.topAdvance, 4) : 2,
+        currentPhase: data.bGroupStage.currentPhase === 'knockout' ? 'knockout' : 'group',
+        filterGroup: typeof data.bGroupStage.filterGroup === 'string' ? data.bGroupStage.filterGroup.slice(0, 12) : 'ALL'
+      };
+    }
+
+    if (data.sGroupStage && typeof data.sGroupStage === 'object') {
+      clean.sGroupStage = {
+        enabled: Boolean(data.sGroupStage.enabled),
+        groupCount: Number.isInteger(data.sGroupStage.groupCount) && data.sGroupStage.groupCount >= 2 ? Math.min(data.sGroupStage.groupCount, 8) : 2,
+        topAdvance: Number.isInteger(data.sGroupStage.topAdvance) && data.sGroupStage.topAdvance >= 1 ? Math.min(data.sGroupStage.topAdvance, 4) : 2,
+        currentPhase: data.sGroupStage.currentPhase === 'knockout' ? 'knockout' : 'group',
+        filterGroup: typeof data.sGroupStage.filterGroup === 'string' ? data.sGroupStage.filterGroup.slice(0, 12) : 'ALL'
+      };
+    }
 
     clean.rev = Number.isInteger(data.rev) && data.rev >= 0 ? data.rev : 0;
     clean.bSessionId = typeof data.bSessionId === 'string' ? data.bSessionId.slice(0, 100) : ('sess_' + Date.now());
@@ -2129,6 +2569,7 @@
           gender: p.gender === 'P' ? 'P' : 'L',
           role: typeof p.role === 'string' ? p.role.slice(0, 20) : 'Intermadiate',
           role_locked: Boolean(p.role_locked),
+          group: typeof p.group === 'string' && p.group.trim() ? p.group.trim().toUpperCase().slice(0, 2) : undefined,
           paid: Boolean(p.paid !== false),
           status: Object.values(PLAYER_STATUS).includes(p.status) ? p.status : PLAYER_STATUS.MENUNGGU,
           jumlah_main: typeof p.jumlah_main === 'number' && p.jumlah_main >= 0 ? Math.floor(p.jumlah_main) : 0,

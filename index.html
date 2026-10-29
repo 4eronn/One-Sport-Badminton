@@ -2193,6 +2193,292 @@
   #loginModalOverlay .modal-box { min-height: min(500px, 88dvh); animation-duration: 0.18s; }
   #loginModalOverlay.open .modal-box { animation-name: modalSlideUp; }
   #loginModalOverlay:not(.open) .modal-box { animation: none; }
+
+  /* ── PENYISIHAN GRUP & TAHAP GRUP (GROUP STAGE UI SYSTEM) ── */
+  .gs-panel {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(15, 30, 54, 0.04);
+    transition: all 0.2s ease;
+  }
+  .gs-panel.is-active {
+    border-color: #93C5FD;
+    background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+  }
+  .gs-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .gs-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .gs-icon-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    color: var(--brand-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #BFDBFE;
+  }
+  .gs-panel.is-active .gs-icon-badge {
+    background: var(--brand-blue);
+    color: #FFFFFF;
+    border-color: var(--brand-blue);
+  }
+  .gs-title-main {
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: var(--brand-navy-dark);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .gs-subtitle {
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1.35;
+  }
+  .gs-status-pill {
+    font-size: 0.64rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .gs-status-pill.optional {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+  }
+  .gs-status-pill.active {
+    background: #DBEAFE;
+    color: #1D4ED8;
+    border: 1px solid #93C5FD;
+  }
+  .gs-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #F1F5F9;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 999px;
+    padding: 5px 12px 5px 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--brand-navy-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .gs-switch-btn:hover {
+    border-color: var(--brand-blue);
+  }
+  .gs-switch-btn.on {
+    background: #EFF6FF;
+    border-color: var(--brand-blue);
+    color: var(--brand-blue);
+  }
+  .gs-switch-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #94A3B8;
+    transition: all 0.2s ease;
+  }
+  .gs-switch-btn.on .gs-switch-dot {
+    background: var(--brand-blue);
+    box-shadow: 0 0 0 3px rgba(11, 116, 222, 0.18);
+  }
+  .gs-controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color);
+  }
+  .gs-control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .gs-control-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+  }
+  .gs-seg-pills {
+    display: inline-flex;
+    background: #F1F5F9;
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    gap: 2px;
+  }
+  .gs-seg-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .gs-seg-btn.active {
+    background: #FFFFFF;
+    color: var(--brand-blue);
+    box-shadow: 0 1px 3px rgba(15, 30, 54, 0.08);
+  }
+  .gs-groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .gs-group-box {
+    background: #FFFFFF;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .gs-group-box.grp-A { border-top: 3px solid #0B74DE; }
+  .gs-group-box.grp-B { border-top: 3px solid #059669; }
+  .gs-group-box.grp-C { border-top: 3px solid #D97706; }
+  .gs-group-box.grp-D { border-top: 3px solid #7C3AED; }
+  .gs-group-box-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .gs-group-tag {
+    font-size: 0.72rem;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+  .gs-group-tag.grp-A { background: #EFF6FF; color: #1D4ED8; }
+  .gs-group-tag.grp-B { background: #ECFDF5; color: #047857; }
+  .gs-group-tag.grp-C { background: #FFFBEB; color: #B45309; }
+  .gs-group-tag.grp-D { background: #F5F3FF; color: #6D28D9; }
+  .gs-member-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .gs-member-chip {
+    font-size: 0.71rem;
+    font-weight: 700;
+    color: var(--brand-navy-dark);
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 2px 7px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gs-filter-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .gs-filter-pill {
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .gs-filter-pill.active {
+    background: var(--brand-navy-dark);
+    color: #FFFFFF;
+    border-color: var(--brand-navy-dark);
+  }
+  .gs-filter-pill.knockout.active {
+    background: #D97706;
+    border-color: #D97706;
+    color: #FFFFFF;
+  }
+  .gs-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #E2E8F0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .gs-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand-blue) 0%, #10B981 100%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  .gs-standings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .gs-qual-badge {
+    margin-left: 5px;
+    font-size: 0.6rem;
+    font-weight: 900;
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #86EFAC;
+    padding: 1px 6px;
+    border-radius: 999px;
+    vertical-align: middle;
+  }
+  .gs-bracket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .gs-bracket-card {
+    background: #F8FAFC;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 9px 11px;
+  }
+  .gs-bracket-card.is-final {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%);
+    border-color: #FCD34D;
+  }
 </style>
 </head>
 <body>
@@ -2374,6 +2660,9 @@
         </button>
       </div>
 
+      <!-- Optional Group Stage Widget (Penyisihan Grup & Tahap Grup - Opsional) -->
+      <div id="groupStageRosterWidget"></div>
+
       <!-- Info Banner -->
       <div id="sportInfoBanner" style="background: var(--brand-navy-light); border: 1.5px solid #BFDBFE; border-radius: var(--radius-lg); padding: 12px; margin-bottom: 14px; font-size: 0.76rem; color: var(--brand-navy-mid); display: flex; flex-direction: column; gap: 5px;">
         <strong style="color: var(--brand-navy-dark);">Aturan Rotasi:</strong>
@@ -2418,6 +2707,9 @@
         <span>Finish & Skor</span>
       </button>
     </div>
+
+    <!-- Optional Group Stage Banner & Controls (Tab Match) -->
+    <div id="groupStageMatchBanner"></div>
 
     <!-- Badminton: Main Berikutnya -->
     <div id="badmintonNextMatchSection">
@@ -2481,6 +2773,9 @@
       </div>
       <div class="champion-sub-label" id="spotlightSubtitle">Peringkat 1 Saat Ini</div>
     </div>
+
+    <!-- Klasemen Per Grup (Opsional saat Mode Penyisihan Grup Aktif) -->
+    <div id="groupStageStandingsContainer"></div>
 
     <!-- Leaderboard Table Container -->
     <div class="leaderboard-container">
@@ -4023,6 +4318,10 @@ let sTeams = [];
 let sMatches = [];
 let sCurrentMatchIndex = 0;
 
+// ── GROUP STAGE / PENYISIHAN GRUP STATE (OPSIONAL) ──
+let bGroupStage = { enabled: false, groupCount: 2, topAdvance: 2, currentPhase: 'group', filterGroup: 'ALL' };
+let sGroupStage = { enabled: false, groupCount: 2, topAdvance: 2, currentPhase: 'group', filterGroup: 'ALL' };
+
 let courtTimers = {};
 let swapContext = null;
 let sessionTitle = `Mabar ${new Date().getDate()}/${new Date().getMonth()+1}/${new Date().getFullYear()}`;
@@ -4594,6 +4893,9 @@ function resetToCleanEmptyState() {
   sCurrentMatchIndex = 0;
   sTeamCount = 0;
 
+  bGroupStage = { enabled: false, groupCount: 2, topAdvance: 2, currentPhase: 'group', filterGroup: 'ALL' };
+  sGroupStage = { enabled: false, groupCount: 2, topAdvance: 2, currentPhase: 'group', filterGroup: 'ALL' };
+
   currentRev = 0;
   if (currentSport === 'badminton') {
     ensureBadmintonCourtsInitialized();
@@ -4971,6 +5273,7 @@ function endCooldownEarly(id) {
 }
 
 function renderPlayersList() {
+  if (typeof renderGroupStageWidgets === 'function') renderGroupStageWidgets();
   const container = document.getElementById('playerRosterList');
   if (!container) return;
 
@@ -5080,6 +5383,23 @@ function renderPlayersList() {
       // Leave after match indicator
       const leaveNotice = p.leave_after_match ? `<span style="font-size:0.65rem; color:#DC2626; font-weight:800; background:#FEF2F2; padding:1px 5px; border-radius:4px;">Keluar stlh match</span>` : '';
 
+      // Optional Group Stage selector / badge
+      let groupSelectHtml = '';
+      if (typeof bGroupStage !== 'undefined' && bGroupStage && bGroupStage.enabled) {
+        const gCount = Math.max(2, Math.min(4, Number(bGroupStage.groupCount) || 2));
+        const gLabels = ['A', 'B', 'C', 'D'].slice(0, gCount);
+        const curGrp = gLabels.includes(p.group) ? p.group : gLabels[0];
+        if (checkEditPermission(false)) {
+          groupSelectHtml = `
+            <select class="select-role-inline" onchange="setParticipantGroup('${escapeHtml(String(p.id))}', this.value)" style="background:#EFF6FF; border-color:#BFDBFE; color:#1D4ED8; font-weight:800;" title="Pilih Grup Penyisihan">
+              ${gLabels.map(gl => `<option value="${gl}" ${curGrp === gl ? 'selected' : ''}>Grup ${gl}</option>`).join('')}
+            </select>
+          `;
+        } else {
+          groupSelectHtml = `<span style="font-size:0.66rem; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:2px 7px; border-radius:999px; font-weight:800;">Grup ${curGrp}</span>`;
+        }
+      }
+
       // Action button
       let actionBtn = `<button class="btn-del-player" onclick="removePlayer('${escapeHtml(String(p.id))}')" title="Keluarkan Pemain">✕</button>`;
       if (p.is_deleted || st === BadmintonService.PLAYER_STATUS.TIDAK_AKTIF) {
@@ -5096,6 +5416,7 @@ function renderPlayersList() {
             <div>
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 <span class="player-roster-name" style="${p.is_deleted ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${escapeHtml(p.name)}</span>
+                ${groupSelectHtml}
                 ${statusBadge}
                 ${quotaBadge}
                 ${leaveNotice}
@@ -5595,6 +5916,21 @@ function generateSoccerMatchSchedule() {
   }
   sMatches = [];
 
+  if (typeof sGroupStage !== 'undefined' && sGroupStage && sGroupStage.enabled && typeof BadmintonService !== 'undefined' && typeof BadmintonService.createMiniSoccerLiga === 'function') {
+    const liga = BadmintonService.createMiniSoccerLiga({
+      teams: sTeams,
+      matches: [],
+      groupCount: sGroupStage.groupCount || 2,
+      topAdvance: sGroupStage.topAdvance || 2
+    });
+    if (liga && Array.isArray(liga.groupMatches) && liga.groupMatches.length > 0) {
+      sMatches = liga.groupMatches;
+      sGroupStage.currentPhase = 'group';
+      sCurrentMatchIndex = 0;
+      return;
+    }
+  }
+
   if (sTeams.length === 2) {
     for (let r = 1; r <= 3; r++) {
       sMatches.push({
@@ -5937,6 +6273,10 @@ function submitSoccerModalScore() {
   m.scoreB = sB;
   m.winner = winner;
   m.status = 'finished';
+
+  if (typeof syncSoccerFinalsFromSemifinals === 'function') {
+    syncSoccerFinalsFromSemifinals();
+  }
 
   closeSoccerScoreModal();
   renderCourtsView();
@@ -6703,13 +7043,23 @@ function renderSoccerTeamRoster(container) {
           <div class="os-card" style="padding:14px; border:1.5px solid ${theme.border}; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:0; border-radius:var(--radius-lg);">
             <!-- Team Header & Controls -->
             <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px;">
-              <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+              <div style="display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap;">
                 <span style="display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:${theme.headerBg}; color:${theme.headerColor}; font-weight:900; font-size:0.82rem; flex-shrink:0;">
                   ${tIdx + 1}
                 </span>
                 <span style="font-weight:900; font-size:1.02rem; color:var(--brand-navy-dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                   ${escapeHtml(team.name)}
                 </span>
+                ${(typeof sGroupStage !== 'undefined' && sGroupStage && sGroupStage.enabled) ? (() => {
+                  const gCount = Math.max(2, Math.min(4, Number(sGroupStage.groupCount) || 2));
+                  const gLabels = ['A', 'B', 'C', 'D'].slice(0, gCount);
+                  const curGrp = gLabels.includes(team.group) ? team.group : gLabels[tIdx % gCount];
+                  return checkEditPermission(false)
+                    ? `<select class="select-role-inline" onchange="setParticipantGroup(${tIdx}, this.value)" style="background:#EFF6FF; border-color:#BFDBFE; color:#1D4ED8; font-weight:800;" title="Pilih Grup Penyisihan">
+                        ${gLabels.map(gl => `<option value="${gl}" ${curGrp === gl ? 'selected' : ''}>Grup ${gl}</option>`).join('')}
+                      </select>`
+                    : `<span style="font-size:0.68rem; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:2px 8px; border-radius:999px; font-weight:800;">Grup ${curGrp}</span>`;
+                })() : ''}
               </div>
               <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
                 <button type="button" onclick="renameSoccerTeam(${tIdx})" title="Ubah nama tim" style="background:#F1F5F9; border:1px solid #CBD5E1; color:var(--brand-navy-dark); border-radius:6px; padding:4px 9px; font-size:0.72rem; font-weight:800; cursor:pointer;">
@@ -7436,6 +7786,7 @@ function ensureBadmintonCourtsInitialized() {
 }
 
 function renderCourtsView() {
+  if (typeof renderGroupStageWidgets === 'function') renderGroupStageWidgets();
   const activeCourtsContainer = document.getElementById('activeCourtsList');
   const restingWrap = document.getElementById('restingPlayersWrap');
   const benchTitle = document.getElementById('benchDrawerTitle');
@@ -8033,6 +8384,13 @@ function renderCourtsView() {
     }
 
     const matchesCardsHtml = sMatches.map((m, idx) => {
+      if (typeof sGroupStage !== 'undefined' && sGroupStage && sGroupStage.enabled && sGroupStage.filterGroup && sGroupStage.filterGroup !== 'ALL') {
+        if (sGroupStage.filterGroup === 'KNOCKOUT') {
+          if (m.stage !== 'KNOCKOUT') return '';
+        } else if (m.group !== sGroupStage.filterGroup) {
+          return '';
+        }
+      }
       const isFinished = m.status === 'finished';
       const isOngoing = m.status === 'ongoing';
       const isNextPending = m === nextPendingMatch;
@@ -8040,14 +8398,20 @@ function renderCourtsView() {
       const isWinB = isFinished && m.winner === 'B';
       const teamAName = m.teamA?.name || 'Tim A';
       const teamBName = m.teamB?.name || 'Tim B';
+      const stageBadgeHtml = (typeof sGroupStage !== 'undefined' && sGroupStage && sGroupStage.enabled)
+        ? (m.stage === 'KNOCKOUT'
+            ? `<span style="background:#FEF3C7; color:#92400E; border:1px solid #FDE68A; font-size:0.66rem; font-weight:800; padding:2px 7px; border-radius:999px;">🏆 ${escapeHtml(m.knockoutLabel || 'Babak Gugur')}</span>`
+            : (m.group ? `<span style="background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; font-size:0.66rem; font-weight:800; padding:2px 7px; border-radius:999px;">Grup ${escapeHtml(m.group)}</span>` : ''))
+        : '';
 
       return `
         <div class="os-card ${isFinished ? 'is-finished' : (isOngoing ? 'is-ongoing' : '')}" style="margin-top:10px; border: 1.5px solid ${isOngoing ? 'var(--brand-blue)' : 'var(--border-color)'}; box-shadow: ${isOngoing ? '0 2px 10px rgba(11,116,222,0.08)' : '0 1px 4px rgba(0,0,0,0.03)'}; background:${isFinished ? '#FAFBFD' : '#FFFFFF'};">
           
           <!-- Top Bar: Match Title, Status & Actions -->
           <div class="card-top-title" style="margin-bottom:10px;">
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <span style="background:var(--brand-navy-dark); color:#FFF; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:0.5px;">MATCH ${m.roundNumber || (idx + 1)}</span>
+              ${stageBadgeHtml}
               <span class="card-title-text" style="font-size:0.84rem; font-weight:800;">${escapeHtml(m.title)}</span>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -8137,14 +8501,695 @@ function renderCourtsView() {
   }
 }
 
-// ── PROPOSAL JADWAL & ACC HOST HANDLERS (FITUR 5 & 8) ──
-function proposeNextCourtMatch(cIdx) {
+// ============================================================================
+//  MODUL PENYISIHAN GRUP & TAHAP GRUP (OPSIONAL - BADMINTON & MINI SOCCER)
+// ============================================================================
+
+function getActiveGroupStageConfig() {
+  if (currentSport === 'minisoccer') {
+    if (!sGroupStage || typeof sGroupStage !== 'object') {
+      sGroupStage = { enabled: false, groupCount: 2, topAdvance: 2, currentPhase: 'group', filterGroup: 'ALL' };
+    }
+    return sGroupStage;
+  } else {
+    if (!bGroupStage || typeof bGroupStage !== 'object') {
+      bGroupStage = { enabled: false, groupCount: 2, topAdvance: 2, currentPhase: 'group', filterGroup: 'ALL' };
+    }
+    return bGroupStage;
+  }
+}
+
+function ensureParticipantsHaveGroups() {
+  const cfg = getActiveGroupStageConfig();
+  if (!cfg.enabled) return;
+  const gCount = Math.max(2, Math.min(4, Number(cfg.groupCount) || 2));
+  const gLabels = ['A', 'B', 'C', 'D'].slice(0, gCount);
+
+  if (currentSport === 'minisoccer') {
+    (sTeams || []).forEach((t, idx) => {
+      if (!t.group || !gLabels.includes(t.group)) {
+        t.group = gLabels[idx % gCount];
+      }
+    });
+  } else {
+    const active = (bPlayers || []).filter(p => !p.is_deleted);
+    active.forEach((p, idx) => {
+      if (!p.group || !gLabels.includes(p.group)) {
+        p.group = gLabels[idx % gCount];
+      }
+    });
+  }
+}
+
+function toggleGroupStageMode(forceState) {
+  if (!checkEditPermission()) return;
+  const cfg = getActiveGroupStageConfig();
+  const nextState = typeof forceState === 'boolean' ? forceState : !cfg.enabled;
+  cfg.enabled = nextState;
+  cfg.filterGroup = 'ALL';
+  if (nextState) {
+    cfg.currentPhase = 'group';
+    ensureParticipantsHaveGroups();
+    if (currentSport === 'minisoccer' && sTeams.length >= 2) {
+      const hasFinished = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+      if (!hasFinished || confirm('Aktifkan Penyisihan Grup dan susun jadwal pertandingan per grup sekarang?')) {
+        generateSoccerMatchSchedule();
+      }
+    }
+    showToast('Mode Penyisihan Grup & Tahap Grup diaktifkan!', 'success');
+  } else {
+    cfg.currentPhase = 'group';
+    if (currentSport === 'minisoccer' && sTeams.length >= 2) {
+      const hasFinished = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+      if (!hasFinished) {
+        generateSoccerMatchSchedule();
+      }
+    }
+    showToast('Mode Penyisihan Grup dinonaktifkan (kembali ke mode reguler).', 'info');
+  }
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+}
+
+function setGroupStageCount(newCount) {
+  if (!checkEditPermission()) return;
+  const cfg = getActiveGroupStageConfig();
+  const count = Math.max(2, Math.min(4, parseInt(newCount, 10) || 2));
+  cfg.groupCount = count;
+  cfg.filterGroup = 'ALL';
+  const gLabels = ['A', 'B', 'C', 'D'].slice(0, count);
+
+  if (currentSport === 'minisoccer') {
+    (sTeams || []).forEach((t, idx) => { t.group = gLabels[idx % count]; });
+    const hasFinished = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+    if (!hasFinished || confirm('Ubah jumlah grup dan susun ulang jadwal Penyisihan Grup?')) {
+      generateSoccerMatchSchedule();
+    }
+  } else {
+    const active = (bPlayers || []).filter(p => !p.is_deleted);
+    active.forEach((p, idx) => { p.group = gLabels[idx % count]; });
+  }
+
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`Jumlah grup diatur menjadi ${count} Grup (${gLabels.map(g => 'Grup ' + g).join(', ')}).`, 'success');
+}
+
+function setGroupStageTopAdvance(topVal) {
+  if (!checkEditPermission()) return;
+  const cfg = getActiveGroupStageConfig();
+  cfg.topAdvance = Math.max(1, Math.min(4, parseInt(topVal, 10) || 2));
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`Kuota lolos tiap grup diatur menjadi Top ${cfg.topAdvance}.`, 'info');
+}
+
+function shuffleGroupAssignments() {
+  if (!checkEditPermission()) return;
+  const cfg = getActiveGroupStageConfig();
+  if (!cfg.enabled) return;
+  const count = Math.max(2, Math.min(4, Number(cfg.groupCount) || 2));
+  const gLabels = ['A', 'B', 'C', 'D'].slice(0, count);
+
+  if (currentSport === 'minisoccer') {
+    if (sTeams.length < 2) {
+      showToast('Minimal 2 tim untuk mengacak pembagian grup.', 'warning');
+      return;
+    }
+    const indices = sTeams.map((_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    indices.forEach((teamIdx, pos) => {
+      sTeams[teamIdx].group = gLabels[pos % count];
+    });
+    const hasFinished = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+    if (!hasFinished || confirm('Pembagian grup tim telah diacak. Susun ulang jadwal pertandingan Penyisihan Grup?')) {
+      generateSoccerMatchSchedule();
+    }
+    showToast('Pembagian grup tim berhasil diacak secara merata!', 'success');
+  } else {
+    const active = bPlayers.filter(p => !p.is_deleted);
+    if (active.length < 4) {
+      showToast('Minimal 4 pemain aktif untuk mengacak pembagian grup.', 'warning');
+      return;
+    }
+    const shuffled = [...active];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    shuffled.forEach((p, pos) => {
+      p.group = gLabels[pos % count];
+    });
+    showToast('Pembagian grup pemain berhasil diacak secara merata!', 'success');
+  }
+
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+}
+
+function setParticipantGroup(idOrIdx, newGroup) {
+  if (!checkEditPermission()) return;
+  const cfg = getActiveGroupStageConfig();
+  const count = Math.max(2, Math.min(4, Number(cfg.groupCount) || 2));
+  const gLabels = ['A', 'B', 'C', 'D'].slice(0, count);
+  if (!gLabels.includes(newGroup)) return;
+
+  if (currentSport === 'minisoccer') {
+    const idx = Number(idOrIdx);
+    if (sTeams[idx]) {
+      sTeams[idx].group = newGroup;
+      const hasFinished = Array.isArray(sMatches) && sMatches.some(m => m.status === 'finished');
+      if (!hasFinished) {
+        generateSoccerMatchSchedule();
+      }
+      showToast(`${sTeams[idx].name} dipindahkan ke Grup ${newGroup}.`, 'info');
+    }
+  } else {
+    const p = bPlayers.find(x => String(x.id) === String(idOrIdx));
+    if (p) {
+      p.group = newGroup;
+      showToast(`${p.name} dipindahkan ke Grup ${newGroup}.`, 'info');
+    }
+  }
+
+  renderPlayersList();
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+}
+
+function setGroupStageFilter(filterVal) {
+  const cfg = getActiveGroupStageConfig();
+  cfg.filterGroup = filterVal || 'ALL';
+  renderCourtsView();
+  renderLeaderboard();
+}
+
+function getCurrentGroupStageAnalysis() {
+  const cfg = getActiveGroupStageConfig();
+  if (!cfg || !cfg.enabled || !window.BadmintonService) return null;
+  ensureParticipantsHaveGroups();
+
+  if (currentSport === 'minisoccer') {
+    if (typeof BadmintonService.createMiniSoccerLiga !== 'function') return null;
+    return BadmintonService.createMiniSoccerLiga({
+      teams: sTeams,
+      matches: sMatches,
+      groupCount: cfg.groupCount || 2,
+      topAdvance: cfg.topAdvance || 2
+    });
+  } else {
+    if (typeof BadmintonService.createLeagueTournament !== 'function') return null;
+    return BadmintonService.createLeagueTournament({
+      players: bPlayers,
+      schedule: bSchedule,
+      groupCount: cfg.groupCount || 2,
+      topAdvance: cfg.topAdvance || 2
+    });
+  }
+}
+
+function generateSoccerKnockoutStageFromGroups() {
+  if (!checkEditPermission()) return;
+  if (currentSport !== 'minisoccer') return;
+  const analysis = getCurrentGroupStageAnalysis();
+  if (!analysis || !Array.isArray(analysis.championshipMatches) || analysis.championshipMatches.length === 0) {
+    showToast('Belum cukup tim lolos kualifikasi grup untuk menyusun Babak Gugur (Minimal 2 tim lolos).', 'warning');
+    return;
+  }
+
+  // Hapus match knockout yang belum dimainkan jika ingin di-update dari klasemen terbaru
+  const existingNonKnockout = sMatches.filter(m => m.stage !== 'KNOCKOUT' || m.status === 'finished');
+  const finishedKnockoutIds = new Set(existingNonKnockout.filter(m => m.stage === 'KNOCKOUT').map(m => m.knockoutId));
+
+  const hasOngoing = existingNonKnockout.some(m => m.status === 'ongoing');
+  let nextRoundNum = existingNonKnockout.length + 1;
+
+  const newKnockouts = analysis.championshipMatches
+    .filter(km => !finishedKnockoutIds.has(km.knockoutId))
+    .map((km, idx) => ({
+      ...km,
+      roundNumber: nextRoundNum + idx,
+      status: (!hasOngoing && idx === 0) ? 'ongoing' : 'pending'
+    }));
+
+  if (newKnockouts.length === 0) {
+    showToast('Seluruh jadwal Babak Gugur / Final sudah selesai dimainkan.', 'info');
+    return;
+  }
+
+  sMatches = [...existingNonKnockout, ...newKnockouts];
+  sGroupStage.currentPhase = 'knockout';
+  sGroupStage.filterGroup = 'ALL';
+
+  renderCourtsView();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`Jadwal Babak Gugur (${newKnockouts.map(k => k.knockoutLabel).join(', ')}) berhasil dibuat dari klasemen grup!`, 'success');
+}
+
+function syncSoccerFinalsFromSemifinals() {
+  if (!Array.isArray(sMatches)) return;
+  const sf1 = sMatches.find(m => m.knockoutId === 'SF1' && m.status === 'finished' && m.winner);
+  const sf2 = sMatches.find(m => m.knockoutId === 'SF2' && m.status === 'finished' && m.winner);
+  if (!sf1 || !sf2) return;
+
+  const win1 = sf1.winner === 'B' ? sf1.teamB : sf1.teamA;
+  const lose1 = sf1.winner === 'B' ? sf1.teamA : sf1.teamB;
+  const win2 = sf2.winner === 'B' ? sf2.teamB : sf2.teamA;
+  const lose2 = sf2.winner === 'B' ? sf2.teamA : sf2.teamB;
+
+  const thirdMatch = sMatches.find(m => m.knockoutId === 'THIRD' && m.status !== 'finished');
+  if (thirdMatch && lose1 && lose2) {
+    thirdMatch.teamA = lose1;
+    thirdMatch.teamB = lose2;
+    thirdMatch.title = `Perebutan Juara 3 • ${lose1.name} vs ${lose2.name}`;
+  }
+
+  const finalMatch = sMatches.find(m => m.knockoutId === 'FINAL' && m.status !== 'finished');
+  if (finalMatch && win1 && win2) {
+    finalMatch.teamA = win1;
+    finalMatch.teamB = win2;
+    finalMatch.title = `Grand Final • ${win1.name} vs ${win2.name}`;
+  }
+}
+
+function proposeBadmintonGroupMatch(groupLabel) {
   if (!checkEditPermission()) return;
   const round = ensureBadmintonCourtsInitialized();
+  const emptyIdx = round.courts.findIndex(c => !c.status || c.status === BadmintonService.COURT_STATUS.KOSONG || (c.status === 'pending' && (!c.teamA || c.teamA.length === 0)));
+  if (emptyIdx === -1) {
+    showToast('Semua lapangan sedang terisi. Selesaikan atau kosongkan salah satu lapangan terlebih dahulu.', 'warning');
+    return;
+  }
+  proposeNextCourtMatch(emptyIdx, groupLabel);
+}
+
+function proposeBadmintonKnockoutMatch(stageType = 'FINAL') {
+  if (!checkEditPermission()) return;
+  const round = ensureBadmintonCourtsInitialized();
+  const emptyIdx = round.courts.findIndex(c => !c.status || c.status === BadmintonService.COURT_STATUS.KOSONG || (c.status === 'pending' && (!c.teamA || c.teamA.length === 0)));
+  if (emptyIdx === -1) {
+    showToast('Semua lapangan sedang terisi. Kosongkan satu lapangan untuk menggelar babak gugur.', 'warning');
+    return;
+  }
+
+  const analysis = getCurrentGroupStageAnalysis();
+  if (!analysis || !Array.isArray(analysis.championshipMatches) || analysis.championshipMatches.length === 0) {
+    showToast('Minimal 4 pemain lolos dari fase grup diperlukan untuk menyusun pertandingan Babak Gugur.', 'warning');
+    return;
+  }
+
+  const targetMatch = analysis.championshipMatches.find(m => m.stage === stageType) || analysis.championshipMatches[0];
+  const fourPlayers = [...(targetMatch.teamA || []), ...(targetMatch.teamB || [])];
+  const busyInCourts = new Set();
+  round.courts.forEach((c, idx) => {
+    if (idx !== emptyIdx && c.status !== BadmintonService.COURT_STATUS.KOSONG && c.status !== 'finished') {
+      [...(c.teamA || []), ...(c.teamB || [])].forEach(p => { if (p) busyInCourts.add(String(p.id)); });
+    }
+  });
+
+  const conflict = fourPlayers.find(p => busyInCourts.has(String(p.id)));
+  if (conflict) {
+    showToast(`Pemain kualifikasi (${conflict.name}) sedang berada di lapangan lain. Selesaikan match terlebih dahulu.`, 'warning');
+    return;
+  }
+
+  const courtName = (round.courts[emptyIdx] && round.courts[emptyIdx].courtName) || `Lapangan ${emptyIdx + 1}`;
+  round.courts[emptyIdx] = {
+    courtNumber: emptyIdx + 1,
+    courtName: courtName,
+    status: BadmintonService.COURT_STATUS.MENUNGGU_ACC,
+    stage: targetMatch.stage,
+    category: 'TERBUKA',
+    categoryLabel: targetMatch.title || 'Babak Gugur',
+    teamA: targetMatch.teamA,
+    teamB: targetMatch.teamB,
+    scoreA: null,
+    scoreB: null,
+    winner: null,
+    shuttlecocks: { baru: 0, bekas_layak: 0, bekas_dihasilkan: 0 }
+  };
+
+  bGroupStage.currentPhase = 'knockout';
+  if (typeof syncRoundResting === 'function') syncRoundResting(round);
+  BadmintonService.syncActivePlayerStatuses(bPlayers, round.courts);
+  renderCourtsView();
+  renderPlayersList();
+  renderLeaderboard();
+  persistAndBroadcast();
+  showToast(`${targetMatch.title} siap di ${courtName}! Menunggu ACC Host.`, 'success');
+}
+
+function renderGroupStageWidgets() {
+  const rosterEl = document.getElementById('groupStageRosterWidget');
+  const matchBannerEl = document.getElementById('groupStageMatchBanner');
+  const standingsEl = document.getElementById('groupStageStandingsContainer');
+
+  const cfg = getActiveGroupStageConfig();
+  const isHost = checkEditPermission(false);
+  const isSoccer = currentSport === 'minisoccer';
+  const gCount = Math.max(2, Math.min(4, Number(cfg.groupCount) || 2));
+  const gLabels = ['A', 'B', 'C', 'D'].slice(0, gCount);
+  const topAdv = Number(cfg.topAdvance) || 2;
+
+  if (cfg.enabled) {
+    ensureParticipantsHaveGroups();
+  }
+
+  // 1. ROSTER WIDGET (Tab Pemain / Tim)
+  if (rosterEl) {
+    if (!cfg.enabled) {
+      if (!isHost) {
+        rosterEl.innerHTML = '';
+      } else {
+        rosterEl.innerHTML = `
+          <div class="gs-panel">
+            <div class="gs-header-row">
+              <div class="gs-title-wrap">
+                <div class="gs-icon-badge">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                </div>
+                <div>
+                  <div class="gs-title-main">
+                    <span>Penyisihan Grup &amp; Tahap Grup</span>
+                    <span class="gs-status-pill optional">Opsional</span>
+                  </div>
+                  <div class="gs-subtitle">
+                    Aktifkan jika turnamen membutuhkan pembagian Grup (A–D), klasemen per grup, &amp; kelolosan Babak Gugur.
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="gs-switch-btn" onclick="toggleGroupStageMode(true)" title="Aktifkan Mode Penyisihan Grup">
+                <span class="gs-switch-dot"></span>
+                <span>Aktifkan</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      const groupSummaryHtml = gLabels.map(gl => {
+        const members = isSoccer
+          ? (sTeams || []).filter(t => t.group === gl).map(t => t.name)
+          : (bPlayers || []).filter(p => !p.is_deleted && p.group === gl).map(p => p.name);
+        return `
+          <div class="gs-group-box grp-${gl}">
+            <div class="gs-group-box-head">
+              <span class="gs-group-tag grp-${gl}">Grup ${gl}</span>
+              <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted);">${members.length} ${isSoccer ? 'Tim' : 'Pemain'}</span>
+            </div>
+            <div class="gs-member-chips">
+              ${members.length > 0
+                ? members.map(m => `<span class="gs-member-chip" title="${escapeHtml(m)}">${escapeHtml(m)}</span>`).join('')
+                : '<span style="font-size:0.71rem; color:var(--text-muted);">Belum ada peserta</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      rosterEl.innerHTML = `
+        <div class="gs-panel is-active">
+          <div class="gs-header-row">
+            <div class="gs-title-wrap">
+              <div class="gs-icon-badge">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+              </div>
+              <div>
+                <div class="gs-title-main">
+                  <span>Mode Penyisihan Grup (${isSoccer ? 'Mini Soccer' : 'Badminton'})</span>
+                  <span class="gs-status-pill active">${gCount} Grup · Top ${topAdv} Lolos</span>
+                </div>
+                <div class="gs-subtitle">
+                  Peserta otomatis terbagi ke dalam grup. Anda dapat mengacak ulang atau mengubah grup tiap peserta di bawah.
+                </div>
+              </div>
+            </div>
+            ${isHost ? `
+              <button type="button" class="gs-switch-btn on" onclick="toggleGroupStageMode(false)" title="Matikan Mode Penyisihan Grup">
+                <span class="gs-switch-dot"></span>
+                <span>Aktif</span>
+              </button>
+            ` : ''}
+          </div>
+
+          ${isHost ? `
+            <div class="gs-controls-bar">
+              <div class="gs-control-group">
+                <span class="gs-control-label">Jumlah Grup:</span>
+                <div class="gs-seg-pills">
+                  <button type="button" class="gs-seg-btn ${gCount === 2 ? 'active' : ''}" onclick="setGroupStageCount(2)">2 Grup</button>
+                  <button type="button" class="gs-seg-btn ${gCount === 3 ? 'active' : ''}" onclick="setGroupStageCount(3)">3 Grup</button>
+                  <button type="button" class="gs-seg-btn ${gCount === 4 ? 'active' : ''}" onclick="setGroupStageCount(4)">4 Grup</button>
+                </div>
+              </div>
+
+              <div class="gs-control-group">
+                <span class="gs-control-label">Lolos:</span>
+                <div class="gs-seg-pills">
+                  <button type="button" class="gs-seg-btn ${topAdv === 1 ? 'active' : ''}" onclick="setGroupStageTopAdvance(1)">Top 1</button>
+                  <button type="button" class="gs-seg-btn ${topAdv === 2 ? 'active' : ''}" onclick="setGroupStageTopAdvance(2)">Top 2</button>
+                </div>
+              </div>
+
+              <div class="gs-control-group" style="margin-left:auto;">
+                <button type="button" class="btn-court-quick-action" onclick="shuffleGroupAssignments()" style="background:#FFFFFF; border:1px solid #93C5FD; color:#1D4ED8; font-weight:800; font-size:0.73rem; padding:5px 10px;">
+                  🎲 Acak Grup
+                </button>
+                ${isSoccer ? `
+                  <button type="button" class="btn-court-quick-action" onclick="generateSoccerMatchSchedule(); renderCourtsView(); persistAndBroadcast(); showToast('Jadwal Penyisihan Grup disusun ulang!', 'success');" style="background:var(--brand-blue); color:#FFF; border:none; font-weight:800; font-size:0.73rem; padding:5px 11px;">
+                    Susun Jadwal Grup
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="gs-groups-grid">
+            ${groupSummaryHtml}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // 2. MATCH BANNER WIDGET (Tab Lapangan / Match)
+  if (matchBannerEl) {
+    if (!cfg.enabled) {
+      matchBannerEl.innerHTML = '';
+    } else {
+      const curFilter = cfg.filterGroup || 'ALL';
+      const analysis = getCurrentGroupStageAnalysis();
+
+      if (isSoccer) {
+        const groupMatches = (sMatches || []).filter(m => m.stage === 'GROUP' || m.stage === 'group' || m.group);
+        const finishedGroupMatches = groupMatches.filter(m => m.status === 'finished');
+        const hasKnockoutMatches = (sMatches || []).some(m => m.stage === 'KNOCKOUT');
+        const pct = groupMatches.length > 0 ? Math.round((finishedGroupMatches.length / groupMatches.length) * 100) : 0;
+
+        matchBannerEl.innerHTML = `
+          <div class="gs-panel is-active" style="margin-top:8px;">
+            <div class="gs-header-row">
+              <div>
+                <div class="gs-title-main">
+                  <span class="gs-status-pill active">${hasKnockoutMatches ? 'Babak Gugur' : 'Penyisihan Grup'}</span>
+                  <span>Progress Match Grup: ${finishedGroupMatches.length}/${groupMatches.length} Selesai (${pct}%)</span>
+                </div>
+              </div>
+              ${isHost ? `
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-skor')" style="background:#FFFFFF; border:1px solid #CBD5E1; color:var(--brand-navy-dark); font-weight:800; font-size:0.72rem; padding:5px 10px;">
+                    Tabel Grup
+                  </button>
+                  <button type="button" class="btn-court-quick-action" onclick="generateSoccerKnockoutStageFromGroups()" style="background:#D97706; color:#FFF; border:none; font-weight:800; font-size:0.73rem; padding:5px 12px; border-radius:6px; cursor:pointer;">
+                    🏆 Susun Babak Gugur (Top ${topAdv})
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="gs-progress-bar">
+              <div class="gs-progress-fill" style="width:${pct}%;"></div>
+            </div>
+
+            <div class="gs-filter-pills" style="margin-top:8px;">
+              <span class="gs-control-label" style="margin-right:2px;">Filter:</span>
+              <button type="button" class="gs-filter-pill ${curFilter === 'ALL' ? 'active' : ''}" onclick="setGroupStageFilter('ALL')">Semua (${(sMatches || []).length})</button>
+              ${gLabels.map(gl => {
+                const cnt = (sMatches || []).filter(m => m.group === gl).length;
+                return `<button type="button" class="gs-filter-pill ${curFilter === gl ? 'active' : ''}" onclick="setGroupStageFilter('${gl}')">Grup ${gl} (${cnt})</button>`;
+              }).join('')}
+              ${hasKnockoutMatches ? `
+                <button type="button" class="gs-filter-pill knockout ${curFilter === 'KNOCKOUT' ? 'active' : ''}" onclick="setGroupStageFilter('KNOCKOUT')">🏆 Babak Gugur</button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        const canKnockout = analysis && Array.isArray(analysis.championshipMatches) && analysis.championshipMatches.length > 0;
+        matchBannerEl.innerHTML = `
+          <div class="gs-panel is-active" style="margin-top:8px;">
+            <div class="gs-header-row" style="margin-bottom:8px;">
+              <div class="gs-title-main">
+                <span class="gs-status-pill active">Tahap Grup Badminton</span>
+                <span>${gCount} Grup Aktif · Top ${topAdv} Lolos per Grup</span>
+              </div>
+              <button type="button" class="btn-court-quick-action" onclick="switchTab('tab-skor')" style="background:#FFFFFF; border:1px solid #93C5FD; color:#1D4ED8; font-size:0.72rem; font-weight:800; padding:4px 10px;">
+                Lihat Klasemen Grup ›
+              </button>
+            </div>
+            ${isHost ? `
+              <div class="gs-filter-pills">
+                <span class="gs-control-label">Usulkan Match ke Lapangan Kosong:</span>
+                ${gLabels.map(gl => `
+                  <button type="button" class="btn-court-quick-action" onclick="proposeBadmintonGroupMatch('${gl}')" style="background:var(--brand-blue); color:#FFF; border:none; border-radius:6px; padding:5px 11px; font-size:0.73rem; font-weight:800; cursor:pointer;">
+                    + Match Grup ${gl}
+                  </button>
+                `).join('')}
+                ${canKnockout ? `
+                  <button type="button" class="btn-court-quick-action" onclick="proposeBadmintonKnockoutMatch('FINAL')" style="background:#D97706; color:#FFF; border:none; border-radius:6px; padding:5px 11px; font-size:0.73rem; font-weight:800; cursor:pointer;">
+                    🏆 Match Final Kualifikasi
+                  </button>
+                ` : ''}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
+  }
+
+  // 3. GROUP STANDINGS & BRACKET PREVIEW (Tab Skor / Klasemen)
+  if (standingsEl) {
+    if (!cfg.enabled) {
+      standingsEl.innerHTML = '';
+    } else {
+      const analysis = getCurrentGroupStageAnalysis();
+      if (!analysis || !analysis.groupStandings) {
+        standingsEl.innerHTML = '';
+        return;
+      }
+
+      const tablesHtml = gLabels.map(gl => {
+        const rows = analysis.groupStandings[gl] || [];
+        return `
+          <div class="gs-panel" style="margin-bottom:0; padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="gs-group-tag grp-${gl}">GRUP ${gl}</span>
+                <span style="font-weight:900; font-size:0.84rem; color:var(--brand-navy-dark);">Klasemen Grup ${gl}</span>
+              </div>
+              <span style="font-size:0.66rem; font-weight:800; color:#15803D; background:#DCFCE7; padding:2px 8px; border-radius:999px;">Top ${topAdv} Lolos</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="lb-table" style="margin:0;">
+                <thead>
+                  <tr>
+                    <th class="col-left">${isSoccer ? 'Tim' : 'Pemain'}</th>
+                    <th class="col-center">${isSoccer ? 'P' : 'MAIN'}</th>
+                    <th class="col-center">${isSoccer ? 'W-D-L' : 'M-K'}</th>
+                    <th class="col-center">${isSoccer ? 'GD' : 'DIFF'}</th>
+                    <th class="col-right">${isSoccer ? 'PTS' : 'POIN'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.length === 0 ? `
+                    <tr><td colspan="5" style="text-align:center; padding:14px; color:var(--text-muted); font-size:0.76rem;">Belum ada peserta di Grup ${gl}.</td></tr>
+                  ` : rows.map((r, rIdx) => {
+                    const isQualified = rIdx < topAdv;
+                    const diffVal = isSoccer ? (r.gd || 0) : (r.diff || 0);
+                    return `
+                      <tr style="${isQualified ? 'background:#F0FDF4;' : ''}">
+                        <td class="col-left">
+                          <strong>${rIdx + 1}. ${escapeHtml(r.name)}</strong>
+                          ${isQualified ? `<span class="gs-qual-badge">LOLOS</span>` : ''}
+                        </td>
+                        <td class="col-center">${isSoccer ? (r.p || 0) : (r.matches || 0)}</td>
+                        <td class="col-center"><strong>${isSoccer ? `${r.w || 0}-${r.d || 0}-${r.l || 0}` : `${r.wins || 0}-${r.losses || 0}`}</strong></td>
+                        <td class="col-center" style="font-weight:800; color:${diffVal >= 0 ? '#059669' : '#DC2626'};">${diffVal >= 0 ? '+' + diffVal : diffVal}</td>
+                        <td class="col-right" style="font-weight:900; color:var(--brand-navy-dark);">
+                          ${isSoccer ? (r.pts || 0) : (r.totalScore || 0)}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Championship / Knockout Bracket Preview Card
+      let bracketPreviewHtml = '';
+      if (Array.isArray(analysis.championshipMatches) && analysis.championshipMatches.length > 0) {
+        const cards = analysis.championshipMatches.map(km => {
+          const isFinal = km.knockoutId === 'FINAL' || km.stage === 'FINAL';
+          const sideA = Array.isArray(km.teamA) ? km.teamA.map(p => p.name).join(' & ') : (km.teamA && km.teamA.name ? km.teamA.name : 'TBD');
+          const sideB = Array.isArray(km.teamB) ? km.teamB.map(p => p.name).join(' & ') : (km.teamB && km.teamB.name ? km.teamB.name : 'TBD');
+          const label = km.knockoutLabel || km.stageLabel || km.title || 'Babak Gugur';
+          return `
+            <div class="gs-bracket-card ${isFinal ? 'is-final' : ''}">
+              <div style="font-size:0.68rem; font-weight:900; color:${isFinal ? '#B45309' : 'var(--brand-blue)'}; text-transform:uppercase; margin-bottom:4px;">
+                ${isFinal ? '🏆 ' : ''}${escapeHtml(label)}
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; font-size:0.78rem; font-weight:800; color:var(--brand-navy-dark);">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(sideA)}</span>
+                <span style="font-size:0.66rem; color:var(--text-muted); background:#E2E8F0; padding:1px 5px; border-radius:4px; flex-shrink:0;">VS</span>
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right;">${escapeHtml(sideB)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        bracketPreviewHtml = `
+          <div class="gs-panel" style="margin-bottom:12px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+              <div style="font-weight:900; font-size:0.84rem; color:var(--brand-navy-dark);">
+                🏆 Proyeksi Bagan Babak Gugur (Berdasarkan Klasemen Grup Saat Ini)
+              </div>
+              ${isHost && isSoccer ? `
+                <button type="button" class="btn-court-quick-action" onclick="generateSoccerKnockoutStageFromGroups(); switchTab('tab-match');" style="background:#D97706; color:#FFF; border:none; font-weight:800; font-size:0.72rem; padding:4px 10px;">
+                  Terapkan ke Jadwal Match ›
+                </button>
+              ` : ''}
+            </div>
+            <div class="gs-bracket-grid">
+              ${cards}
+            </div>
+          </div>
+        `;
+      }
+
+      standingsEl.innerHTML = `<div class="gs-standings-grid">${tablesHtml}</div>${bracketPreviewHtml}`;
+    }
+  }
+}
+
+// ── PROPOSAL JADWAL & ACC HOST HANDLERS (FITUR 5 & 8) ──
+function proposeNextCourtMatch(cIdx, forceGroup = null) {
+  if (!checkEditPermission()) return;
+  const round = ensureBadmintonCourtsInitialized();
+  const targetGroup = forceGroup || ((typeof bGroupStage !== 'undefined' && bGroupStage && bGroupStage.enabled && bGroupStage.filterGroup && bGroupStage.filterGroup !== 'ALL' && bGroupStage.filterGroup !== 'KNOCKOUT') ? bGroupStage.filterGroup : null);
+  const candidatePlayers = targetGroup
+    ? bPlayers.filter(p => !p.is_deleted && p.group === targetGroup)
+    : bPlayers;
+
   const res = BadmintonService.createCourtProposal({
     courtNumber: cIdx + 1,
     courtName: (round.courts[cIdx] && round.courts[cIdx].courtName) || `Lapangan ${cIdx + 1}`,
-    players: bPlayers,
+    players: candidatePlayers,
     partnerHistory: bPartnerHistory,
     opponentHistory: bOpponentHistory,
     partnerRequests: bPartnerRequests,
@@ -8152,8 +9197,14 @@ function proposeNextCourtMatch(cIdx) {
   });
 
   if (res.court.status === BadmintonService.COURT_STATUS.KOSONG) {
-    showToast(res.message, 'warning');
+    showToast(targetGroup ? `Pemain siap di Grup ${targetGroup} belum cukup (minimal 4 pemain menunggu di Grup ${targetGroup}).` : res.message, 'warning');
     return;
+  }
+
+  if (targetGroup) {
+    res.court.group = targetGroup;
+    res.court.stage = 'GROUP';
+    res.court.categoryLabel = `${res.court.categoryLabel || 'Ganda'} • Grup ${targetGroup}`;
   }
 
   round.courts[cIdx] = res.court;
@@ -8712,6 +9763,10 @@ function setSoccerWinner(idx, outcome) {
     }
   }
 
+  if (typeof syncSoccerFinalsFromSemifinals === 'function') {
+    syncSoccerFinalsFromSemifinals();
+  }
+
   renderCourtsView();
   renderLeaderboard();
   renderHistory();
@@ -9166,6 +10221,7 @@ function getSoccerStatsAndRankings(sortMode = 'wins') {
 
 // ── LEADERBOARD & STATS ──
 function renderLeaderboard() {
+  if (typeof renderGroupStageWidgets === 'function') renderGroupStageWidgets();
   const tbody = document.getElementById('leaderboardTableBody');
   const spotlightName = document.getElementById('spotlightPlayerName');
   const thead = document.getElementById('leaderboardTableHeader');
@@ -10937,11 +11993,13 @@ function getCurrentAppState() {
     bSessionId: bSessionId || ('sess_' + Date.now()),
     bAwardedSessionIds: Array.isArray(bAwardedSessionIds) ? bAwardedSessionIds : [],
     bOfficialScoring: Boolean(bOfficialScoring),
+    bGroupStage,
     sPlayers,
     sTeamCount,
     sTeams,
     sMatches,
-    sCurrentMatchIndex
+    sCurrentMatchIndex,
+    sGroupStage
   };
 }
 
@@ -10984,12 +12042,14 @@ function loadFromLocalStorage() {
     if (typeof data.bSessionId === 'string') bSessionId = data.bSessionId;
     if (Array.isArray(data.bAwardedSessionIds)) bAwardedSessionIds = data.bAwardedSessionIds;
     if (typeof data.bOfficialScoring === 'boolean') bOfficialScoring = data.bOfficialScoring;
+    if (data.bGroupStage && typeof data.bGroupStage === 'object') bGroupStage = data.bGroupStage;
 
     if (Array.isArray(data.sPlayers)) sPlayers = data.sPlayers;
     if (typeof data.sTeamCount === 'number') sTeamCount = data.sTeamCount;
     if (Array.isArray(data.sTeams)) sTeams = data.sTeams;
     if (Array.isArray(data.sMatches)) sMatches = data.sMatches;
     if (typeof data.sCurrentMatchIndex === 'number') sCurrentMatchIndex = data.sCurrentMatchIndex;
+    if (data.sGroupStage && typeof data.sGroupStage === 'object') sGroupStage = data.sGroupStage;
 
     if (currentSport === 'minisoccer' && typeof ensureSoccerTeamsInitialized === 'function') {
       ensureSoccerTeamsInitialized(false);
@@ -12996,6 +14056,7 @@ function applyReceivedState(incomingData) {
   if (typeof data.bSessionId === 'string') bSessionId = data.bSessionId;
   if (Array.isArray(data.bAwardedSessionIds)) bAwardedSessionIds = data.bAwardedSessionIds;
   if (typeof data.bOfficialScoring === 'boolean') bOfficialScoring = data.bOfficialScoring;
+  if (data.bGroupStage && typeof data.bGroupStage === 'object') bGroupStage = data.bGroupStage;
 
   if (window.BadmintonService) {
     const curCourts = (bSchedule[bCurrentRoundIndex] && bSchedule[bCurrentRoundIndex].courts) || [];
@@ -13012,6 +14073,7 @@ function applyReceivedState(incomingData) {
   if (Array.isArray(data.sTeams)) sTeams = data.sTeams;
   if (Array.isArray(data.sMatches)) sMatches = data.sMatches;
   if (typeof data.sCurrentMatchIndex === 'number') sCurrentMatchIndex = data.sCurrentMatchIndex;
+  if (data.sGroupStage && typeof data.sGroupStage === 'object') sGroupStage = data.sGroupStage;
 
   if (currentSport === 'minisoccer' && typeof ensureSoccerTeamsInitialized === 'function') {
     ensureSoccerTeamsInitialized(false);
