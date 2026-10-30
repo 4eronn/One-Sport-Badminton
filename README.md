@@ -44,7 +44,8 @@ It runs smoothly in any modern browser on all devices (including low-end phones 
 
 ### Standings
 
-Players are ranked by wins, with a tie-break sequence that is applied in order and stops as soon as a tie is resolved:
+- **Optional group stage.** Turn on *Penyisihan Grup & Tahap Grup* from the roster or court screen. Participants are split into 2–4 groups, every group plays a round-robin, and the top 1–2 of each group advance to the knockout/final stage. The feature is off by default, so casual rotation sessions are unchanged.
+- Players are ranked by wins, with a tie-break sequence that is applied in order and stops as soon as a tie is resolved:
 
 1. Head-to-head result (when exactly two players are tied)
 2. Total points scored
@@ -100,6 +101,10 @@ Then visit <http://localhost:8000>.
 4. Others join as a **spectator** (view only) or as a **referee** (view and score, using the PIN).
 
 Live sync uses MQTT over secure WebSockets. See [Known limitations](#known-limitations) before relying on it for anything sensitive.
+
+### Account access
+
+Public account registration (*Sign Up*) is disabled. Sessions are started either with the built-in Host account or in Guest/spectator mode. The Host username and password can be changed from the **Akun** tab.
 
 ## Project structure
 

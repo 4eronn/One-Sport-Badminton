@@ -1,8 +1,9 @@
 /**
  * ============================================================================
  * VERCEL SERVERLESS API: /api/auth
- * Endpoint REST untuk autentikasi & sinkronisasi akun (Admin & User)
- * Mendukung login, pendaftaran akun baru, dan update password lintas perangkat
+ * Endpoint REST untuk autentikasi & sinkronisasi akun (Host/Admin)
+ * Mendukung login dan update password lintas perangkat.
+ * Pendaftaran akun publik sudah dinonaktifkan.
  * ============================================================================
  */
 const { getUser, saveUser, authenticateUser, getUsers, getProvider } = require('./db.js');
@@ -115,33 +116,12 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      // ACTION C: SIGNUP USER BARU
+      // ACTION C: SIGNUP DINONAKTIFKAN
+      // Pendaftaran akun publik dihapus. Akun hanya dibuat/dikelola oleh Host/Admin.
       if (action === 'signup') {
-        const name = String(body.name || '').trim();
-        if (!name || !username || !password) {
-          return res.status(400).json({ success: false, message: 'Semua kolom pendaftaran wajib diisi.' });
-        }
-        if (password.length < 4) {
-          return res.status(400).json({ success: false, message: 'Password minimal 4 karakter.' });
-        }
-
-        const existing = await getUser(username);
-        if (existing) {
-          return res.status(409).json({ success: false, message: 'Username sudah digunakan.' });
-        }
-
-        const createRes = await saveUser({
-          username,
-          name,
-          password,
-          role: 'user'
-        });
-
-        return res.status(201).json({
-          success: true,
-          message: 'Pendaftaran berhasil.',
-          user: createRes.user,
-          provider: createRes.provider
+        return res.status(403).json({
+          success: false,
+          message: 'Pendaftaran akun baru sudah dinonaktifkan. Silakan masuk menggunakan akun Host/Admin.'
         });
       }
 

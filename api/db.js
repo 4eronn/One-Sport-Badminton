@@ -8,11 +8,20 @@
 const fs = require('fs');
 const path = require('path');
 
+// Identitas akun Host/Admin utama (username = email)
+const ADMIN_USERNAME = 'admin@onesport.id';
+const ADMIN_LEGACY_USERNAMES = ['admin', 'admin@onesport.co.id'];
+
+function isAdminUsername(value) {
+  const clean = String(value || '').trim().toLowerCase();
+  return clean === ADMIN_USERNAME.toLowerCase() || ADMIN_LEGACY_USERNAMES.includes(clean);
+}
+
 // In-memory fallback untuk local development / serverless standby
 const DEFAULT_USERS = [
   {
-    username: 'admin',
-    email: 'admin@onesport.co.id',
+    username: ADMIN_USERNAME,
+    email: ADMIN_USERNAME,
     name: 'Admin OneSport',
     password: 'temanmainlebihdekat',
     role: 'host'
@@ -136,8 +145,20 @@ async function ensurePgTables(client) {
     `);
     await client.query(`
       INSERT INTO onesport_users (username, email, name, password, role)
-      VALUES 
-        ('admin', 'admin@onesport.co.id', 'Admin OneSport', 'temanmainlebihdekat', 'host'),
+      SELECT 'admin@onesport.id', 'admin@onesport.id', 'Admin OneSport', 'temanmainlebihdekat', 'host'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM onesport_users
+        WHERE LOWER(username) IN ('admin', 'admin@onesport.co.id', 'admin@onesport.id')
+      );
+    `);
+    await client.query(`
+      UPDATE onesport_users
+      SET email = 'admin@onesport.id'
+      WHERE LOWER(username) IN ('admin', 'admin@onesport.co.id');
+    `);
+    await client.query(`
+      INSERT INTO onesport_users (username, email, name, password, role)
+      VALUES
         ('user', null, 'Pemain OneSport', 'user123', 'user')
       ON CONFLICT (username) DO NOTHING;
     `);
@@ -370,6 +391,14 @@ async function deletePlayer(roomId = 'DEFAULT', playerId) {
 async function getUser(usernameOrEmail) {
   if (!usernameOrEmail) return null;
   const clean = String(usernameOrEmail).trim().toLowerCase();
+  const candidates = [clean];
+  if (clean === ADMIN_USERNAME.toLowerCase()) {
+    ADMIN_LEGACY_USERNAMES.forEach(alias => {
+      if (!candidates.includes(alias)) candidates.push(alias);
+    });
+  } else if (ADMIN_LEGACY_USERNAMES.includes(clean)) {
+    if (!candidates.includes(ADMIN_USERNAME.toLowerCase())) candidates.push(ADMIN_USERNAME.toLowerCase());
+  }
   const provider = getProvider();
 
   if (provider === 'postgres') {
@@ -377,12 +406,14 @@ async function getUser(usernameOrEmail) {
       const client = await getPgClient();
       if (client) {
         await ensurePgTables(client);
-        const res = await client.query(
-          'SELECT username, email, name, password, role FROM onesport_users WHERE LOWER(username) = $1 OR LOWER(email) = $1 LIMIT 1',
-          [clean]
-        );
-        if (res && res.rows && res.rows.length > 0) {
-          return { ...res.rows[0], provider: 'postgres' };
+        for (const candidate of candidates) {
+          const res = await client.query(
+            'SELECT username, email, name, password, role FROM onesport_users WHERE LOWER(username) = $1 OR LOWER(email) = $1 LIMIT 1',
+            [candidate]
+          );
+          if (res && res.rows && res.rows.length > 0) {
+            return { ...res.rows[0], provider: 'postgres' };
+          }
         }
       }
     } catch (e) {
@@ -395,14 +426,14 @@ async function getUser(usernameOrEmail) {
     try {
       const kv = getKvClient();
       if (kv) {
-        let u = await kv.get('onesport:users:' + clean);
-        if (!u && clean.includes('@')) {
-          const direct = await kv.get('onesport:users:admin');
-          if (direct && (direct.email || '').toLowerCase() === clean) {
-            u = direct;
-          }
+        for (const candidate of candidates) {
+          const u = await kv.get('onesport:users:' + candidate);
+          if (u) return { ...u, provider: 'kv' };
         }
-        if (u) return { ...u, provider: 'kv' };
+        const direct = await kv.get('onesport:users:admin');
+        if (direct && (direct.email || '').toLowerCase() === clean) {
+          return { ...direct, provider: 'kv' };
+        }
       }
     } catch (e) {
       console.warn('[ONESPORT DB] KV getUser error:', e.message);
@@ -411,7 +442,7 @@ async function getUser(usernameOrEmail) {
 
   // Memory fallback
   for (const [key, val] of memoryStore.users.entries()) {
-    if (key === clean || (val.email && val.email.toLowerCase() === clean)) {
+    if (candidates.includes(key) || (val.email && candidates.includes(val.email.toLowerCase()))) {
       return { ...val, provider: 'memory' };
     }
   }
@@ -422,10 +453,11 @@ async function getUser(usernameOrEmail) {
 async function saveUser(userData) {
   if (!userData || !userData.username) return { success: false, message: 'Invalid user data' };
   const username = String(userData.username).trim().toLowerCase();
+  const isAdmin = isAdminUsername(username);
   const name = String(userData.name || username).trim();
   const password = String(userData.password || '').trim();
-  const email = userData.email ? String(userData.email).trim().toLowerCase() : (username === 'admin' ? 'admin@onesport.co.id' : null);
-  const role = (username === 'admin' || userData.role === 'host') ? 'host' : (userData.role || 'user');
+  const email = userData.email ? String(userData.email).trim().toLowerCase() : (isAdmin ? ADMIN_USERNAME : null);
+  const role = (isAdmin || userData.role === 'host') ? 'host' : (userData.role || 'user');
   const provider = getProvider();
 
   const userObj = {
@@ -483,12 +515,12 @@ async function authenticateUser(usernameOrEmail, password) {
 
   const user = await getUser(cleanUname);
   if (user) {
-    if (user.password === cleanPass || (user.username === 'admin' && cleanPass === 'temanmainlebihdekat')) {
+    if (user.password === cleanPass || (isAdminUsername(user.username) && cleanPass === 'temanmainlebihdekat')) {
       return {
         success: true,
         user: {
-          username: user.username,
-          email: user.email,
+          username: isAdminUsername(user.username) ? ADMIN_USERNAME : user.username,
+          email: isAdminUsername(user.username) ? ADMIN_USERNAME : user.email,
           name: user.name,
           role: user.role
         },
@@ -497,13 +529,13 @@ async function authenticateUser(usernameOrEmail, password) {
     }
   }
 
-  // Khusus admin: selalu izinkan kredensial default 'admin' / 'temanmainlebihdekat'
-  if ((cleanUname === 'admin' || cleanUname === 'admin@onesport.co.id') && cleanPass === 'temanmainlebihdekat') {
+  // Khusus admin: selalu izinkan kredensial default 'admin@onesport.id' / 'temanmainlebihdekat'
+  if (isAdminUsername(cleanUname) && cleanPass === 'temanmainlebihdekat') {
     return {
       success: true,
       user: {
-        username: 'admin',
-        email: 'admin@onesport.co.id',
+        username: ADMIN_USERNAME,
+        email: ADMIN_USERNAME,
         name: 'Admin OneSport',
         role: 'host'
       },

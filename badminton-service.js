@@ -719,10 +719,9 @@
     }
 
     // 2. Gender-aware selection (Q-3):
-    // a) Bila > 4 pemain putri menunggu, buat match khusus putri (4 pemain putri)
-    //    Jika hanya 4 putri, tetap prioritaskan ganda campuran agar semua pemain main
+    // a) Bila minimal 4 pemain putri menunggu, buat match khusus putri (4 pemain putri)
     const femalePlayers = availablePool.filter(p => p && p.gender === 'P');
-    if (femalePlayers.length > 4) {
+    if (femalePlayers.length >= 4) {
       return femalePlayers.slice(0, 4);
     }
 

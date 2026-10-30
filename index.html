@@ -23,7 +23,7 @@
 <!-- Realtime WebSockets & QR Code Libraries -->
 <script src="vendor/mqtt.min.js"></script>
 <script src="vendor/qrcode.min.js"></script>
-<script src="badminton-service.js?v=8"></script>
+<script src="badminton-service.js?v=9"></script>
 <script>
   window.addEventListener('load', function() {
     if (typeof mqtt === 'undefined') {
@@ -2189,7 +2189,7 @@
   .history-item-card:hover {
     border-color: var(--brand-navy-soft);
   }
-  /* Auth sheet: fixed min-height so Sign In / Sign Up / Guest don't resize the sheet */
+  /* Auth sheet: fixed min-height so Sign In / Guest don't resize the sheet */
   #loginModalOverlay .modal-box { min-height: min(500px, 88dvh); animation-duration: 0.18s; }
   #loginModalOverlay.open .modal-box { animation-name: modalSlideUp; }
   #loginModalOverlay:not(.open) .modal-box { animation: none; }
@@ -4062,13 +4062,10 @@
       <button class="btn-del-player" id="btnLoginModalCloseBtn" onclick="closeLoginModal()" title="Tutup">✕</button>
     </div>
 
-    <!-- Tab Switcher: Sign In, Sign Up, Guest -->
+    <!-- Tab Switcher: Sign In / Guest -->
     <div class="login-tab-switcher" style="display: flex; background: #F1F5F9; border-radius: var(--radius-md); padding: 3px; gap: 4px; margin-bottom: 16px;">
       <button type="button" class="login-tab-btn active" id="loginTabBtnSignIn" onclick="switchLoginAuthTab('signin')" style="flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: 800; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; background: #FFF; color: var(--brand-navy-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
         Sign In
-      </button>
-      <button type="button" class="login-tab-btn" id="loginTabBtnSignUp" onclick="switchLoginAuthTab('signup')" style="flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: 800; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; background: transparent; color: var(--text-muted);">
-        Sign Up
       </button>
       <button type="button" class="login-tab-btn" id="loginTabBtnGuest" onclick="switchLoginAuthTab('guest')" style="flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: 800; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s ease; background: transparent; color: var(--text-muted);">
         Guest
@@ -4078,7 +4075,7 @@
     <!-- PANE 1: SIGN IN -->
     <div id="loginAuthPaneSignIn" style="display: block;">
       <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.45;">
-        Masuk dengan akun Host (Admin) atau akun Pengguna Anda.
+        Masuk dengan akun Host (Admin) OneSport. Pendaftaran akun baru tidak tersedia.
       </div>
       <form onsubmit="event.preventDefault(); submitLoginForm();" style="display: flex; flex-direction: column; gap: 11px;">
         <div id="loginErrorMessage" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.74rem; font-weight: 700; line-height: 1.4; text-align: center;">
@@ -4103,39 +4100,7 @@
       </form>
     </div>
 
-    <!-- PANE 2: SIGN UP -->
-    <div id="loginAuthPaneSignUp" style="display: none;">
-      <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.45;">
-        Daftarkan akun baru untuk menyimpan profil dan data pertandingan Anda secara permanen.
-      </div>
-      <form onsubmit="event.preventDefault(); submitSignUpForm();" style="display: flex; flex-direction: column; gap: 10px;">
-        <div id="signUpErrorMessage" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #DC2626; border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.74rem; font-weight: 700; line-height: 1.4; text-align: center;"></div>
-        <div>
-          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Nama Lengkap / Panggilan</label>
-          <input type="text" id="signUpInputName" class="input-styled-os" placeholder="Contoh: Budi Santoso" maxlength="30" required>
-        </div>
-        <div>
-          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Username</label>
-          <input type="text" id="signUpInputUsername" class="input-styled-os" placeholder="Contoh: budi123 (huruf/angka)" maxlength="20" autocomplete="username" required>
-        </div>
-        <div>
-          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Password</label>
-          <div style="position:relative;">
-            <input type="password" id="signUpInputPassword" class="input-styled-os" placeholder="Minimal 4 karakter..." style="padding-right:42px;" autocomplete="new-password" required>
-            <button type="button" onclick="togglePasswordVisibility('signUpInputPassword', this)" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; display:flex; align-items:center;">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="7" r="3"></circle></svg>
-            </button>
-          </div>
-        </div>
-        <div>
-          <label style="font-size: 0.74rem; font-weight: 800; color: var(--brand-navy-dark); display: block; margin-bottom: 4px;">Konfirmasi Password</label>
-          <input type="password" id="signUpInputPasswordConfirm" class="input-styled-os" placeholder="Ketik ulang password..." autocomplete="new-password" required>
-        </div>
-        
-      </form>
-    </div>
-
-    <!-- PANE 3: GUEST -->
+    <!-- PANE 2: GUEST -->
     <div id="loginAuthPaneGuest" style="display: none;">
       <div style="text-align: center; padding: 8px 4px 14px 4px;">
         <div style="width: 48px; height: 48px; border-radius: 50%; background: #EFF6FF; color: var(--brand-blue); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto;">
@@ -4227,8 +4192,15 @@ function escapeHtml(str) {
 let currentSport = 'badminton'; // 'badminton' | 'minisoccer'
 
 // ── AUTHENTICATION & ROLE MANAGEMENT ──
-const HOST_EMAIL = 'admin@onesport.co.id';
+const HOST_EMAIL = 'admin@onesport.id';
 const HOST_PASSWORD = 'temanmainlebihdekat';
+// Alias lama tetap dikenali agar sesi/perangkat yang sudah login tidak terputus.
+const HOST_LEGACY_IDENTIFIERS = ['admin', 'admin@onesport.co.id'];
+
+function isHostIdentifier(identifier) {
+  const clean = String(identifier || '').trim().toLowerCase();
+  return clean === HOST_EMAIL.toLowerCase() || HOST_LEGACY_IDENTIFIERS.includes(clean);
+}
 
 const DEFAULT_USERS_DB = [
   { username: 'user', name: 'Pemain OneSport', password: 'user123', role: 'user' }
@@ -4260,7 +4232,7 @@ try {
   const savedUser = localStorage.getItem('onesport_auth_user');
   if (savedUser) {
     const parsed = JSON.parse(savedUser);
-    if (parsed && (parsed.role === 'host' || (parsed.email && (parsed.email.toLowerCase() === HOST_EMAIL.toLowerCase() || parsed.email.toLowerCase() === 'admin')))) {
+    if (parsed && (parsed.role === 'host' || (parsed.email && isHostIdentifier(parsed.email)))) {
       currentUser = parsed;
       const customName = localStorage.getItem('onesport_user_display_name');
       if (customName && customName.trim()) currentUser.name = customName.trim();
@@ -4286,7 +4258,7 @@ function isHostUser() {
   if (!currentUser || isGuestUser()) return false;
   if (currentUser.role === 'host') return true;
   const identifier = (currentUser.email || currentUser.username || '').toLowerCase();
-  return (identifier === HOST_EMAIL.toLowerCase() || identifier === 'admin');
+  return isHostIdentifier(identifier);
 }
 
 function isRegularUser() {
@@ -4473,21 +4445,6 @@ const VercelDbSync = {
     return null;
   },
 
-  async signUpUserOnline(name, username, password) {
-    try {
-      const baseUrl = this.getBaseApiUrl();
-      const res = await fetch(`${baseUrl}/api/auth`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'signup', name, username, password })
-      });
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (e) {}
-    return null;
-  },
-
   async testConnection() {
     const baseUrl = this.getBaseApiUrl();
     try {
@@ -4656,7 +4613,7 @@ function initApp() {
     if (document.getElementById('settingMinPlays')) document.getElementById('settingMinPlays').value = bMinPlays;
     if (document.getElementById('settingTotalRounds')) document.getElementById('settingTotalRounds').value = plannedRounds;
 
-    // Peran ditentukan oleh status login (Host: admin@onesport.co.id, lainnya spectator)
+    // Peran ditentukan oleh status login (Host: admin@onesport.id, lainnya spectator)
     userRole = isHostUser() ? 'host' : 'spectator';
 
     // Sinkronkan preferensi olahraga dari parameter URL (?sport=minisoccer) atau penyimpanan lokal
@@ -11143,7 +11100,7 @@ function renderAccountTab() {
   if (isHost) {
     const displayName = getUserDisplayName();
     const allHistory = getLiveHistory();
-    const adminUsername = 'admin';
+    const adminUsername = HOST_EMAIL;
     const currentAdminPass = localStorage.getItem('onesport_admin_password') || HOST_PASSWORD;
     container.innerHTML = `
       <div class="os-card" style="margin-bottom: 14px;">
@@ -11170,7 +11127,7 @@ function renderAccountTab() {
 
             <div>
               <label style="font-size:0.75rem; font-weight:700; color:var(--brand-navy-soft); display:block; margin-bottom:4px;">Username Login</label>
-              <input type="text" class="input-styled-os" value="${escapeHtml(adminUsername)} (${escapeHtml(HOST_EMAIL)})" readonly style="background:#F1F5F9; color:var(--text-secondary); cursor:not-allowed; font-size:0.8rem; padding:7px 10px;">
+              <input type="text" class="input-styled-os" value="${escapeHtml(adminUsername)}" readonly style="background:#F1F5F9; color:var(--text-secondary); cursor:not-allowed; font-size:0.8rem; padding:7px 10px;">
               <div style="font-size:0.68rem; color:var(--text-muted); margin-top:3px;">Gunakan username ini untuk login Admin di semua perangkat (PC, HP, Tablet &amp; Web Browser).</div>
             </div>
 
@@ -11556,7 +11513,7 @@ function saveHostAccountSettings() {
 
   // Sinkronisasi ke Database Cloud Vercel
   if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.updateUserOnline === 'function') {
-    VercelDbSync.updateUserOnline('admin', newName, newPass || (localStorage.getItem('onesport_admin_password') || HOST_PASSWORD));
+    VercelDbSync.updateUserOnline(HOST_EMAIL, newName, newPass || (localStorage.getItem('onesport_admin_password') || HOST_PASSWORD));
   }
 
   showToast('Perubahan akun Admin berhasil disimpan & disinkronkan ke database cloud!', 'success');
@@ -13181,18 +13138,14 @@ function renderAuthUI() {
 
 function switchLoginAuthTab(tab) {
   const btnSignIn = document.getElementById('loginTabBtnSignIn');
-  const btnSignUp = document.getElementById('loginTabBtnSignUp');
   const btnGuest = document.getElementById('loginTabBtnGuest');
   const paneSignIn = document.getElementById('loginAuthPaneSignIn');
-  const paneSignUp = document.getElementById('loginAuthPaneSignUp');
   const paneGuest = document.getElementById('loginAuthPaneGuest');
 
   const errLogin = document.getElementById('loginErrorMessage');
-  const errSignUp = document.getElementById('signUpErrorMessage');
   if (errLogin) errLogin.style.display = 'none';
-  if (errSignUp) errSignUp.style.display = 'none';
 
-  [btnSignIn, btnSignUp, btnGuest].forEach(btn => {
+  [btnSignIn, btnGuest].forEach(btn => {
     if (btn) {
       btn.style.background = 'transparent';
       btn.style.color = 'var(--text-muted)';
@@ -13201,21 +13154,9 @@ function switchLoginAuthTab(tab) {
     }
   });
   if (paneSignIn) paneSignIn.style.display = 'none';
-  if (paneSignUp) paneSignUp.style.display = 'none';
   if (paneGuest) paneGuest.style.display = 'none';
 
-  if (tab === 'signup') {
-    if (btnSignUp) {
-      btnSignUp.style.background = '#FFF';
-      btnSignUp.style.color = 'var(--brand-navy-dark)';
-      btnSignUp.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
-      btnSignUp.classList.add('active');
-    }
-    if (paneSignUp) paneSignUp.style.display = 'block';
-    if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => {
-      document.getElementById('signUpInputName')?.focus({ preventScroll: true });
-    }, 120);
-  } else if (tab === 'guest') {
+  if (tab === 'guest') {
     if (btnGuest) {
       btnGuest.style.background = '#FFF';
       btnGuest.style.color = 'var(--brand-navy-dark)';
@@ -13256,9 +13197,7 @@ function openLoginModal(isInitial = false) {
   const inputEmail = document.getElementById('loginInputEmail');
   const inputPass = document.getElementById('loginInputPassword');
   const errEl = document.getElementById('loginErrorMessage');
-  const signErrEl = document.getElementById('signUpErrorMessage');
   if (errEl) errEl.style.display = 'none';
-  if (signErrEl) signErrEl.style.display = 'none';
 
   if (closeBtn) {
     closeBtn.style.display = 'block';
@@ -13279,9 +13218,7 @@ function openLoginModal(isInitial = false) {
 function closeLoginModal(force = false) {
   const modal = document.getElementById('loginModalOverlay');
   const errEl = document.getElementById('loginErrorMessage');
-  const signErrEl = document.getElementById('signUpErrorMessage');
   if (errEl) errEl.style.display = 'none';
-  if (signErrEl) signErrEl.style.display = 'none';
 
   if (!force && !currentUser && !isGuestSession) {
     loginAsGuest(true);
@@ -13311,101 +13248,6 @@ function submitLoginForm() {
   loginUser(email, pass);
 }
 
-function submitSignUpForm() {
-  const nameInput = document.getElementById('signUpInputName');
-  const unameInput = document.getElementById('signUpInputUsername');
-  const passInput = document.getElementById('signUpInputPassword');
-  const passConfirmInput = document.getElementById('signUpInputPasswordConfirm');
-  const errEl = document.getElementById('signUpErrorMessage');
-  if (errEl) errEl.style.display = 'none';
-
-  const name = nameInput ? nameInput.value.trim() : '';
-  const uname = unameInput ? unameInput.value.trim() : '';
-  const pass = passInput ? passInput.value.trim() : '';
-  const passConfirm = passConfirmInput ? passConfirmInput.value.trim() : '';
-
-  const showErr = (msg) => {
-    if (errEl) {
-      errEl.textContent = msg;
-      errEl.style.display = 'block';
-    }
-    showToast(msg, 'error');
-  };
-
-  if (!name || !uname || !pass || !passConfirm) {
-    showErr('Semua kolom pendaftaran wajib diisi.');
-    return;
-  }
-
-  if (name.length > 30) {
-    showErr('Nama lengkap maksimal 30 karakter.');
-    return;
-  }
-
-  if (!/^[a-zA-Z0-9_]{3,20}$/.test(uname)) {
-    showErr('Username hanya boleh kombinasi huruf, angka, underscore (3-20 karakter).');
-    return;
-  }
-
-  const cleanUname = uname.toLowerCase();
-  if (cleanUname === 'admin' || cleanUname === 'guest' || cleanUname === HOST_EMAIL.toLowerCase()) {
-    showErr('Username tersebut tidak dapat digunakan.');
-    return;
-  }
-
-  if (pass.length < 4) {
-    showErr('Password minimal 4 karakter.');
-    return;
-  }
-
-  if (pass !== passConfirm) {
-    showErr('Konfirmasi password tidak cocok dengan password.');
-    return;
-  }
-
-  const users = getUsersDatabase();
-  const exists = users.some(u => (u.username || '').toLowerCase() === cleanUname);
-  if (exists) {
-    showErr('Username sudah digunakan! Silakan pilih username lain atau Sign In.');
-    return;
-  }
-
-  const newUser = {
-    username: cleanUname,
-    name: name,
-    password: pass,
-    role: 'user',
-    createdAt: Date.now()
-  };
-  users.push(newUser);
-  saveUsersDatabase(users);
-
-  // Sinkronisasi ke Database Cloud Vercel
-  if (typeof VercelDbSync !== 'undefined' && typeof VercelDbSync.signUpUserOnline === 'function') {
-    VercelDbSync.signUpUserOnline(name, cleanUname, pass);
-  }
-
-  currentUser = {
-    username: newUser.username,
-    name: newUser.name,
-    role: 'user'
-  };
-  userRole = 'spectator';
-  isGuestSession = false;
-  localStorage.setItem('onesport_auth_user', JSON.stringify(currentUser));
-  localStorage.setItem('onesport_user_role', 'spectator');
-  localStorage.setItem('onesport_user_display_name', currentUser.name);
-  localStorage.removeItem('onesport_guest_session');
-
-  if (errEl) errEl.style.display = 'none';
-  closeLoginModal();
-  applyRoleUI();
-  if (document.getElementById('tab-akun')?.classList.contains('active')) {
-    renderAccountTab();
-  }
-  showToast(`Pendaftaran berhasil! Selamat datang, ${currentUser.name}.`, 'success');
-}
-
 function loginAsGuest(silent = false) {
   isGuestSession = true;
   currentUser = {
@@ -13432,13 +13274,13 @@ function loginUser(email, password) {
   const tabErrEl = document.getElementById('tabAccountLoginError');
 
   const customAdminPass = localStorage.getItem('onesport_admin_password');
-  const isHostUsername = (cleanEmail === HOST_EMAIL.toLowerCase() || cleanEmail === 'admin');
+  const isHostUsername = isHostIdentifier(cleanEmail);
   const isHostPassword = (cleanPass === (customAdminPass || HOST_PASSWORD) || cleanPass === HOST_PASSWORD);
 
   if (isHostUsername && isHostPassword) {
     const customName = localStorage.getItem('onesport_user_display_name');
     currentUser = {
-      username: 'admin',
+      username: HOST_EMAIL,
       email: HOST_EMAIL,
       name: customName || 'Admin OneSport',
       role: 'host'
@@ -13519,8 +13361,8 @@ function loginUser(email, password) {
       if (res && res.success && res.user) {
         if (res.user.role === 'host') {
           currentUser = {
-            username: 'admin',
-            email: res.user.email || HOST_EMAIL,
+            username: HOST_EMAIL,
+            email: HOST_EMAIL,
             name: res.user.name || 'Admin OneSport',
             role: 'host'
           };
